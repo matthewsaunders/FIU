@@ -1,7 +1,6 @@
+#include <stdio.h>
 #include <ctype.h>
-
-int getch(void);
-void ungetch(int);
+#include "calc.h"
 
 /* getop: get next character or numeric operand */
 int getop(char s[])
