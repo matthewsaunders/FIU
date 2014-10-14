@@ -1,13 +1,10 @@
-all: bstsort strCompare
+all: bstsort
 
-bstsort: bstsort.o 
-	gcc bstsort.o -o bstsort
+bstsort: bstsort.o strCompare.o 
+	gcc bstsort.o strCompare.o bstsort.h -o bstsort
 
 bstsort.o: bstsort.c
 	gcc -c bstsort.c -Wall -o bstsort.o
-
-strCompare: strCompare.o
-	gcc strCompare.o -Wall -o strCompare
 
 strCompare.o: strCompare.c	
 	gcc -c strCompare.c -Wall -o strCompare.o

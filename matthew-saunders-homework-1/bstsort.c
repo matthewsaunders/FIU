@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include "bstsort.h"
+
 
 void usage(){
   fprintf(stderr, "usage: bstsort [-c] [-o output_file_name] [input_file_name]\n");
@@ -25,7 +27,28 @@ struct Tree* create_binary_tree(){
   return t;
 }
 
-void add_to_tree(struct Tree* t, char* data){
+void insert_node (struct Node* node, struct Node* current, int cs){
+  /* add lower string to right subtree */
+  if(strCompare(node->data, current->data, cs) > 0){
+    if(!current->right){
+      current->right = node;
+    } else{
+      insert_node(node, current->right, cs);
+    }
+  }
+
+  /* add lower string to left subtree */
+  if(strCompare(node->data, current->data, cs) <= 0){
+    if(!current->left){
+      current->left = node;
+    } else{
+      insert_node(node, current->left, cs);
+    }
+  }
+  return;
+}
+
+void add_to_tree(struct Tree* t, int* data, int cs){
   struct Node* node = (struct Node*)malloc(sizeof(struct Node*));
   node->data = data;
   node->left = 0;
@@ -35,29 +58,8 @@ void add_to_tree(struct Tree* t, char* data){
     t->root = node;
   } else {
     printf("bobs your uncle");
-    insert_node(node, t->root);
+    insert_node(node, t->root, cs);
   }
-  return;
-}
-
-void insert_node (struct Node* node, struct Node* current){
-  /* add lower string to right subtree */
-  if(strCompare(node->data, current->data) > 0){
-    if(!current->right){
-      current->right = node;
-    } else{
-      insert_node(node, current, current->right);
-    }
-  }
-
-  /* add lower string to left subtree */
-  if(strCompare(node->data, current->data) <= 0){
-    if(!current->left){
-      current->left = node;
-    } else{
-      insert_node(node, current->left);
-    }
-  } 
   return;
 }
 
@@ -115,16 +117,33 @@ int main(int argc, char* argv[])
 	usage();
     return -1;
   }
-
+/*
   while((c = fgetc(fin)) != EOF){
     fputc(c, fout);
   }
+*/
+
+  struct Tree* tree;
+  tree = create_binary_tree();
+
+  int in;
+  char* ch;
+  in = 0;
+  /* find line from file and insert into tree */
+  while((c = fgetc(fin)) != EOF){
+    fputc(c, fout);
+    if(!in && c != '\n'){
+      //ch = (char*)&c;
+      add_to_tree(tree, c, cs);
+      in = 1;
+    }
+    if(c == '\n'){
+      in = 0;
+    }
+  }
 
 
-
-
-
-
+  /* print tree */
 
 
 

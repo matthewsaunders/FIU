@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
+#include "bstsort.h"
 
 void strCompareUsage();
 int compareWithCase(char* str1, char* str2);
 int compareWithOutCase(char* str1, char* str2);
+int strCompare(char* string1, char* string2, int flag);
 
 void strCompareUsage()
 {
@@ -49,10 +50,10 @@ int compareWithOutCase(char* str1, char* str2){
   /* strings match */
   return 0;
 }
-
+/*
 int main(int argc, char* argv[])
 {
-  /* case sensitive flag */
+  /* case sensitive flag 
   int c;
   int cs;
   char* string1;
@@ -89,4 +90,11 @@ int main(int argc, char* argv[])
   }
 
   return 0;
+}
+*/
+int strCompare(char* string1, char* string2, int cs){
+  if(cs)
+    return compareWithCase(string1, string2);
+  else
+    return compareWithOutCase(string1, string2);
 }
