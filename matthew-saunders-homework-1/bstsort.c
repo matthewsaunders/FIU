@@ -82,8 +82,10 @@ void print_node (struct Node* n, FILE* fout){
 }
 
 void print_tree (struct Tree* t, FILE* fout){
-  print_node(t->root, fout);
-  free(t->root);
+  if(t->root){
+    print_node(t->root, fout);
+    free(t->root);
+  }
 }
 
 int numchar(char* x){
@@ -126,9 +128,16 @@ int main(int argc, char* argv[])
   argv += optind;
 
   /* open input and output files */
-  if((of && argc == 1) || (!of && argc == 0)){
+  if(!of && argc == 0){
     fin = stdin;
     fout = stdout;
+  }else if(of && argc == 1){
+    fin = stdin;
+    fout = fopen(argv[0],"w");
+        if(!fout) {
+      fprintf(stderr, "ERROR: can't open file (to write): %s\n", argv[0]);
+      return -1;
+    }
   }else if(!of && argc == 1){
     fout = stdout;
     fin = fopen(argv[0],"r");
