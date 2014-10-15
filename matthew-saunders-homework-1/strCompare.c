@@ -50,48 +50,7 @@ int compareWithOutCase(char* str1, char* str2){
   /* strings match */
   return 0;
 }
-/*
-int main(int argc, char* argv[])
-{
-  /* case sensitive flag 
-  int c;
-  int cs;
-  char* string1;
-  char* string2;
 
-  cs = 0;
-  while((c = getopt(argc, argv, "w")) != -1){
-    switch(c) {
-      case 'w':
-        cs = 1;
-        break;
-      case '?':
-      default:
-        strCompareUsage();
-    }
-  }
-  argc -= optind;
-  argv += optind;
-
-  if(argc != 2){
-    fprintf(stderr, "Invalid number of arguments\n");
-    strCompareUsage();
-    return -1;
-  }
-
-  string1 = argv[0];
-  string2 = argv[1];
-
-  if(cs == 1){
-    return compareWithCase(string1, string2);
-  }
-  else {
-    return compareWithOutCase(string1, string2);
-  }
-
-  return 0;
-}
-*/
 int strCompare(char* string1, char* string2, int cs){
   if(cs)
     return compareWithCase(string1, string2);

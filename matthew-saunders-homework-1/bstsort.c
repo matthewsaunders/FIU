@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include "bstsort.h"
 
-
 void usage(){
   fprintf(stderr, "usage: bstsort [-c] [-o output_file_name] [input_file_name]\n");
   exit(1);
@@ -48,24 +47,57 @@ void insert_node (struct Node* node, struct Node* current, int cs){
   return;
 }
 
-void add_to_tree(struct Tree* t, int* data, int cs){
+void add_to_tree(struct Tree* t, char* data, int cs){
   struct Node* node = (struct Node*)malloc(sizeof(struct Node*));
   node->data = data;
   node->left = 0;
   node->right = 0;
 
-  if(!t){
+  if(!t->root){
     t->root = node;
   } else {
-    printf("bobs your uncle");
     insert_node(node, t->root, cs);
   }
   return;
 }
 
-void print_tree (struct Tree* root){
-  /* print tree and reclaim memory using an in-order traversal (left, root, right) */
+void print_node (struct Node* n, FILE* fout){
+  /* left */
+  if(n->left){
+    print_node(n->left, fout);
+  }
 
+  /* root */
+  fprintf(fout, "%s", n->data);
+  free(n->data);
+
+  /* right */
+  if(n->right){
+    print_node(n->right, fout);
+  }
+
+  /* reclaim memory */
+  free(n->left);
+  free(n->right);
+}
+
+void print_tree (struct Tree* t, FILE* fout){
+  print_node(t->root, fout);
+  free(t->root);
+}
+
+int numchar(char* x){
+  int length;
+  length = 0;
+
+  while(*x++ != '\0'){
+    length++;
+  }
+  return length;
+}
+
+void ditto(char* a, char* b){
+  while((*a++ = *b++));
 }
 
 int main(int argc, char* argv[])
@@ -73,12 +105,12 @@ int main(int argc, char* argv[])
   int c;
   int cs, of; /* case sensistive, output file */
   FILE *fin, *fout;
-  struct Tree* t;
 
   cs = of = 0;
   while((c = getopt(argc, argv, "co")) != -1){
     switch(c) {
       case 'c':
+
         cs = 1;
         break;
       case 'o':
@@ -94,14 +126,17 @@ int main(int argc, char* argv[])
   argv += optind;
 
   /* open input and output files */
-  if(!of && argc == 1){
+  if((of && argc == 1) || (!of && argc == 0)){
+    fin = stdin;
+    fout = stdout;
+  }else if(!of && argc == 1){
     fout = stdout;
     fin = fopen(argv[0],"r");
 	if(!fin) {
       fprintf(stderr, "ERROR: can't open file (to read): %s\n", argv[0]);
       return -1;
     }
-  } else if(of && argc == 2){
+  }else if(of && argc == 2){
     fout = fopen(argv[0],"w");
 	if(!fout) {
       fprintf(stderr, "ERROR: can't open file (to write): %s\n", argv[0]);
@@ -117,40 +152,30 @@ int main(int argc, char* argv[])
 	usage();
     return -1;
   }
-/*
-  while((c = fgetc(fin)) != EOF){
-    fputc(c, fout);
-  }
-*/
 
   struct Tree* tree;
+  /* create a binary tree */
   tree = create_binary_tree();
 
-  int in;
-  char* ch;
-  in = 0;
-  /* find line from file and insert into tree */
-  while((c = fgetc(fin)) != EOF){
-    fputc(c, fout);
-    if(!in && c != '\n'){
-      //ch = (char*)&c;
-      add_to_tree(tree, c, cs);
-      in = 1;
-    }
-    if(c == '\n'){
-      in = 0;
-    }
+  char* x;
+  char* line;
+  size_t len = 0;
+  /* read data and create binary tree */
+  while((getline(&line, &len, fin))>0){
+    /* allocate space and copy line into memory */
+    x = (char*)malloc(sizeof(char)*numchar(line));
+    ditto(x, line);
+    /* add line to tree */
+    add_to_tree(tree, x, cs);
   }
 
-
   /* print tree */
-
-
+  print_tree(tree, fout);
 
   /* close input and output files */
   if(!of && argc == 1){
     fclose(fin);
-  } else if(of && argc == 2){
+  }else if(of && argc == 2){
     fclose(fout);
     fclose(fin);
   }
