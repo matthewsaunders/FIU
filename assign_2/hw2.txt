@@ -1,0 +1,261 @@
+COP 3530
+Sections U02, U03
+Spring 2014
+
+
+
+                           HOMEWORK #2
+                           ===========
+
+
+                                     Due: Thursday, October 2nd, 2014
+
+
+Write the class LinkedListMethods that contains only static methods.
+Write only the 5 methods that are next to your name.
+
+
+Follow the same procedure that you did for Homework #1, i.e use good 
+programming style, write an author block and email them to me.
+You do not have to turn the hard copy and the java file for the Pair class.
+
+
+
+Method 1:
+
+ A multiset is similar to a set except that the duplications count.
+We want to represent multisets as linked lists. The first representation
+that comes to mind uses a LinkedList<T> where the same item can occur at
+several indices.
+For example, the multiset { "Ali Baba" , "Papa Bill", "Marcus",
+"Ali Baba", "Marcus", "Ali Baba" } can be represented as a linked list
+of strings with "Ali Baba" at index 0, "Papa Bill" at index 1,
+"Marcus" at index 2, "Ali Baba" at index 3, and so on, for a total of
+6 strings.
+
+We want a representation of the multiset as pair <item,integer> where the integer,
+called the multiplication of item,
+tells us how many times item occurs in the multiset.
+This way the above multiset is represented as the linked list with
+Pair("Ali Baba" ,3) at index 0,  Pair("Papa Bill", 1) at index 1, and
+Pair("Marcus",2) at index 2.
+
+Write the method
+
+public static <T>  LinkedList<Pair<T,Integer>>
+            convert(LinkedList<T> in)
+
+
+that transforms the first representation into the Pair representation.
+If in is null, convert returns null. Also feel free to modify the input list.
+
+Below is the class Pair.
+
+public class Pair<T,S>
+{
+
+   // the fields
+
+    private T first;
+
+    private S second;
+
+
+    // the constructor
+    public Pair(T f, S s)
+    {
+
+       first = f;
+       second = s;
+    }
+
+    // the get methods
+    public T getFirst()
+    {
+       return first;
+    }
+
+    public S getSecond()
+    {
+       return second;
+    }
+
+    // the set methods
+    // set first to v
+    public void setFirst(T v)
+    {
+       first = v;
+    }
+
+    // set second to v
+    public void setSecond(S v)
+    {
+       second = v;
+    }
+
+}
+
+
+Method 2:
+
+ Write the method
+
+
+public static void reduceList( java.util.LinkedList<String> list,
+              char ch)
+
+that deletes from list all names that start with the letter ch.
+
+Method 3:
+
+ We define the balanced parentheses strings as follows:
+
+1. {} is a balanced parentheses string
+
+2. [] is a balanced parentheses string
+
+3. () is a balanced parentheses string
+
+4. If S is a balanced parentheses string, so is {S}
+
+5. If S is a balanced parentheses string, so is [S]
+
+6. If S is a balanced parentheses string, so is (S)
+
+7. If S and T are  balanced parentheses strings, so is ST . 
+   where S and T can be the same string or different ones.
+
+
+
+For example, the strings () , [()] , {{}(){}} , ()()  are 4 balanced strings.
+
+Write the method
+
+public static boolean isBalanced(String in)
+
+that returns true if in is a string of balanced parentheses and
+false if it is not. You may write a recursive or a non-recursive program,
+but try to make your program as short as possible.
+
+Method 4:
+
+ Write the method 
+
+public static <T> void eliminateDuplicates(LinkedList<T> list)
+
+that deletes all duplicate items from list. Use the equals method to
+check for duplications.
+
+
+Method 5: 
+
+Write the method
+
+public static <T extends Comparable<? super T>> void 
+    sort(LinkedList<T> list)
+
+that sorts list in the increasing order of compareTo. 
+Do not use the Collections class.
+
+Method 6:  
+
+We define the Grandpa strings as follows:
+
+1. ab is a Grandpa string.
+
+2. bca is a Grandpa string.
+
+3. If S is a Grandpa string, so is SaS.
+
+4. If U and V are Grandpa strings, so is UbV.
+
+Here a, b, c are constants and S,U,V are variables. In these rules,
+the same letter represents the same string. So, if S = ab,
+rule 3 tells us that abaab is a Grandpa string.
+In rule 4, U and V represent Grandpa strings, but they may be different.
+
+Write the method
+
+public static boolean isGrandpa(String in)
+returns true if S is a Grandpa string and false otherwise.
+
+Method 7:
+
+Write the method
+
+public static  <T extends Comparable< ? super T>>
+     int find(T [] a, T x, int low, int high)
+
+returns an index where x occurs in the array a, or -1 if
+x is not in a. Assume that a is sorted in increasing order.
+Use the binary search method.
+
+Method 8: 
+
+Write the method sort. 
+
+public static  <T extends Comparable< ? super T>>
+     void sort(T [] a)
+
+sorts the array a in increasing order. The method must be
+a short recursive program. Do not use the methods quicksort, 
+merge sort, or the Arrays class.
+
+Method 9:
+
+   Write the method getLargest.
+
+public static <T extends Comparable< ? super T>>
+     T getLargest(T [] a, int low, int high)
+
+returns the largest item in the array slice a[low:high].
+Throw an illegal argument exception if low > high.
+
+
+
+Here the method assignments:
+
+ 1. Abodo, Franklin -----> 1, 2, 3, 4, 5
+ 2. Alvarez, Justin  -----> 1, 2, 3, 7, 8
+ 3. Archila, Gustavo -----> 1, 2, 4, 6, 7
+ 4. Beltran, Jonathan -----> 1, 3, 5, 7, 9
+ 5. Concepcion, Osvaldo -----> 1, 4, 5, 7, 8
+
+ 6. Delamo, Kevin -----> 1, 3, 7, 8, 9
+ 7. Fernandez, Eric -----> 1, 4, 5, 7, 9
+ 8. Flores, Felix -----> 2, 3, 4, 5, 7
+ 9. Gonzalez, Daniel-----> 2, 4, 5, 6, 8
+10. Hernandez, Franco -----> 2, 3, 7, 8, 9
+
+11. Herr, Richard -----> 2, 4, 5, 6, 8
+12. Lwande, Absalom -----> 2, 5, 6, 7, 9
+13. Machado, Juan -----> 2, 4, 6, 8, 9
+14. Martin, Leonardo -----> 2, 3, 5, 6, 7, 9
+15. McBride, Jeremy-----> 2, 5, 7, 8, 9
+
+
+16. Medina Rodriguez, Jorge ----->  1, 4, 5, 6, 8
+17. Mirabent, Marcos -----> 3, 4, 5, 7, 8
+18. Morales Llano, Alfredo  ----->  3, 4, 6, 8, 9
+19. Murillo, Roberto  -----> 3, 5, 6, 7, 8
+20. Ng, Han  -----> 1, 4, 5, 6, 8
+
+
+21. Paniagua, Alan -----> 3, 4, 6, 7, 8
+22. Ramirez, Ailed -----> 1, 3, 5, 6, 9
+23. Reyes, Manuel-----> 1, 4, 6, 7, 9
+24. Rico, Robert -----> 3, 4, 6, 7, 9
+25. Rodriguez, Orlando  -----> 3, 4, 5, 7, 8
+
+26. Rodriguez, Jorge  -----> 2, 4, 5, 7, 8
+27. Santoyo, Alfredo  -----> 3, 5, 6, 8, 9
+28. Saunders, Matthew  -----> 4, 5, 6, 7, 8
+29. Stroud, Stephan  -----> 4, 5, 6, 7, 9
+30. Ulloa, Osman  -----> 4, 5, 6, 8, 9
+
+31. Valiente, Monica  -----> 4, 6, 7, 8, 9
+32. Vega, Victoriano  -----> 5, 6, 7, 8, 9
+33. Viant Rogriguez, Rodolfo  ----> 1, 3, 5, 6, 8
+
+
+
