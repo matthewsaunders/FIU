@@ -70,14 +70,16 @@ int enlarge(PIXEL* original, int rows, int cols, int scale,
 int rotate(PIXEL* original, int rows, int cols, int rotation,
 	   PIXEL** new, int* newrows, int* newcols)
 {
-  int row, col;
-
-  if ((rows <= 0) || (cols <= 0)) return -1;
-
-  *new = (PIXEL*)malloc(rows*cols*sizeof(PIXEL));
-
-
-
+  if(rotation % 360 == 0){
+    //do nothing
+    printf("\nflag1\n");
+  }
+  else if((rotation > 0 && rotation % 270 == 0) || (rotation < 0 && rotation % 90 == 0 && rotation % 180 != 0 && rotation % 270 != 0)){
+    printf("\nflag2\n");
+  }
+  else if((rotation > 0 && rotation % 180 == 0) || (rotation < 0 && rotation % 180 == 0)){
+    printf("\nflag3\n");
+  }
 
   return 0;
 }
@@ -119,7 +121,7 @@ int main(int argc, char *argv[])
   PIXEL *b, *nb;
   char* infile;
   char* outfile;
-  int fl, ro, sc, ou; /* getopt flags */
+  int fl, ro, sc, ou, nro; /* getopt flags */
   int argindex;
   int val_scale, val_rotate;
 
@@ -127,7 +129,7 @@ int main(int argc, char *argv[])
   infile = stdin;
   argindex = 0;
   val_scale = val_rotate = 0;
-  fl = ro = sc = ou = 0;
+  fl = ro = sc = ou = nro = 0;
   while((c = getopt(argc, argv, "srfo")) != -1){
     switch(c) {
       case 's':
@@ -149,6 +151,7 @@ int main(int argc, char *argv[])
           fprintf(stderr, "Duplicate options\n");
           exit(-1);
         }
+        printf("\noptarg: %s , sizeof: %d\n",optarg, sizeof(optarg));
         fl = 1;
         break;
       case 'o':
@@ -159,6 +162,8 @@ int main(int argc, char *argv[])
         ou = 1;
         break;
       case '?':
+        printf("\noptarg: %s , sizeof: %d\n",optarg, sizeof(optarg));
+
       default:
         usage();
         printf("default");
@@ -181,7 +186,7 @@ int main(int argc, char *argv[])
   if(sc){
     val_scale = atoi(argv[argindex++]);
   }
-  if(ro){
+  if(ro && !nro){
     val_rotate = atoi(argv[argindex++]);
   }
   if(ou){
@@ -195,14 +200,19 @@ int main(int argc, char *argv[])
   readFile(infile, &r, &c, &b);
 
   //execute function calls based on command line flags
-  if(fl)
+  if(fl){
     flip(b, &nb, r, c);
-  if(sc)
+  }
+  if(sc){
     enlarge(b, r, c, val_scale, &nb, &nr, &nc);
     r = nr;
     c = nc;
-  if(ro)
-    printf("rotate");
+  }
+  if(ro){
+    rotate(b, r, c, val_rotate, &nb, &nr, &nc);
+    r = nr;
+    c = nc;
+  }
 
   //write results to file
   writeFile(outfile, r, c, nb);
