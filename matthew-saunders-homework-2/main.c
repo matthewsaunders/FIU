@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
         break;
       case '?':
         tmp = atoi(argv[optind]);
-        if((tmp == 0 || tmp % 90 == 0) && !nro){
+        if((tmp == 0 || tmp % 90 == 0) && !nro && ro){
           nro = 1;
           val_rotate = tmp;
         }
@@ -218,7 +218,7 @@ int main(int argc, char *argv[])
   argc -= optind;
   argv += optind;
 
-  if(argc < 1 && !nro){
+  if(argc < 1 && !nro && !fl){
     fprintf(stderr, "Too few arguments");
     exit(-1);
   }
