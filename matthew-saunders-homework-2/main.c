@@ -43,7 +43,7 @@ int enlarge(PIXEL* original, int rows, int cols, int scale,
       for (col=0; col < cols; col++) {
         for(j=0; j<scale; j++){
           PIXEL* o = original + row*cols + col;
-          PIXEL* n = (*new) + row*cols*scale*scale + cols*scale*i + col*scale + col*j;
+          PIXEL* n = (*new) + row*cols*scale*scale + cols*scale*i + col*scale + j;
           *n = *o;
         }
       }
@@ -70,15 +70,71 @@ int enlarge(PIXEL* original, int rows, int cols, int scale,
 int rotate(PIXEL* original, int rows, int cols, int rotation,
 	   PIXEL** new, int* newrows, int* newcols)
 {
+  int row, col, row2, col2;
+
   if(rotation % 360 == 0){
-    //do nothing
+    //no rotation -> copy and paste
     printf("\nflag1\n");
+    
+    *newrows = rows;
+    *newcols = cols;
+    *new = (PIXEL*)malloc((*newrows)*(*newcols)*sizeof(PIXEL));
+    
+    for (row=0; row < rows; row++){
+      for (col=0; col < cols; col++) {
+        PIXEL* o = original + row*cols + col;
+        PIXEL* n = (*new) + row*cols + col;
+        *n = *o;
+      }
+    }
   }
   else if((rotation > 0 && rotation % 270 == 0) || (rotation < 0 && rotation % 90 == 0 && rotation % 180 != 0 && rotation % 270 != 0)){
     printf("\nflag2\n");
+
+    *newrows = cols;
+    *newcols = rows;
+    *new = (PIXEL*)malloc((*newrows)*(*newcols)*sizeof(PIXEL));
+
+    for (row=0; row < rows; row++){
+      for (col=0; col < cols; col++) {
+        PIXEL* o = original + row*cols + col;
+        PIXEL* n = (*new) + col*rows + (rows-row-1);   
+        *n = *o;
+      }
+    }
+
   }
   else if((rotation > 0 && rotation % 180 == 0) || (rotation < 0 && rotation % 180 == 0)){
     printf("\nflag3\n");
+
+    *newrows = rows;
+    *newcols = cols;
+    *new = (PIXEL*)malloc((*newrows)*(*newcols)*sizeof(PIXEL));
+
+    for (row=0; row < rows; row++){
+      for (col=0; col < cols; col++) {
+        PIXEL* o = original + row*cols + col;
+        PIXEL* n = (*new) + (rows-row)*cols - (col+1);
+        *n = *o;
+      }
+    }
+
+  }
+  else if((rotation > 0 && rotation % 90 == 0) || (rotation < 0 && rotation % 270 == 0)){
+    printf("\nflag4\n");
+
+    *newrows = cols;
+    *newcols = rows;
+    *new = (PIXEL*)malloc((*newrows)*(*newcols)*sizeof(PIXEL));
+
+    for (row=0; row < rows; row++){
+      for (col=0; col < cols; col++) {
+        PIXEL* o = original + row*cols + col;
+        PIXEL* n = (*new) + col*rows + (rows-row-1); 
+        *n = *o;
+      }
+    }
+
   }
 
   return 0;
@@ -123,7 +179,7 @@ int main(int argc, char *argv[])
   char* outfile;
   int fl, ro, sc, ou, nro; /* getopt flags */
   int argindex;
-  int val_scale, val_rotate;
+  int val_scale, val_rotate, tmp;
 
   outfile = "result.bmp";
   infile = stdin;
@@ -151,7 +207,6 @@ int main(int argc, char *argv[])
           fprintf(stderr, "Duplicate options\n");
           exit(-1);
         }
-        printf("\noptarg: %s , sizeof: %d\n",optarg, sizeof(optarg));
         fl = 1;
         break;
       case 'o':
@@ -162,8 +217,12 @@ int main(int argc, char *argv[])
         ou = 1;
         break;
       case '?':
-        printf("\noptarg: %s , sizeof: %d\n",optarg, sizeof(optarg));
-
+        tmp = atoi(argv[optind]);
+        if((tmp == 0 || tmp % 90 == 0) && !nro){
+          nro = 1;
+          val_rotate = tmp;
+        }
+        break;
       default:
         usage();
         printf("default");
@@ -172,7 +231,7 @@ int main(int argc, char *argv[])
   argc -= optind;
   argv += optind;
 
-  if(argc < 1){
+  if(argc < 1 && !nro){
     fprintf(stderr, "Too few arguments");
     exit(-1);
   }
@@ -196,6 +255,7 @@ int main(int argc, char *argv[])
     infile = argv[argindex];
   }
   
+          printf("\nrotate by %d\n", val_rotate);
   //read input file
   readFile(infile, &r, &c, &b);
 
