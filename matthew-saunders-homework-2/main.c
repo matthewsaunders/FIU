@@ -4,8 +4,7 @@
 #include "bmplib.h"
 
 /*
- *
- *
+ * This method prints out usage of the bmptool.
  */
 void usage(){
   fprintf(stderr, "usage: bmptool [-s scale | -r degree | -f ] [-o output_file] [input_file] \n");
@@ -70,12 +69,9 @@ int enlarge(PIXEL* original, int rows, int cols, int scale,
 int rotate(PIXEL* original, int rows, int cols, int rotation,
 	   PIXEL** new, int* newrows, int* newcols)
 {
-  int row, col, row2, col2;
+  int row, col;
 
   if(rotation % 360 == 0){
-    //no rotation -> copy and paste
-    printf("\nflag1\n");
-    
     *newrows = rows;
     *newcols = cols;
     *new = (PIXEL*)malloc((*newrows)*(*newcols)*sizeof(PIXEL));
@@ -89,8 +85,6 @@ int rotate(PIXEL* original, int rows, int cols, int rotation,
     }
   }
   else if((rotation > 0 && rotation % 270 == 0) || (rotation < 0 && rotation % 90 == 0 && rotation % 180 != 0 && rotation % 270 != 0)){
-    printf("\nflag2\n");
-
     *newrows = cols;
     *newcols = rows;
     *new = (PIXEL*)malloc((*newrows)*(*newcols)*sizeof(PIXEL));
@@ -98,15 +92,12 @@ int rotate(PIXEL* original, int rows, int cols, int rotation,
     for (row=0; row < rows; row++){
       for (col=0; col < cols; col++) {
         PIXEL* o = original + row*cols + col;
-        PIXEL* n = (*new) + col*rows + (rows-row-1);   
+        PIXEL* n = (*new) + (cols-col-1)*rows + row;   
         *n = *o;
       }
     }
-
   }
   else if((rotation > 0 && rotation % 180 == 0) || (rotation < 0 && rotation % 180 == 0)){
-    printf("\nflag3\n");
-
     *newrows = rows;
     *newcols = cols;
     *new = (PIXEL*)malloc((*newrows)*(*newcols)*sizeof(PIXEL));
@@ -118,11 +109,8 @@ int rotate(PIXEL* original, int rows, int cols, int rotation,
         *n = *o;
       }
     }
-
   }
   else if((rotation > 0 && rotation % 90 == 0) || (rotation < 0 && rotation % 270 == 0)){
-    printf("\nflag4\n");
-
     *newrows = cols;
     *newcols = rows;
     *new = (PIXEL*)malloc((*newrows)*(*newcols)*sizeof(PIXEL));
@@ -134,7 +122,6 @@ int rotate(PIXEL* original, int rows, int cols, int rotation,
         *n = *o;
       }
     }
-
   }
 
   return 0;
@@ -181,8 +168,8 @@ int main(int argc, char *argv[])
   int argindex;
   int val_scale, val_rotate, tmp;
 
-  outfile = "result.bmp";
-  infile = stdin;
+  outfile = NULL;
+  infile = NULL;
   argindex = 0;
   val_scale = val_rotate = 0;
   fl = ro = sc = ou = nro = 0;
@@ -235,12 +222,7 @@ int main(int argc, char *argv[])
     fprintf(stderr, "Too few arguments");
     exit(-1);
   }
-/*  
-  int k = 0;
-  for(k=0; k<argc; k++){
-    printf("arg %d: %s", k, argv[k]);
-  }
-*/
+  
   /* assume if argument are true, they are in order */
   if(sc){
     val_scale = atoi(argv[argindex++]);
@@ -255,7 +237,6 @@ int main(int argc, char *argv[])
     infile = argv[argindex];
   }
   
-          printf("\nrotate by %d\n", val_rotate);
   //read input file
   readFile(infile, &r, &c, &b);
 
@@ -276,7 +257,7 @@ int main(int argc, char *argv[])
 
   //write results to file
   writeFile(outfile, r, c, nb);
-    
+
   free(b);
   free(nb);
   return 0;
