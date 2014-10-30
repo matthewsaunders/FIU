@@ -54,7 +54,7 @@ int main(int argc, char* argv[]){
       close(fd_B[1]);
       dup2(fd_B[0], STDIN_FILENO);
       
-      //wait(0);
+      wait(0);
       execlp("sort", "sort", NULL);
 
       /* return only when exec fails */
@@ -63,7 +63,7 @@ int main(int argc, char* argv[]){
     }
 
   } else { /* parent process */
-    //wait(0);    
+    wait(0);    
 
     /* update file descriptors */
     close(fd[1]);
