@@ -33,13 +33,14 @@ void execute(char* cmdline)
 {
   int pid, async, index;
   char* args[MAX_ARGS];
-  char oflag, iflaag, pflag;
-  oflag = iflaag = pflag = 0;
+  char oflag, aflag, iflag, pflag;
+  oflag = aflag = iflag = pflag = 0;
   
   char* ofile;
-  char* args_copy[20];
-  int ofile_no;
-  FILE *outfp;
+  char* ifile;
+  char* args_copy[MAX_ARGS];
+  int ofile_no, ifile_no;
+  FILE *outfp, *infp;
 
   memset(args_copy, 0, sizeof(args_copy));
 
@@ -57,19 +58,39 @@ void execute(char* cmdline)
   else async = 0;
 
     index = 0;
-    printf("oflag is set to %d:", oflag);
    
-    //Check if output is being rerouted
-    while((index < nargs) && strcmp(args[index], ">")){ 
+    //Cycle through arguments until a shell redirect is found
+    //while((index < nargs) && (strcmp(args[index], ">") || strcmp(args[index], ">>"))){ 
+    while((index < nargs) && strcmp(args[index], ">") && strcmp(args[index], ">>") && strcmp(args[index], "<") ){ 
       args_copy[index] = args[index];
+      printf("arg%d: %s\n",index,args[index]);
       index++; }
 
+    //Check if output is being rerouted
     if(index < nargs){
-      oflag = 1;
-      ofile = args[index + 1];
-      index += 2;
+      if(!strcmp(args[index], ">") || !strcmp(args[index], ">>")){
+        if(!strcmp(args[index], ">")){
+          printf("change output\n");
+          oflag = 1;
+        }
+
+        if(!strcmp(args[index], ">>")){
+          printf("append output\n");
+          aflag = 1;
+        }
+        ofile = args[index + 1];
+        index += 2;
+      }
+
+      if(!strcmp(args[index], "<")){
+        printf("change input\n");
+        iflag = 1;
+        ifile = args[index + 1];
+        index += 2;
+      }
+
     }
-    
+
 
   pid = fork();
   if(pid == 0) { /* child process */
@@ -77,13 +98,33 @@ void execute(char* cmdline)
     //output is redirected
     if(oflag){
       if ((outfp = fopen(ofile, "w")) == NULL) {
-        fprintf(stderr, "ERROR: can't open file %s\n", ofile);
         return;
       } else {
         ofile_no = fileno(outfp);
         dup2(ofile_no, STDOUT_FILENO);        
       }
     }
+
+    //output is appended
+    if(aflag){
+      if ((outfp = fopen(ofile, "a")) == NULL) {
+        return;
+      } else {
+        ofile_no = fileno(outfp);
+        dup2(ofile_no, STDOUT_FILENO);
+      }
+    }
+
+    //input is redirected
+    if(iflag){
+      if ((infp = fopen(ifile, "r")) == NULL) {
+        return;
+      } else {
+        ofile_no = fileno(infp);
+        dup2(ifile_no, STDIN_FILENO);
+      }
+    }
+
 
     execvp(args_copy[0], args_copy);
     /* return only when exec fails */
