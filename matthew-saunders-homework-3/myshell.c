@@ -64,13 +64,10 @@ void execute(char* cmdline)
   char* ofile;
   char* ifile;
   char* args_copy[MAX_ARGS];
-  char* args_copy2[MAX_ARGS];
   int ofile_no, ifile_no;
   FILE *outfp, *infp;
 
   memset(args_copy, 0, sizeof(args_copy));
-  memset(args_copy2, 0, sizeof(args_copy));
-  args_copy2[0] = "sort";
 
   //Get the number of arguments
   int nargs = get_args(cmdline, args);
@@ -87,14 +84,12 @@ void execute(char* cmdline)
 
     index = 0;
    
-    //Cycle through arguments until a shell redirect is found
-    while(index < nargs){ 
-      args_copy[index] = args[index];
+  //Cycle through arguments until a shell redirect is found
+  while(index < nargs){ 
+      //args_copy[index] = args[index];
       printf("arg%d: %s\n",index,args[index]);
-      index++; 
 
       //Check if output is being rerouted
-      if(index < nargs){
         if(!strcmp(args[index], ">") || !strcmp(args[index], ">>")){
           if(oflag || aflag || iflag){
             printf("ERROR: too many redirects\n");
@@ -110,69 +105,72 @@ void execute(char* cmdline)
             aflag = 1;
             ofile = args[index + 1];
           }
-          index += 2;
+          printf("o removing... arg%d:%s, arg%d:%s",index,args[index],index+1, args[index+1]);
+          args[index] = 0;
+          args[index+1] = 0;
+          index ++;
         }else if(!strcmp(args[index], "<")){
           printf("change input\n");
           iflag = 1;
           ifile = args[index + 1];
+          printf("i removing... arg%d:%s, arg%d:%s",index,args[index],index+1, args[index+1]);
+          args[index] = 0;
+          args[index+1] = 0;
+          index ++;
+        }
+
+      index++; 
+  } //end while
+
+    pid = fork();
+    if(pid == 0) { /* child process */
+    
+      //output is redirected
+      if(oflag){
+        if ((outfp = fopen(ofile, "w")) == NULL) {
+          return;
+        } else {
+          ofile_no = fileno(outfp);
+          dup2(ofile_no, STDOUT_FILENO);        
         }
       }
-   }
 
-
-  pid = fork();
-  if(pid == 0) { /* child process */
-    
-    //output is redirected
-    if(oflag){
-      if ((outfp = fopen(ofile, "w")) == NULL) {
-        return;
-      } else {
-        ofile_no = fileno(outfp);
-        dup2(ofile_no, STDOUT_FILENO);        
+      //output is appended
+      if(aflag){
+        if ((outfp = fopen(ofile, "a")) == NULL) {
+          return;
+        } else {
+          ofile_no = fileno(outfp);
+          dup2(ofile_no, STDOUT_FILENO);
+        }
       }
-    }
 
-    //output is appended
-    if(aflag){
-      if ((outfp = fopen(ofile, "a")) == NULL) {
-        return;
-      } else {
-        ofile_no = fileno(outfp);
-        dup2(ofile_no, STDOUT_FILENO);
+      //input is redirected
+      if(iflag){
+        if ((infp = fopen(ifile, "r")) == NULL) {
+          return;
+        } else {
+          ifile_no = fileno(infp);
+          dup2(ifile_no, STDIN_FILENO);
+          //mycopy(ifile_no, STDIN_FILENO);
+        }
       }
-    }
 
-printf("iflag = %d", iflag);
-    //input is redirected
-    if(iflag){
-      if ((infp = fopen(ifile, "r")) == NULL) {
-        return;
-      } else {
-        ifile_no = fileno(infp);
-        dup2(ifile_no, STDIN_FILENO);
-        //mycopy(ifile_no, STDIN_FILENO);
-      }
-    }
+      execvp(args[0], args);
 
-    if(iflag){
-      execvp(args_copy[0], args_copy2);
-    }else{
-      execvp(args_copy[0], args_copy);
-    }
-    /* return only when exec fails */
-    perror("exec failed");
-    exit(-1);
-  } else if(pid > 0) { /* parent process */
-    if(!async) waitpid(pid, NULL, 0);
-    else printf("this is an async call\n");
-  } else { /* error occurred */
-    perror("fork failed");
-    exit(1);
-  } 
+      /* return only when exec fails */
+      perror("exec failed");
+      exit(-1);
+  
+    } else if(pid > 0) { /* parent process */
+      if(!async) waitpid(pid, NULL, 0);
+      else printf("this is an async call\n");
+  
+    } else { /* error occurred */
+      perror("fork failed");
+      exit(1);
+    } 
 
- 
-  //} //end while(nargs > 0)
 }
 
 int main (int argc, char* argv [])
