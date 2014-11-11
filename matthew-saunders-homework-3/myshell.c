@@ -11,6 +11,31 @@
 #define MAX_ARGS 20
 #define BUFFSIZ 1024
 
+void mycopy(int fdsrc, int fddest)
+{
+  char buf[BUFFSIZ];
+  int total = 0;
+
+  for(;;) {
+    int written = 0;
+
+    int x = read(fdsrc, buf, BUFSIZ);
+    if(x < 0) { perror("ERROR: reading file"); return; }
+    else if(x == 0) break;
+
+    while (x > 0) {
+      int y = write(fddest, &buf[written], x);
+      if(y < 0) { perror("ERROR: writing file"); return; }
+      x -= y;
+      written += y;
+    }
+
+    total += written;
+  }
+
+  printf("Copied %d bytes\n", total);
+}
+
 int get_args(char* cmdline, char* args[]) 
 {
   int i = 0;
@@ -39,10 +64,13 @@ void execute(char* cmdline)
   char* ofile;
   char* ifile;
   char* args_copy[MAX_ARGS];
+  char* args_copy2[MAX_ARGS];
   int ofile_no, ifile_no;
   FILE *outfp, *infp;
 
   memset(args_copy, 0, sizeof(args_copy));
+  memset(args_copy2, 0, sizeof(args_copy));
+  args_copy2[0] = "sort";
 
   //Get the number of arguments
   int nargs = get_args(cmdline, args);
@@ -60,36 +88,36 @@ void execute(char* cmdline)
     index = 0;
    
     //Cycle through arguments until a shell redirect is found
-    //while((index < nargs) && (strcmp(args[index], ">") || strcmp(args[index], ">>"))){ 
-    while((index < nargs) && strcmp(args[index], ">") && strcmp(args[index], ">>") && strcmp(args[index], "<") ){ 
+    while(index < nargs){ 
       args_copy[index] = args[index];
       printf("arg%d: %s\n",index,args[index]);
-      index++; }
+      index++; 
 
-    //Check if output is being rerouted
-    if(index < nargs){
-      if(!strcmp(args[index], ">") || !strcmp(args[index], ">>")){
-        if(!strcmp(args[index], ">")){
-          printf("change output\n");
-          oflag = 1;
+      //Check if output is being rerouted
+      if(index < nargs){
+        if(!strcmp(args[index], ">") || !strcmp(args[index], ">>")){
+          if(oflag || aflag || iflag){
+            printf("ERROR: too many redirects\n");
+            return;
+          }
+
+          if(!strcmp(args[index], ">")){
+            printf("change output\n");
+            oflag = 1;
+            ofile = args[index + 1];
+          }else if(!strcmp(args[index], ">>")){
+            printf("append output\n");
+            aflag = 1;
+            ofile = args[index + 1];
+          }
+          index += 2;
+        }else if(!strcmp(args[index], "<")){
+          printf("change input\n");
+          iflag = 1;
+          ifile = args[index + 1];
         }
-
-        if(!strcmp(args[index], ">>")){
-          printf("append output\n");
-          aflag = 1;
-        }
-        ofile = args[index + 1];
-        index += 2;
       }
-
-      if(!strcmp(args[index], "<")){
-        printf("change input\n");
-        iflag = 1;
-        ifile = args[index + 1];
-        index += 2;
-      }
-
-    }
+   }
 
 
   pid = fork();
@@ -115,18 +143,23 @@ void execute(char* cmdline)
       }
     }
 
+printf("iflag = %d", iflag);
     //input is redirected
     if(iflag){
       if ((infp = fopen(ifile, "r")) == NULL) {
         return;
       } else {
-        ofile_no = fileno(infp);
+        ifile_no = fileno(infp);
         dup2(ifile_no, STDIN_FILENO);
+        //mycopy(ifile_no, STDIN_FILENO);
       }
     }
 
-
-    execvp(args_copy[0], args_copy);
+    if(iflag){
+      execvp(args_copy[0], args_copy2);
+    }else{
+      execvp(args_copy[0], args_copy);
+    }
     /* return only when exec fails */
     perror("exec failed");
     exit(-1);
