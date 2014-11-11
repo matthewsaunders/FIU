@@ -11,31 +11,6 @@
 #define MAX_ARGS 20
 #define BUFFSIZ 1024
 
-void mycopy(int fdsrc, int fddest)
-{
-  char buf[BUFFSIZ];
-  int total = 0;
-
-  for(;;) {
-    int written = 0;
-
-    int x = read(fdsrc, buf, BUFSIZ);
-    if(x < 0) { perror("ERROR: reading file"); return; }
-    else if(x == 0) break;
-
-    while (x > 0) {
-      int y = write(fddest, &buf[written], x);
-      if(y < 0) { perror("ERROR: writing file"); return; }
-      x -= y;
-      written += y;
-    }
-
-    total += written;
-  }
-
-  printf("Copied %d bytes\n", total);
-}
-
 int get_args(char* cmdline, char* args[]) 
 {
   int i = 0;
@@ -56,10 +31,10 @@ int get_args(char* cmdline, char* args[])
 
 void execute(char* cmdline) 
 {
-  int pid, async, index;
+  int pid, async, index, pipeIndex;
   char* args[MAX_ARGS];
-  char oflag, aflag, iflag, pflag;
-  oflag = aflag = iflag = pflag = 0;
+  char oflag, aflag, iflag, pflag, ischild;
+  oflag = aflag = iflag = pflag = ischild = 0;
   
   char* ofile;
   char* ifile;
@@ -82,49 +57,56 @@ void execute(char* cmdline)
   if(!strcmp(args[nargs-1], "&")) { async = 1; args[--nargs] = 0; }
   else async = 0;
 
-    index = 0;
+  index = pipeIndex = 0;
    
   //Cycle through arguments until a shell redirect is found
-  while(index < nargs){ 
-      //args_copy[index] = args[index];
-      printf("arg%d: %s\n",index,args[index]);
+  while(!ischild && index < nargs){ 
+    //printf("arg%d: %s\n",index,args[index]);
+    pipeIndex = 0;
+    oflag = aflag = iflag = pflag = ischild = 0;
 
+    //while(index < nargs && !pflag){
+    while(index < nargs){
       //Check if output is being rerouted
-        if(!strcmp(args[index], ">") || !strcmp(args[index], ">>")){
-          if(oflag || aflag || iflag){
-            printf("ERROR: too many redirects\n");
-            return;
-          }
-
-          if(!strcmp(args[index], ">")){
-            printf("change output\n");
-            oflag = 1;
-            ofile = args[index + 1];
-          }else if(!strcmp(args[index], ">>")){
-            printf("append output\n");
-            aflag = 1;
-            ofile = args[index + 1];
-          }
-          printf("o removing... arg%d:%s, arg%d:%s",index,args[index],index+1, args[index+1]);
-          args[index] = 0;
-          args[index+1] = 0;
-          index ++;
-        }else if(!strcmp(args[index], "<")){
-          printf("change input\n");
-          iflag = 1;
-          ifile = args[index + 1];
-          printf("i removing... arg%d:%s, arg%d:%s",index,args[index],index+1, args[index+1]);
-          args[index] = 0;
-          args[index+1] = 0;
-          index ++;
+      if(!strcmp(args[index], ">") || !strcmp(args[index], ">>")){
+        //check for error conditions
+        if(oflag || aflag){
+          printf("ERROR: too many output redirects\n");
+          return;
         }
 
-      index++; 
-  } //end while
+       //assign correct output file name
+        if(!strcmp(args[index], ">")){
+          oflag = 1;
+          ofile = args[index + 1];
+        }else if(!strcmp(args[index], ">>")){
+          aflag = 1;
+          ofile = args[index + 1];
+        }  
 
-    pid = fork();
-    if(pid == 0) { /* child process */
-    
+        args[index] = 0;
+        args[++index] = 0;
+     }else if(!strcmp(args[index], "<")){
+        if(iflag){
+          printf("ERROR: too many input redirects\n");
+        }
+
+        //assign correct input file name
+        iflag = 1;
+        ifile = args[index + 1];
+        args[index] = 0;
+        args[++index] = 0;
+      }else if(!strcmp(args[index], "|")){
+        printf("\nIs a pipe\n");
+        pflag = 1;
+      }
+
+      index++; 
+    } //end while
+
+  pid = fork();
+  if(pid == 0) { /* child process */
+    ischild = 1;
       //output is redirected
       if(oflag){
         if ((outfp = fopen(ofile, "w")) == NULL) {
@@ -152,7 +134,6 @@ void execute(char* cmdline)
         } else {
           ifile_no = fileno(infp);
           dup2(ifile_no, STDIN_FILENO);
-          //mycopy(ifile_no, STDIN_FILENO);
         }
       }
 
@@ -171,6 +152,7 @@ void execute(char* cmdline)
       exit(1);
     } 
 
+  } //end while
 }
 
 int main (int argc, char* argv [])
