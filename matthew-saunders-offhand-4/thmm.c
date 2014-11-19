@@ -1,8 +1,9 @@
-#include <math.h>
-#include <pthread.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+#include <pthread.h>
 
 struct mythread_t {
   pthread_t id; /* pthread id */
@@ -153,16 +154,16 @@ int main (int argc, char * argv[])
   int pp = atoi(argv[1]);
   if(pp <= 0) { printf("ERROR: invalid number of threads!\n"); return 2; }
   int p = (int)sqrt(pp);
-  if(p*p != pp) { printf("ERROR: #threads not square number!\n"); return 3; }
+//  if(p*p != pp) { printf("ERROR: #threads not square number!\n"); return 3; }
 
   /* read matrix A */
   read_matrix(argv[2], &a, &sa, &i, &j);
-  if(i != j) { printf("ERROR: matrix A not square\n"); return 4; }
+//  if(i != j) { printf("ERROR: matrix A not square\n"); return 4; }
   n = i;
 
   /* read matrix B */
   read_matrix(argv[3], &b, &sb, &i, &j);
-  if(i != j) { printf("ERROR: matrix B not square\n"); return 5; }
+//  if(i != j) { printf("ERROR: matrix B not square\n"); return 5; }
   if(n != i) { printf("ERROR: matrix A and B incompatible\n"); return 6; }
   if(n/p*p != n) { printf("ERROR: matrix dimension cannot be divided by p.\n"); return 7; }
 

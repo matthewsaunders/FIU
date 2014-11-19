@@ -1,18 +1,22 @@
-all:	seqmm thmm genmat prtmat
+all:	thmm genmat prtmat
 
-CFLAGS = -O3 -Wall
+prtmat:	prtmat.o
+	gcc prtmat.o -o prtmat
 
-seqmm:	seqmm.c
-	$(CC) $(CFLAGS) $< -o $@
+prtmat.o:	prtmat.c
+	gcc -Wall -c prtmat.c -o prtmat.o
 
-thmm:	thmm.c
-	$(CC) $(CFLAGS) $< -o $@
+genmat:	genmat.o
+	gcc genmat.o -o genmat
 
-genmat:	genmat.c
-	$(CC) $(CFLAGS) $< -o $@
+genmat.o:	genmat.c
+	gcc -Wall -c genmat.c -o genmat.o
 
-prtmat:	prtmat.c
-	$(CC) $(CFLAGS) $< -o $@
+thmm:	thmm.o
+	gcc thmm.o -o thmm -lpthread -lm
+
+thmm.o:	thmm.c
+	gcc -Wall -c thmm.c -o thmm.o
 
 clean:
-	$(RM) seqmm thmm genmat prtmat *~
+	rm -f *.o *~ thmm genmat prtmat
