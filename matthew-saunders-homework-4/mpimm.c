@@ -13,6 +13,8 @@ struct mythread_t {
   float **a, **b, **c; /* the three matrices */
 };
 
+pthread_mutex_t mutex;
+
 /* read a matrix from a file */
 void read_matrix(char* fname, float*** a, float** sa, int* m, int* n)
 {
@@ -74,6 +76,35 @@ void write_matrix(char* fname, float* sa, int m, int n, int id, int p)
   fclose(foutptr);
 }
 
+void write_matrix2(char* fname, float* sa, int m, int n, int id, int p)
+{
+  FILE* foutptr;
+  int i;
+  float* ptr;
+
+  foutptr = fopen(fname, "w");
+  if(!foutptr) {
+    perror("ERROR: can't open matrix file\n");
+    exit(1);
+ }
+  if(fwrite(&m, sizeof(int), 1, foutptr) != 1 ||
+     fwrite(&n, sizeof(int), 1, foutptr) != 1) {
+    perror("Error reading matrix file");
+    exit(1);
+  }
+  ptr = sa + n*p;
+  for(i=id; i<m; i+=p) {
+    if(fwrite(ptr, sizeof(float), n, foutptr) != n) {
+      perror("Error writing matrix file");
+      exit(1);
+    }
+    ptr += n*p;
+  }
+
+  fclose(foutptr);
+}
+
+
 void block_matmul(int index, int p, /* index of thread, total number of threads */
 		  int m, int n, int q, /* matrices are M*N */
 		  float** a, float** b, float** c) 
@@ -101,6 +132,8 @@ int main (int argc, char * argv[])
   int i, j;
   int id; /* process rank */
   int p; /* number of processes */
+
+  pthread_mutex_init(&mutex, NULL);
 
   if(argc != 4) {
     printf("Usage: %s fileA fileB fileC\n", argv[0]);
@@ -148,12 +181,18 @@ int main (int argc, char * argv[])
   }
  
   /* write matrix C */
+/*
   MPI_Barrier (MPI_COMM_WORLD);
   if(!id)
     write_matrix(argv[3], sc, m, q, id, p);
+*/
+  pthread_mutex_lock(&mutex);
+  write_matrix2(argv[3], sc, m, q, id, p);
+  pthread_mutex_unlock(&mutex);
 
   MPI_Finalize();
 
+  pthread_mutex_destroy(&mutex);
   free(a); free(b); free(c);
   free(sa); free(sb); free(sc);
   return 0;
