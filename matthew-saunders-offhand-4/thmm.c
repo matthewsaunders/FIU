@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,9 +6,9 @@
 
 struct mythread_t {
   pthread_t id; /* pthread id */
-  int x, y; /* thread coordinates (0..P-1, 0..P-1) */
-  int N; /* matrix dimension NxN */
-  int P; /* number of threads in one dimension; there are PxP number of threads */
+  int index; /* index in total thread count */
+  int M, N, Q; /* matrix dimension A=MxN, B=NxQ */
+  int P; /* number of threads */
   float **a, **b, **c; /* the three matrices */
 };
 
@@ -50,18 +49,23 @@ void write_matrix(char* fname, float* sa, int m, int n)
   FILE* foutptr;
   int i;
   float* ptr;
-
+printf("filename: %s\n",fname);
+printf("m: %d\nn: %d\n",m,n);
+printf("flag 7a\n");
   foutptr = fopen(fname, "w");
+printf("foutptr: %d\n",foutptr);
   if(!foutptr) {
+printf("flag 7b\n");
     perror("ERROR: can't open matrix file\n");
     exit(1); 
  }
-
+printf("flag 7\n");
   if(fwrite(&m, sizeof(int), 1, foutptr) != 1 ||
      fwrite(&n, sizeof(int), 1, foutptr) != 1) {
     perror("Error reading matrix file");
     exit(1);
   }
+printf("flag 8\n");
 
   ptr = sa;
   for(i=0; i<m; i++) {
@@ -71,68 +75,77 @@ void write_matrix(char* fname, float* sa, int m, int n)
     }
     ptr += n;
   }
+printf("flag 9\n");
 
   fclose(foutptr);
 }
 
-void block_matmul(int crow, int ccol, /* corner of C block */
-		  int arow, int acol, /* corner of A block */
-		  int brow, int bcol, /* corner of B block */
-		  int n, /* block size */
-		  int N, /* matrices are N*N */
+void block_matmul(int start, int stop, /* rows of C block */
+		  int m, int n, int q, /* matrices are M*N */
 		  float** a, float** b, float** c) 
 {
   int i, j, k;
-  for(i=0; i<n; i++)
-    for(j=0; j<n; j++)
+  for(i=start; i<stop; i++)
+    for(j=0; j<q; j++)
       for(k=0; k<n; k++)
-	c[crow+i][ccol+j] += a[arow+i][acol+k]*b[brow+k][bcol+j];
+	c[i][j] += a[i][k]*b[k][j];
 }
 
 /* dumb matrix multiplication; used for debugging purposes */
-void dumb_matmul(float** a, float** b, float** c, int N) 
+void dumb_matmul(float** a, float** b, float** c, int M,int N, int Q) 
 {
-  /*
-  int i, j, k;
-  for(i=0; i<N; i++)
-    for(j=0; j<N; j++)
-      for(k=0; k<N; k++)
-	c[i][j] += a[i][k]*b[k][j];
-  */
-  block_matmul(0, 0, 0, 0, 0, 0, N, N, a, b, c);
+  block_matmul(0, M, M, N, Q, a, b, c);
 }
 
 /* starting routing for threads */
 void* work(void* arg)
 {
   struct mythread_t* t = (struct mythread_t*)arg;
-  int n = t->N/t->P, i;
-  for(i = 0; i<t->P; i++) {
-    block_matmul(n*t->x, n*t->y, n*t->x, n*i, n*i, n*t->y,
-		 n, t->N, t->a, t->b, t->c);
-  }
+  int start, stop, step;
+
+  printf("\nthread #%d\n",t->index);
+  step = t->M%t->P;
+  //step = t->P/t->M + t->M%t->P;
+  if(!step) //step is 0
+    step = t->M/t->P;
+
+  //start = t->index*step;
+  //stop = (t->index+1)*step;
+  start = t->index;
+  stop = start+1;
+  printf("index: %d\n",t->index);
+  printf("start: %d\nstop: %d\nstep: %d\n",start,stop,step);
+  if(t->index == t->P-1) //this is the last thread, make its stop the end of the matrix
+    stop = t->M;
+
+  block_matmul(start, stop, t->M, t->N, t->Q, t->a, t->b, t->c);
   return 0;
 }
 
 
 /* call this function to do matrix multiplication */
-void matmul(int p, float** a, float** b, float** c, int N) 
+void matmul(int p, float** a, float** b, float** c, int M, int N, int Q) 
 { 
-  if(p == 1) dumb_matmul(a, b, c, N);
+  if(p == 1) dumb_matmul(a, b, c, M, N, Q);
   else {
     struct mythread_t *t, *k;
-    int i, j;
+    int i;
     t = k = (struct mythread_t*)
-      malloc(p*p*sizeof(struct mythread_t));
+      malloc(p*sizeof(struct mythread_t));
+
+    //if more threads are requested than there are rows, set thread count to row count
+    if(p>M)
+      p = M;
+
+    printf("# of threads (p): %d\n", p);
     for(i=0; i<p; i++) {
-      for(j=0; j<p; j++) {
-	k->x = i; k->y = j; k->N = N; k->P = p;
-	k->a = a; k->b = b; k->c = c;
+        printf("creating thread: %d\n",i);
+	k->M = M; k->N = N; k->Q = Q; k->P = p;
+	k->a = a; k->b = b; k->c = c, k->index = i;
 	pthread_create(&k->id, 0, work, k);
 	k++;
-      }
     }
-    for(i=0; i<p*p; i++) {
+    for(i=0; i<p; i++) {
       pthread_join(t[i].id, 0);
     }
     free(t);
@@ -141,7 +154,7 @@ void matmul(int p, float** a, float** b, float** c, int N)
 
 int main (int argc, char * argv[]) 
 {
-  int n; /* dimension of the matrix */
+  int m, n, q; /* dimension of the matrix */
   float *sa, *sb, *sc; /* storage for matrix A, B, and C */
   float **a, **b, **c; /* 2-d array to access matrix A, B, and C */
   int i, j;
@@ -151,33 +164,37 @@ int main (int argc, char * argv[])
     return 1;
   }
 
-  int pp = atoi(argv[1]);
-  if(pp <= 0) { printf("ERROR: invalid number of threads!\n"); return 2; }
-  int p = (int)sqrt(pp);
-//  if(p*p != pp) { printf("ERROR: #threads not square number!\n"); return 3; }
+  int p = atoi(argv[1]);
+  if(p <= 0) { printf("ERROR: invalid number of threads!\n"); return 2; }
 
   /* read matrix A */
   read_matrix(argv[2], &a, &sa, &i, &j);
-//  if(i != j) { printf("ERROR: matrix A not square\n"); return 4; }
-  n = i;
+  m = i;
+  n = j;
 
   /* read matrix B */
   read_matrix(argv[3], &b, &sb, &i, &j);
-//  if(i != j) { printf("ERROR: matrix B not square\n"); return 5; }
+  q = j;
   if(n != i) { printf("ERROR: matrix A and B incompatible\n"); return 6; }
-  if(n/p*p != n) { printf("ERROR: matrix dimension cannot be divided by p.\n"); return 7; }
 
+printf("flag 1\n");
+printf("m: %d\nn: %d\nq: %d\n",m,n,q);
   /* initialize matrix C */
-  sc = (float*)malloc(n*n*sizeof(float));
-  memset(sc, 0, n*n*sizeof(float));
-  c = (float**)malloc(n*sizeof(float*));
-  for(i=0; i<n; i++) c[i] = &sc[i*n];
+  sc = (float*)malloc(m*q*sizeof(float));
+  memset(sc, 0, m*q*sizeof(float));
+printf("flag 2\n");
+  c = (float**)malloc(m*sizeof(float*));
+printf("flag 3\n");
+  for(i=0; i<n; i++) c[i] = &sc[i*q];
 
+printf("flag 4\n");
   /* do the multiplication */
-  matmul(p, a, b, c, n);
+  matmul(p, a, b, c, m, n, q);
   
+printf("flag 5\n");
   /* write matrix C */
-  write_matrix(argv[4], sc, n, n);
+  write_matrix(argv[4], sc, m, q);
+printf("flag 6\n");
 
   free(a); free(b); free(c);
   free(sa); free(sb); free(sc);
