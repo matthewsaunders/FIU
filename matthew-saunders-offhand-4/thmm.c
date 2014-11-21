@@ -49,23 +49,17 @@ void write_matrix(char* fname, float* sa, int m, int n)
   FILE* foutptr;
   int i;
   float* ptr;
-printf("filename: %s\n",fname);
-printf("m: %d\nn: %d\n",m,n);
-printf("flag 7a\n");
+
   foutptr = fopen(fname, "w");
-printf("foutptr: %d\n",foutptr);
   if(!foutptr) {
-printf("flag 7b\n");
     perror("ERROR: can't open matrix file\n");
     exit(1); 
  }
-printf("flag 7\n");
   if(fwrite(&m, sizeof(int), 1, foutptr) != 1 ||
      fwrite(&n, sizeof(int), 1, foutptr) != 1) {
     perror("Error reading matrix file");
     exit(1);
   }
-printf("flag 8\n");
 
   ptr = sa;
   for(i=0; i<m; i++) {
@@ -75,17 +69,16 @@ printf("flag 8\n");
     }
     ptr += n;
   }
-printf("flag 9\n");
 
   fclose(foutptr);
 }
 
-void block_matmul(int start, int stop, /* rows of C block */
+void block_matmul(int index, int p, /* index of thread, total number of threads */
 		  int m, int n, int q, /* matrices are M*N */
 		  float** a, float** b, float** c) 
 {
   int i, j, k;
-  for(i=start; i<stop; i++)
+  for(i=index; i<m; i+=p)
     for(j=0; j<q; j++)
       for(k=0; k<n; k++)
 	c[i][j] += a[i][k]*b[k][j];
@@ -94,31 +87,15 @@ void block_matmul(int start, int stop, /* rows of C block */
 /* dumb matrix multiplication; used for debugging purposes */
 void dumb_matmul(float** a, float** b, float** c, int M,int N, int Q) 
 {
-  block_matmul(0, M, M, N, Q, a, b, c);
+  block_matmul(0, 1, M, N, Q, a, b, c);
 }
 
 /* starting routing for threads */
 void* work(void* arg)
 {
   struct mythread_t* t = (struct mythread_t*)arg;
-  int start, stop, step;
 
-  printf("\nthread #%d\n",t->index);
-  step = t->M%t->P;
-  //step = t->P/t->M + t->M%t->P;
-  if(!step) //step is 0
-    step = t->M/t->P;
-
-  //start = t->index*step;
-  //stop = (t->index+1)*step;
-  start = t->index;
-  stop = start+1;
-  printf("index: %d\n",t->index);
-  printf("start: %d\nstop: %d\nstep: %d\n",start,stop,step);
-  if(t->index == t->P-1) //this is the last thread, make its stop the end of the matrix
-    stop = t->M;
-
-  block_matmul(start, stop, t->M, t->N, t->Q, t->a, t->b, t->c);
+  block_matmul(t->index, t->P, t->M, t->N, t->Q, t->a, t->b, t->c);
   return 0;
 }
 
@@ -137,9 +114,7 @@ void matmul(int p, float** a, float** b, float** c, int M, int N, int Q)
     if(p>M)
       p = M;
 
-    printf("# of threads (p): %d\n", p);
     for(i=0; i<p; i++) {
-        printf("creating thread: %d\n",i);
 	k->M = M; k->N = N; k->Q = Q; k->P = p;
 	k->a = a; k->b = b; k->c = c, k->index = i;
 	pthread_create(&k->id, 0, work, k);
@@ -177,24 +152,17 @@ int main (int argc, char * argv[])
   q = j;
   if(n != i) { printf("ERROR: matrix A and B incompatible\n"); return 6; }
 
-printf("flag 1\n");
-printf("m: %d\nn: %d\nq: %d\n",m,n,q);
   /* initialize matrix C */
   sc = (float*)malloc(m*q*sizeof(float));
   memset(sc, 0, m*q*sizeof(float));
-printf("flag 2\n");
   c = (float**)malloc(m*sizeof(float*));
-printf("flag 3\n");
-  for(i=0; i<n; i++) c[i] = &sc[i*q];
+  for(i=0; i<m; i++) c[i] = &sc[i*q];
 
-printf("flag 4\n");
   /* do the multiplication */
   matmul(p, a, b, c, m, n, q);
   
-printf("flag 5\n");
   /* write matrix C */
   write_matrix(argv[4], sc, m, q);
-printf("flag 6\n");
 
   free(a); free(b); free(c);
   free(sa); free(sb); free(sc);
