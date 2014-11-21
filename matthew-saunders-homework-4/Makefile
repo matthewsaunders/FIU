@@ -1,4 +1,4 @@
-all:	thmm genmat prtmat
+all:	mpimm genmat prtmat
 
 prtmat:	prtmat.o
 	gcc prtmat.o -o prtmat
@@ -12,11 +12,11 @@ genmat:	genmat.o
 genmat.o:	genmat.c
 	gcc -Wall -c genmat.c -o genmat.o
 
-thmm:	thmm.o
-	gcc thmm.o -o thmm -lpthread -lm
+mpimm:	mpimm.c
+	mpicc mpimm.c -o mpimm -lpthread -lm
 
-thmm.o:	thmm.c
+mpimm.o:	mpimm.c
 	gcc -Wall -c thmm.c -o thmm.o
 
 clean:
-	rm -f *.o *~ thmm genmat prtmat
+	rm -f *.o *~ mpimm genmat prtmat
