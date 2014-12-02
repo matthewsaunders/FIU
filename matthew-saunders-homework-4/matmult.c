@@ -3,23 +3,94 @@
 #include <string.h>
 #include <mpi.h>
 
-float* read_matrix(fileA){
-  float* storage; /* storage array for chunk of matrix */
+/* GLOBAL SCOPE */
+int p; /* total number of processes */
+int id; /* process rank */
 
-  return storage;
+/* process p-1 reads in the matrix n/p rows at a time and sends it to
+   the other processes */
+float* read_matrix(char* filename)
+{ 
+  printf("..in function read_matrix\n");
+  printf("p: %d, id: %d\n", p, id);
+  float* storage_mat; /* storage array for chunk of matrix */
+  FILE* finptr; /* file with matrix being read */
+  int *m, *n;
+  float* ptr;
+  int i, j;
+
+  /* open file */
+  finptr = fopen(filename, "r");
+  if(!finptr) { perror("ERROR: can't open matrix file\n"); exit(1); }
+
+  /* reads in the dimension of the matrix (n x n); if not square
+     matrix, quit */
+  if(fread(m, sizeof(int), 1, finptr) != 1 ||
+     fread(n, sizeof(int), 1, finptr) != 1) {
+    perror("Error reading matrix file");
+    exit(1);
+  }
+
+  if((*m) != (*n)) { printf("ERROR: matrix A not square\n"); exit(2); }
+  if(!((*n)%p)) { printf("ERROR: number of processes P is not evenly divisible\n"); exit(2); }
+
+  /* allocate an array 'storage_mat' of floats of n x (n/p) in size */
+  storage_mat = (float*)malloc((*n)*((*n)/p)*sizeof(float));
+  
+  if(id == p-1) {
+    for(i=0; i<p; i++) {
+      /* read (n/p) rows of the matrix and fill in the array */
+      ptr = storage_mat + ((*n)/p)*i;
+      for(j=0; j<((i+1)*(*n)/p - 1); j++) {
+        if(fread(ptr, sizeof(float), (*n), finptr) != (*n)) {
+          perror("Error reading matrix file");
+          exit(1);
+        }
+        ptr += (*n);
+      }
+
+      if(i < p-1) {
+	/* mpi send the array storage_mat to process rank i */
+      }
+    }
+  } else {
+    /* mpi receive the array storage_mat from process rank p-1 */
+  }
+
+  /* close file */
+  fclose(finptr);
+  return storage_mat;
 }
 
-void write_matrix(fileC, storage_matC){
+/* process 0 writes out the matrix n/p rows at a time on behalf of all
+   other processes */
+void write_matrix(char* filename, float* storage_mat)
+{
+  printf("..in function write_matrix\n");
+  int i;
 
-
+  /* open file */
+  if(!id) {
+    for(i=0; i<p; i++) {
+      /* write (n/p) rows of the matrix from the array storage_mat */
+      if(i < p-1) {
+	/* mpi receive the array storage_mat from process rank i */
+      }
+    }
+  } else {
+    /* mpi send the array storage_mat to process rank 0 */
+   
+  }
+  /* close file */
   return;
 }
 
 int main(int argc, char* argv[])
 {
-  int p; /* total number of processes */
-  int id; /* process rank */
-  int i;
+//  int p; /* total number of processes */
+//  int id; /* process rank */
+  int i, j;
+  int n;
   char* fileA; /* file containing matrix A */
   char* fileB; /* file containing matrix B */
   char* fileC; /* file containing matrix C */
@@ -44,14 +115,13 @@ int main(int argc, char* argv[])
   fileB = argv[2];
   fileC = argv[3];
 
+  /* allocate space and intialize to zero for storage_matC as an array
+     of floats of n x (n/p) in size */
   storage_matA = read_matrix(fileA);
   storage_matB = read_matrix(fileB);
 
-  /* allocate space and intialize to zero for storage_matC as an array
-     of floats of n x (n/p) in size */
-  storage_matA = (float*)malloc(id*(id/p)*sizeof(float));
-  storage_matB = (float*)malloc(id*(id/p)*sizeof(float));
-  storage_matC = (float*)malloc(id*(id/p)*sizeof(float));
+  memset(storage_matC, 0, id*(id/p)*sizeof(float));
+  storage_matC = storage_matA;
 
   /* create the auxiliary array of pointers so that the elements in A,
      B and C can be accessed using matA[i][j], etc. */
@@ -59,10 +129,13 @@ int main(int argc, char* argv[])
   b = (float**)malloc((id/p)*sizeof(float*));
   c = (float**)malloc((id/p)*sizeof(float*));
 
+//  for(i=0; i<m; i++) (*a)[i] = &(*storage_matA)[i*(n)]; 
+
   for(i=0; i<p; i++) {
   /* calculate the partial sum for matC given the row band of A and
      B (see notes on row-wise matrix multiplication). */
     
+
     if(i < p-1) {
       /* mpi send storage_matB to the next process (id+1)%p */
       /* mpi receive storage_matB from the previous process */
