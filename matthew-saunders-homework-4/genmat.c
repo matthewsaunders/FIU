@@ -41,7 +41,8 @@ int main (int argc, char * argv[])
   for (i = 0; i < m; i++) {
     ptr = a;
     for (j = 0; j < n; j++) {
-      *(ptr++) = ((float)rand())/RAND_MAX;
+      //*(ptr++) = ((float)rand())/RAND_MAX;
+      *(ptr++) = 1.0;
     }
     fwrite (a, sizeof(float), n, foutptr);
   }
