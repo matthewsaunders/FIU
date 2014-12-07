@@ -1,245 +1,219 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
 #include <mpi.h>
 
-//#define DEBUG 
+/* Uncomment line to enable debugging */
+//#define DEBUG
 
-/* GLOBAL SCOPE */
-int p; /* total number of processes */
-int id; /* process rank */
-MPI_Status status; /* MPI status */
-MPI_Request request; /* MPI status */
-int *m, *n; /*matrix dimensions */
+/* GLOBAL VARIABLES */
+int m, n;	/* matrix dimensions */
+int p;		/* total number of processes */
+int id;		/* process rank */
 
 /* process p-1 reads in the matrix n/p rows at a time and sends it to
    the other processes */
-float* read_matrix(char* filename)
-{ 
-  float* storage_mat; /* storage array for chunk of matrix */
-  FILE* finptr; /* file with matrix being read */
-  //int *m, *n;
-  float* ptr;
-  int i, j;
-
-  m = (int*)malloc(sizeof(int));
-  n = (int*)malloc(sizeof(int));
+float* read_matrix(char* filename) { 
+  FILE* fptr;		/* File containing matrix being read */
+  float* storage_mat; 	/* Storage for matrix being read */
+  int i;		/* Loop index */
+  int chunk;		/* Size of each matrix subsection per process */
+  MPI_Status status;	/* MPI status */
 
   /* open file */
-  finptr = fopen(filename, "r");
-  if(!finptr) { perror("ERROR: can't open matrix file\n"); exit(1); }
+  if(!(fptr = fopen(filename, "r"))){
+    perror("ERROR: can't open matrix file\n");
+    MPI_Finalize();
+    exit(1);
+  }
 
   /* reads in the dimension of the matrix (n x n); if not square
      matrix, quit */
-  if(fread(m, sizeof(int), 1, finptr) != 1 ||
-     fread(n, sizeof(int), 1, finptr) != 1){
-    perror("Error reading matrix file");
+  if(fread(&m, sizeof(int), 1, fptr) != 1 ||
+     fread(&n, sizeof(int), 1, fptr) != 1){    
+    perror("ERROR: reading matrix file");
+    MPI_Finalize();
+    exit(1);
+  }  
+
+  /* exit if the matrix is not square */
+  if(m != n){
+    perror("ERROR: matrix must be square\n");
+    MPI_Finalize();
     exit(1);
   }
 
-  if((*m) != (*n)) { printf("ERROR: matrix A not square\n"); exit(2); }
-  if(((*n)%p) != 0) { printf("ERROR: number of processes P is not evenly divisible\n"); exit(2); }
-
-  /* allocate an array 'storage_mat' of floats of n x (n/p) in size */
-  storage_mat = (float*)malloc((*n)*((*n)/p)*sizeof(float));
-
-  if(id == p-1) {
-    for(i=0; i<p; i++) {
-      /* read (n/p) rows of the matrix and fill in the array */
-      ptr = storage_mat;
-      for(j=0; j<((*n)/p); j++) {
-        if(fread(ptr, sizeof(float), (*n), finptr) != (*n)) {
-          perror("Error reading matrix file");
-          exit(1);
-        }
-        ptr += (*n)/p;
-      }
-
-      if(i < p-1) {
-        /* mpi send the array storage_mat to process rank i */
-        MPI_Send(storage_mat, (*n)*(*n)/p, MPI_FLOAT, i, 0, MPI_COMM_WORLD);
-      }
-    }
-  } else {
-    /* mpi receive the array storage_mat from process rank p-1 */
-    MPI_Recv(storage_mat, (*n)*(*n)/p, MPI_FLOAT, p-1, 0, MPI_COMM_WORLD, &status);
+  /* exit if the matrix is not evenly divisible by the number of threads */
+  if(n % p != 0){
+    perror("ERROR: n not divisible by p\n");
+    MPI_Finalize();
+    exit(1);
   }  
 
-#ifdef DEBUG
-  printf("...In function read_matrix\n");
+  /* allocate an array 'storage_mat' of floats of n x (n/p) in size */
+  chunk = n*(n/p);
+  storage_mat = malloc(chunk*sizeof(float)); 
+  
+  if (id == p-1){ 
+    for(i = 0; i < p; i++){
+      /* read (n/p) rows of the matrix and fill in the array */
+      if (fread(storage_mat, sizeof(float), chunk, fptr) != chunk){
+	printf("ERROR: reading matrix file");
+	MPI_Finalize();
+	exit(1);
+      }      
+
+      if (i < p-1){
+        /* mpi send the array storage_mat to process rank i */
+	MPI_Send(storage_mat, chunk, MPI_FLOAT, i, 0, MPI_COMM_WORLD);	
+      }
+    }
+  } 
+  else {
+    /* mpi receive the array storage_mat from process rank p-1 */
+    MPI_Recv(storage_mat, chunk, MPI_FLOAT, p-1, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+  }  
+
+  /* debug section to display each matrix subsection per process */
+  #ifdef DEBUG
   printf("\tp: %d, id: %d\n", p, id);
-  printf("----> matrix section for process %d\n",id);
-  ptr = storage_mat;
-  for(i=0; i<(*n)/p; i++){
-    for(j=0; j<(*n); j++){
-      printf("%4.2f ", (float)storage_mat[i*(*n)/p + j]);
+  printf("----> matrix '%s' section for process %d\n",filename, id);
+  int j;
+  for(i=0; i<n/p; i++){
+    for(j=0; j<n; j++){
+      printf("%4.2f ", (float)storage_mat[i*n/p + j]);
     }
     printf("\n");
   }
-#endif
+  #endif
 
   /* close file */
-  fclose(finptr);
+  fclose(fptr);
   return storage_mat;
 }
 
-
 /* process 0 writes out the matrix n/p rows at a time on behalf of all
    other processes */
-void write_matrix(char* filename, float* storage_mat)
-{
-  //printf("..in function write_matrix\n");
-  int i;
-  FILE* foutptr;
-  float* ptr;
+void write_matrix(char* filename, float* storage_mat) {
+  FILE* fout; 		/* File containing matrix being written */
+  int chunk;		/* Size of each matrix subsection per process */
+  int i;		/* Loop index */
+  MPI_Status status;	/* MPI status */
+  
+  chunk = n*(n/p);
 
   /* open file */
-  foutptr = fopen(filename, "w");
-  if(!foutptr) { perror("ERROR: can't open matrix file\n"); exit(1); }
+  if(!(fout = fopen(filename, "w"))) {
+    perror("ERROR: can't open matrix file\n");
+    exit(1); 
+  }  
 
-  if(fwrite(m, sizeof(int), 1, foutptr) != 1 ||
-     fwrite(n, sizeof(int), 1, foutptr) != 1) {
-    perror("Error writing matrix file");
-    exit(1);
-  }
-
-  ptr = storage_mat;
-
-  if(!id) {
-    for(i=0; i<p; i++) {
-      /* write (n/p) rows of the matrix from the array storage_mat */
-      for(i=0; i<(*m); i++) {
-        if(fwrite(ptr, sizeof(float), (*n), foutptr) != (*n)) {
-          perror("Error reading matrix file");
-          exit(1);
-        }      
-	  }
-
-      if(i < p-1) {
-        /* mpi receive the array storage_mat from process rank i */
-        MPI_Recv(storage_mat, (*n)*(*n)/p, MPI_FLOAT, i, 0, MPI_COMM_WORLD, &status);
-      }
+  MPI_Barrier (MPI_COMM_WORLD);
+  if(!id){
+    /* reads in the dimension of the matrix */
+    if(fwrite(&m, sizeof(int), 1, fout) != 1 ||
+       fwrite(&n, sizeof(int), 1, fout) != 1) {
+      perror("ERROR: writing matrix file first two");
+      MPI_Finalize();
+      exit(1);    
     }
+    
+    for(i = 0; i < p; i++){
+      /* write (n/p) rows of the matrix from the array storage_mat */
+      if(fwrite(storage_mat, sizeof(float), chunk, fout) != chunk){
+	perror("ERROR: writing matrix");
+	MPI_Finalize();
+	exit(1);
+      }
+      if(i < p-1){
+        /* mpi receive the array storage_mat from process rank i */
+	MPI_Recv(storage_mat, chunk, MPI_FLOAT, i+1, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+      }
+    }      
   } else {
     /* mpi send the array storage_mat to process rank 0 */
-    MPI_Send(storage_mat, (*n)*(*n)/p, MPI_FLOAT, 0, 0, MPI_COMM_WORLD);
-  }
+    MPI_Send(storage_mat, chunk, MPI_FLOAT, 0, 0, MPI_COMM_WORLD);
+  }  
   /* close file */
-  return;
+  fclose(fout);  
 }
 
 
-int main(int argc, char* argv[])
-{
-  int i;
-  char* fileA; /* file containing matrix A */
-  char* fileB; /* file containing matrix B */
-  char* fileC; /* file containing matrix C */
-  float *storage_matA, *storage_matB, *storage_matC; /* storage for matrix A, B, and C */
-  float **a, **b, **c; /* 2-d array to access matrix A, B, and C */
-  int x, y, z;
-
+int main(int argc, char *argv[]) {
+  int i, j, k, l;	/* Loop indexes */
+  float* storage_matA, *storage_matB, *storage_matC; /* storage for matrix A, B, and C */
+  float **a, **b, **c;	/* 2-d array to access matrix A, B, and C */
+  int chunk;		/* Size of each matrix subsection per process */
+  int offset;		/* offset of matrix A during calculations of matrix C */
+  MPI_Status status;	/* MPI status */
+  
   /* initialize mpi, and find out the rank (id) and the total number
      of processes (p) */
   MPI_Init(&argc, &argv);
-  MPI_Comm_size(MPI_COMM_WORLD, &p);
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
+  MPI_Comm_size(MPI_COMM_WORLD, &p);
 
   /* parse command line arguments: fileA (the name of the file that
-     contains the matrix A), fileB (the name of the file that contains
-     matrix B), and fileC (the name of the file to store matrix C) */
-  if(argc != 4) {
+   contains the matrix A), fileB (the name of the file that contains
+   matrix B), and fileC (the name of the file to store matrix C) */
+  if(argc != 4){
     printf("Usage: %s fileA fileB fileC\n", argv[0]);
-    return 1;
+    MPI_Finalize();
+    return -1;
   }
-
-  fileA = argv[1];
-  fileB = argv[2];
-  fileC = argv[3];
-
+ 
   /* allocate space and intialize to zero for storage_matC as an array
      of floats of n x (n/p) in size */
-  storage_matA = read_matrix(fileA);
-  storage_matB = read_matrix(fileB);
-
-  int j;
-  float* ptr;
-  printf("\tp: %d, id: %d\n", p, id);
-  printf("----> matrix section for process %d\n",id);
-  ptr = storage_matA;
-  for(i=0; i<(*n)/p; i++){
-    for(j=0; j<(*n); j++){
-      printf("%4.2f ", (float)storage_matA[i*(*n)/p + j]);
-    }
-    printf("\n");
-  }
-
-
-
-  storage_matC = (float*)malloc((id*id/p)*sizeof(float));
-  memset(storage_matC, 0, sizeof((id*id/p)*sizeof(float)));
-
+  storage_matA = read_matrix(argv[1]);
+  storage_matB = read_matrix(argv[2]);
+  chunk = n*(n/p);  
+  storage_matC = malloc(chunk * sizeof(float));
+  memset(storage_matC, 0, chunk * sizeof(float));
+  
   /* create the auxiliary array of pointers so that the elements in A,
-     B and C can be accessed using matA[i][j], etc. */
-  a = (float**)malloc(((*n)/p)*sizeof(float*));
-  b = (float**)malloc(((*n)/p)*sizeof(float*));
-  c = (float**)malloc(((*n)/p)*sizeof(float*));
+     B and C can be accessed using matA[i][j], etc. */  
+  a = (float**)malloc((n/p)*sizeof(float*));  
+  b = (float**)malloc((n/p)*sizeof(float*));
+  c = (float**)malloc((n/p)*sizeof(float*));
 
-  for(i=0; i<(*n)/p; i++){ a[i] = &storage_matA[i*(*m)];}
-  for(i=0; i<(*n)/p; i++){ b[i] = &storage_matB[i*(*m)];}
-  for(i=0; i<(*n)/p; i++){ c[i] = &storage_matC[i*(*m)];} 
-
-
-  printf("LOOK HERE\n");
-  for(i=0; i<(*n)/p; i++){ 
-    for(j=0; j<(*n); j++){
-     printf("a[%d,%d] = %4.2f %p\n",i,j, (float)a[i][j], &a[i][j]);
-    }
-  } 
-
-  //printf("--> before calc %d\n",id);
-  for(i=0; i<p; i++) {
-    /* calculate the partial sum for matC given the row band of A and
-     B (see notes on row-wise matrix multiplication). */
-
-    printf("x: %d, y,z: %d\n", (*n)/p, (*n));
-    //for(x=0; x<(*n)/p; x++){
-    for(x=0; x<4; x++){
-     //for(y=0; y<(*n); y++){
-     for(y=0; y<4; y++){
-     // for(z=0; z<(*n); z++){
-        printf("%d - (%d,%d): %4.2f --> ",id, x, y, (float)c[x][y]);
-        c[x][y] += (float)a[x][y] * (float)b[x][y];  
-        //c[x][y] += a[x][y] * b[x][y];  
-        printf("%4.2f ........ %4.2f %4.2f %p\n", (float)c[x][y], (float)a[x][y], (float)b[x][y]), &a[x][y];
-      //}
-     }
-    }
-
-    if(i < p-1) {
-      /* mpi send storage_matB to the next process (id+1)%p */
-      MPI_Isend(storage_matB, (*n)*(*n)/p, MPI_FLOAT, (id+1)%p, 0, MPI_COMM_WORLD, &request);
-
-      /* mpi receive storage_matB from the previous process */
-      MPI_Irecv(storage_matB, (*n)*(*n)/p, MPI_FLOAT, (id+(p-1))%p, 0, MPI_COMM_WORLD, &request);
-    }
-  }
-  printf("--> after calc %d\n",id);
-
-  //storage_matC = storage_matA; 
+  for (i=0; i<n/p; i++){ a[i] = &storage_matA [i*n];}
+  for (i=0; i<n/p; i++){ b[i] = &storage_matB [i*n];} 
+  for (i=0; i<n/p; i++){ c[i] = &storage_matC [i*n];} 
  
-  //write_matrix(fileC, storage_matC);
-  printf("--> after write %d\n",id);
+  /* calculate the partial sum for matC given the row band of A and
+     B (see notes on row-wise matrix multiplication). */ 
+  for(i = 0; i < p; i++){
 
-  /* reclaim matrices, finalize mpi */
-  free(storage_matA);
-  free(storage_matB);
-  //free(storage_matC);
+    offset = ((id*(n/p)) + (i*(n/p))) % n;
+    if(offset < 0){offset = -offset;}
+
+    for(j = 0; j < (n/p); j++){
+      for(k = 0; k < (n/p); k++){
+	for(l = 0; l < n; l++){
+	  c[j][l] += a[j][offset + k] * b[k][l];
+	}
+      }
+    }
+    /* mpi send storage_matB to the next process (id+1)%p */
+    /* mpi receive storage_matB from the previous process */
+    MPI_Sendrecv (storage_matB , chunk, MPI_FLOAT , (id+p-1)%p, 0, storage_matB, chunk, 
+                  MPI_FLOAT, (id+1)%p, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;
+  }  
+
+  MPI_Barrier (MPI_COMM_WORLD);
+  write_matrix(argv[3], storage_matC);
+  
+  /* reclaim matrices */
   free(a);
   free(b);
   free(c);
-  free(m);
-  free(n);
+  free(storage_matA);
+  free(storage_matB);
+  free(storage_matC);
+
+  /* Finalize MPI */
   MPI_Finalize();
   return 0;
 }
+

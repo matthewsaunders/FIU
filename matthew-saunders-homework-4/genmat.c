@@ -43,6 +43,7 @@ int main (int argc, char * argv[])
     for (j = 0; j < n; j++) {
       //*(ptr++) = ((float)rand())/RAND_MAX;
       *(ptr++) = 1.0;
+      //*(ptr++) = (float)j;
     }
     fwrite (a, sizeof(float), n, foutptr);
   }
