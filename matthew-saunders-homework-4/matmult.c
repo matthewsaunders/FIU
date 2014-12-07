@@ -1,3 +1,15 @@
+/*
+ Name:	Matthew Saunders
+ Class:	COP 4338
+ Date:	06 Dec 2014
+ Summary:
+ 	This program takes two square matrices as input and multiplies them 
+	together using MPI multiprocessing.  The multiprocessing algorithm uses 
+	a row-wise matrix multiplication so that only (n/p) rows of the matrix 
+	are loaded into memory per process, where n is the number of rows and p 
+	is the total number of processes.  The result matrix is output to file.
+*/
+
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -186,7 +198,6 @@ int main(int argc, char *argv[]) {
   for(i = 0; i < p; i++){
 
     offset = ((id*(n/p)) + (i*(n/p))) % n;
-    if(offset < 0){offset = -offset;}
 
     for(j = 0; j < (n/p); j++){
       for(k = 0; k < (n/p); k++){
@@ -197,8 +208,8 @@ int main(int argc, char *argv[]) {
     }
     /* mpi send storage_matB to the next process (id+1)%p */
     /* mpi receive storage_matB from the previous process */
-    MPI_Sendrecv (storage_matB , chunk, MPI_FLOAT , (id+p-1)%p, 0, storage_matB, chunk, 
-                  MPI_FLOAT, (id+1)%p, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;
+    MPI_Sendrecv (storage_matB , chunk, MPI_FLOAT , (id+1)%p, 0, storage_matB, chunk, 
+                  MPI_FLOAT, (id+p-1)%p, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;
   }  
 
   MPI_Barrier (MPI_COMM_WORLD);
