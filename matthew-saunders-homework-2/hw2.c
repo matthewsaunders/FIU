@@ -1,7 +1,7 @@
 /*
  Name:	Matthew Saunders
  Class:	COP 4520
- Date:	22 Feb 2015
+ Date:	27 Feb 2015
  Summary:
 */
 
@@ -78,6 +78,61 @@ void addall(int x, int* sum, int root){
 }
 
 void collectall(char* sendbuf, int sendcnt, char* recvbuf){
+
+  int p, id;
+  MPI_Comm_size(MPI_COMM_WORLD, &p);
+  MPI_Comm_rank(MPI_COMM_WORLD, &id);
+  MPI_Status status;    /* MPI status */
+  MPI_Request send_request;
+  MPI_Request recv_request;
+
+  int otherNode;
+  int mask = hob(p) >> 1;
+  int i, j;
+  int blocksize = sendcnt;
+  int send_offset = 0;
+  int recv_offset = blocksize;
+
+  for(; i < sendcnt; i++) {
+    recvbuf[i] = sendbuf[i];
+  }
+
+
+  while(mask){
+    otherNode = id ^ mask;
+
+    for(i=0;i<sizeof(recvbuf);i++){
+      printf("recvbuf[%d-%d]: %c\n",id,i,recvbuf[i]);
+    }
+
+
+    if(otherNode <= p-1){
+      
+      //non-blocking send
+      MPI_Isend(recvbuf + send_offset, sendcnt, MPI_CHAR, otherNode, 0, MPI_COMM_WORLD, &send_request);
+      //blocking recv
+      MPI_Recv(recvbuf + recv_offset, sendcnt, MPI_CHAR, otherNode, 0, MPI_COMM_WORLD, &status);
+
+      sendcnt = 2*sendcnt;      
+      printf("%d sendcnt: %d\n",id,sendcnt);
+      send_offset = recv_offset;
+      recv_offset = 2*recv_offset;
+    }else{
+      printf("WOAH %d, %d\n",id,otherNode);
+    }
+
+    mask>>=1;
+    //MPI_Wait(&send_request, MPI_STATUS_IGNORE);
+    //MPI_Wait(&send_request, &status);
+    //MPI_Wait(&recv_request, MPI_STATUS_IGNORE);
+    //MPI_Wait(&recv_request, &status);
+    MPI_Barrier(MPI_COMM_WORLD);
+  }
+
+    for(i=0;i<sizeof(recvbuf);i++){
+      printf("recvbuf[%d-%d]: %c\n",id,i,recvbuf[i]);
+    }
+
   return;
 } 
 
@@ -99,7 +154,7 @@ int main( int argc, char *argv[]  ){
   char* buf = (char*)malloc(p+1);
   collectall(&ch, 1, buf);
   buf[p] = '\0';
-  if(id==2) printf("%d: %s\n", id, buf);
+  if(id==2) printf("\n\n%d: %s\n\n\n", id, buf);
 
   free(buf);
   /* Finalize MPI */
