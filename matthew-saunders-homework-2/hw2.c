@@ -87,7 +87,8 @@ void collectall(char* sendbuf, int sendcnt, char* recvbuf){
   MPI_Request recv_request;
 
   int otherNode;
-  int mask = hob(p) >> 1;
+  //int mask = hob(p) >> 1;
+  int mask = hob(p);
   int i, j;
   int blocksize = sendcnt;
   int send_offset = 0;
@@ -101,20 +102,21 @@ void collectall(char* sendbuf, int sendcnt, char* recvbuf){
   while(mask){
     otherNode = id ^ mask;
 
-    for(i=0;i<sizeof(recvbuf);i++){
+    for(i=0;i<sendcnt;i++){
       printf("recvbuf[%d-%d]: %c\n",id,i,recvbuf[i]);
     }
 
 
     if(otherNode <= p-1){
-      
+     
+      printf("soff: %d, roff: %d\n",send_offset, recv_offset); 
       //non-blocking send
       MPI_Isend(recvbuf + send_offset, sendcnt, MPI_CHAR, otherNode, 0, MPI_COMM_WORLD, &send_request);
       //blocking recv
       MPI_Recv(recvbuf + recv_offset, sendcnt, MPI_CHAR, otherNode, 0, MPI_COMM_WORLD, &status);
 
       sendcnt = 2*sendcnt;      
-      printf("%d sendcnt: %d\n",id,sendcnt);
+      //printf("%d sendcnt: %d\n",id,sendcnt);
       send_offset = recv_offset;
       recv_offset = 2*recv_offset;
     }else{
@@ -122,17 +124,13 @@ void collectall(char* sendbuf, int sendcnt, char* recvbuf){
     }
 
     mask>>=1;
-    //MPI_Wait(&send_request, MPI_STATUS_IGNORE);
-    //MPI_Wait(&send_request, &status);
-    //MPI_Wait(&recv_request, MPI_STATUS_IGNORE);
-    //MPI_Wait(&recv_request, &status);
     MPI_Barrier(MPI_COMM_WORLD);
   }
-
+/*
     for(i=0;i<sizeof(recvbuf);i++){
       printf("recvbuf[%d-%d]: %c\n",id,i,recvbuf[i]);
     }
-
+*/
   return;
 } 
 
