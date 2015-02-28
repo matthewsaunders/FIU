@@ -8,18 +8,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <mpi.h>
+#include <string.h>
 
-/* This function is a collective operation; that is, it shall be called by all mpi processes or none at all. 
-Each process is expected to provide a value 'x', and when the function returns, the process whose rank is 
-'root' shall have to sum stored in the location pointed by 'sum'. */
 void addall(int x, int* sum, int root);
-
-/* This function is a collective operation; that is, it shall be called by all mpi processes or none at all. 
-Each process is expected to provide a block of data of size 'sendcnt' stored in 'sendbuf'. When the function
-returns, each process will have the data blocks sent from all other processes (including itself) stored in 
-'recvbuf'. The receive buffer shall be allocated before hand with enough room to store data from all processes. 
-The block of data from the i-th process is received by every process and placed in the i-th block of the 
-receive buffer  'recvbuf'. You can assume that all processes provide the same 'sendcnt'. */
 void collectall(char* sendbuf, int sendcnt, char* recvbuf);
 
 /*
@@ -38,37 +29,44 @@ int hob (int num){
   return mask;
 }
 
+/* This function is a collective operation; that is, it shall be called by all mpi processes or none at all. 
+Each process is expected to provide a value 'x', and when the function returns, the process whose rank is 
+'root' shall have to sum stored in the location pointed by 'sum'. */
 void addall(int x, int* sum, int root){
   int p, id;
   MPI_Comm_size(MPI_COMM_WORLD, &p);
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
   MPI_Status status;	/* MPI status */
 
-  int otherNode;
-  int sentData = 0;
-  int mask = hob(p);
-  int *buf = (int*)malloc(1);
+  int otherNode; /* id of node to send/recv */
+  int sentData = 0; /*1 if this node has sent its data */
+  int mask = hob(p); /* set the bit mask for determining the otherNode */
+  int *buf = (int*)malloc(1); /*create a buffer to send recieve data value */
   *sum = x;
 
+  /* until this node has sent its data, determine if it should send or receive this loop iteration */
   while(!sentData){
     otherNode = id ^ mask;
-    if(id & mask){ //true if value at mask position in p is a 1
+
+    /* true if the bit of this node's id is 1 at the masks position */
+    if(id & mask){
       // send data
-      //printf("s: p%d to p%d \n", id, otherNode);
       MPI_Send(sum, 1, MPI_INT, otherNode, 0, MPI_COMM_WORLD);
       sentData = 1;
     }else{
+      /* true if otherNode exists within # processes */
       if(otherNode <= p-1){
         // receive data
         MPI_Recv(buf, 1, MPI_INT, otherNode, 0, MPI_COMM_WORLD, &status);
         *sum += *buf;
-	//printf("r: p%d from p%d, sum: %d, buf: %d \n",id, otherNode, *sum, *buf);
       }
+
+      /* shift mask bit right one position */
       mask>>=1;
     }
 
+    /* true if there is only one process */
     if(id == root && !mask){
-      //printf("process %d done... sum=%d \n", root, *sum);
       sentData = 1;
     }
   }
@@ -77,60 +75,50 @@ void addall(int x, int* sum, int root){
   return;
 }
 
+/* This function is a collective operation; that is, it shall be called by all mpi processes or none at all. 
+Each process is expected to provide a block of data of size 'sendcnt' stored in 'sendbuf'. When the function
+returns, each process will have the data blocks sent from all other processes (including itself) stored in 
+'recvbuf'. The receive buffer shall be allocated before hand with enough room to store data from all processes. 
+The block of data from the i-th process is received by every process and placed in the i-th block of the 
+receive buffer  'recvbuf'. You can assume that all processes provide the same 'sendcnt'. */
 void collectall(char* sendbuf, int sendcnt, char* recvbuf){
 
-  int p, id;
+  int p, id; 
   MPI_Comm_size(MPI_COMM_WORLD, &p);
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
   MPI_Status status;    /* MPI status */
-  MPI_Request send_request;
-  MPI_Request recv_request;
 
-  int otherNode;
-  //int mask = hob(p) >> 1;
-  int mask = hob(p);
-  int i, j;
-  int blocksize = sendcnt;
-  int send_offset = 0;
-  int recv_offset = blocksize;
+  int otherNode; /* id of node to send/recv */
+  int mask = hob(p); /* set the bit mask for determining the otherNode */
+  int i; /* general loop iterator */
+  int recv_offset = sendcnt; /* offset into the recvbuf array to place new data */
 
-  for(; i < sendcnt; i++) {
+  /* initialize the recvbuf with this nodes startng data */
+  for(i=0; i < sendcnt; i++) {
     recvbuf[i] = sendbuf[i];
   }
 
-
+  /* true while the data mask has value greater than 0, false once all binary data positions have been looped through */
   while(mask){
     otherNode = id ^ mask;
 
-    for(i=0;i<sendcnt;i++){
-      printf("recvbuf[%d-%d]: %c\n",id,i,recvbuf[i]);
-    }
-
-
     if(otherNode <= p-1){
-     
-      printf("soff: %d, roff: %d\n",send_offset, recv_offset); 
-      //non-blocking send
-      MPI_Isend(recvbuf + send_offset, sendcnt, MPI_CHAR, otherNode, 0, MPI_COMM_WORLD, &send_request);
-      //blocking recv
+      
+      /* Send the data this node has from the recvbuf starting at the begininng of the array until 
+         the sendcnt amount */
+      MPI_Send(recvbuf, sendcnt, MPI_CHAR, otherNode, 0, MPI_COMM_WORLD);
+      /* Receive data should be placed in recvbuf starting at sendcnt, the position of the first unused 
+         data location. */
       MPI_Recv(recvbuf + recv_offset, sendcnt, MPI_CHAR, otherNode, 0, MPI_COMM_WORLD, &status);
 
+      /* double the sendcnt and update the position to insert data in the recvbuf */
       sendcnt = 2*sendcnt;      
-      //printf("%d sendcnt: %d\n",id,sendcnt);
-      send_offset = recv_offset;
       recv_offset = 2*recv_offset;
-    }else{
-      printf("WOAH %d, %d\n",id,otherNode);
     }
 
     mask>>=1;
-    MPI_Barrier(MPI_COMM_WORLD);
   }
-/*
-    for(i=0;i<sizeof(recvbuf);i++){
-      printf("recvbuf[%d-%d]: %c\n",id,i,recvbuf[i]);
-    }
-*/
+
   return;
 } 
 
@@ -149,10 +137,10 @@ int main( int argc, char *argv[]  ){
   if(id==0) printf("addall->%d\n", sum);
   
   char ch = 'A'+id;
-  char* buf = (char*)malloc(p+1);
+  char* buf = (char*)malloc((p+1)*sizeof(char));
   collectall(&ch, 1, buf);
   buf[p] = '\0';
-  if(id==2) printf("\n\n%d: %s\n\n\n", id, buf);
+  if(id==2) printf("%d: %s\n", id, buf);
 
   free(buf);
   /* Finalize MPI */
