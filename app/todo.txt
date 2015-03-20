@@ -1,4 +1,6 @@
 1. Home Page
+- "Add recipe"
+
 2. Breakfast Page
 - change header from "All Recipes..." to "Breakfast Recipes"
 - Change recipe icons
@@ -6,5 +8,5 @@
 3. Create a Cookbook
 4. Create Recipe
 5. Add Recipe
-6a. sign up
-6b. login
+DONE 6a. sign up
+DONE 6b. login
