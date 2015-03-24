@@ -108,9 +108,12 @@
                         <a href="breakfast.html"><span class="glyphicon glyphicon-apple"></span> All Recipes</a>
                     </li>
 					<li class="divider"></li>
-                    <li>
-                        <a href="javascript:;" data-toggle="collapse" data-target="#booklist"><span class="glyphicon glyphicon-book"></span> Cookbooks <i class="fa fa-fw fa-caret-down"></i></a>
-                        <ul id="booklist" class="collapse">
+                    <li class="dropdown open">
+                        
+                        <a href="#" data-toggle="collapse" class="dropdown-toggle" data-target="#booklist"><span class="glyphicon glyphicon-book" aria-expanded="false"></span> Cookbooks <b class="caret"></b></a>
+
+
+                        <ul id="booklist" class="open">
                             <li class="active">
                                 <a href="#">Breakfast</a>
                             </li>
@@ -143,7 +146,7 @@
                         <h1 class="page-header">
                             Breakfast <small>by John Smith</small>
 							
-							<div class="dropdown">
+							<div class="dropdown pull-right">
 							<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
 							Add recipe
 								<span class="caret"></span>
