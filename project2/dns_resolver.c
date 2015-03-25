@@ -1,8 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 
-char dns_servers [10][100];
+
+
+#define Type_A 1 //ipv4
+#define Type_NS 2 //nameserver
 
 /*
 DNS HEADER
@@ -22,7 +27,7 @@ DNS HEADER
 |                   ARCOUNT                     |
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 */
-struct DNS_Header{
+struct DNS_HEADER{
   unsigned id:16; // identification number
  
   unsigned rd :1; // recursion desired
@@ -58,65 +63,59 @@ DNS QUERY
 | 		     QCLASS 			|
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 */
-struct DNS_Query {
+struct DNS_QUERY {
   unsigned qname:16;
   unsigned qtype:16;
   unsigned qclass:16;
 };
 
 
-
-
-
-void get_dns_servers()
+void print_dns_servers()
 {
-    FILE *fp;
-    char line[100] , *p;
-    char index = 0;
-    if((fp = fopen("/etc/resolv.conf" , "r")) == NULL)
-    {
-        printf("Failed opening /etc/resolv.conf file \n");
-    }
-     
-    while(fgets(line , 100 , fp)){
-        if(line[0] == '#'){
-            continue;
-        }
-        if( !(strncmp(line , "nameserver" , 10)) )
-        {
-            p = strtok(line , " ");
-            p = strtok(NULL , " ");
-
-            //strcpy(dns_servers[index], p); 
-            strcpy(dns_servers[0] , "208.67.222.222");
-            printf("p: %s", dns_servers[index-1]);
-        }
-    }
+  printf("-----------     DNS Servers     ----------\n");
+  printf("a.root-servers.net	198.41.0.4, 2001:503:ba3e::2:30	VeriSign, Inc.\n");
+  printf("b.root-servers.net	192.228.79.201, 2001:500:84::b	University of Southern California (ISI)\n");
+  printf("c.root-servers.net	192.33.4.12, 2001:500:2::c	Cogent Communications\n");
+  printf("d.root-servers.net	199.7.91.13, 2001:500:2d::d	University of Maryland\n");
+  printf("e.root-servers.net	192.203.230.10	NASA (Ames Research Center)\n");
 }
 
 
+void gethostbyname(char *host){
+  //unsigned char buf[65536], *qname, *reader;
+  int i, j, stop, s;
+
+  struct sockaddr_in a;
+  struct sockaddr_in  dest;
+  //struct Res_Record answer[20], auth[20], addit[20];
+
+  struct DNS_HEADER *dns = NULL;
+  //struct Question *qinfo = NULL;
+ 
+  s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
 
-
+}
 
 
 int main (int argc, char* argv []){
 
-  char server_ip[100];
+  char dns_server_ip[100];
   char domain_name[100];
 
   if(argc != 3) {
     printf("Usage: %s [server_ip] [domain_name]\n", argv[0]);
+    print_dns_servers();
     return 1;
   }
 
-  strcpy(server_ip, argv[1]);
+  strcpy(dns_server_ip, argv[1]);
   strcpy(domain_name, argv[2]);
 
-  printf("server_ip: %s\n", server_ip);
+  printf("dns_server_ip: %s\n", dns_server_ip);
   printf("domain_name: %s\n", domain_name);
 
-  get_dns_servers();
+  gethostbyname(domain_name);
 
   return 0;
 }
