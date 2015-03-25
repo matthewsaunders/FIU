@@ -63,22 +63,59 @@ DNS QUERY
 | 		     QCLASS 			|
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 */
-struct DNS_QUERY {
-  unsigned qname:16;
+struct DNS_QUESTION {
   unsigned qtype:16;
   unsigned qclass:16;
 };
 
+struct DNS_QUERY {
+  char *name;
+  struct DNS_QUESTION *question;
+};
+
+struct R_DATA {
+  unsigned type:16;
+  unsigned class:16;
+  unsigned ttl:32;
+  unsigned rdlength:16;
+};
+
+struct RES_RECORD {
+  char *name;
+  struct R_DATA *resource;
+  unsigned char *rdata;
+};
 
 void print_dns_servers()
 {
-  printf("-----------     DNS Servers     ----------\n");
+  printf("\n\t\t-----------     DNS Servers     ----------\n");
   printf("a.root-servers.net	198.41.0.4, 2001:503:ba3e::2:30	VeriSign, Inc.\n");
   printf("b.root-servers.net	192.228.79.201, 2001:500:84::b	University of Southern California (ISI)\n");
   printf("c.root-servers.net	192.33.4.12, 2001:500:2::c	Cogent Communications\n");
   printf("d.root-servers.net	199.7.91.13, 2001:500:2d::d	University of Maryland\n");
   printf("e.root-servers.net	192.203.230.10	NASA (Ames Research Center)\n");
 }
+
+void nametodnsformat(){
+
+}
+
+
+void builddnsquery(){}
+void senddnsquery(){}
+
+void printdnsresponse(){}
+void processdnsresponse(){}
+void recvdnsresponse(){}
+
+
+
+
+
+
+
+
+
 
 
 void gethostbyname(char *host){
