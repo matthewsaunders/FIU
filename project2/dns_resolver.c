@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <arpa/inet.h>
-
-
+#include <arpa/inet.h> 
+#include <netinet/in.h> 
+#include <unistd.h>
 
 #define Type_A 1 //ipv4
 #define Type_NS 2 //nameserver
@@ -73,6 +73,28 @@ struct DNS_QUERY {
   struct DNS_QUESTION *question;
 };
 
+/*
+			       1  1  1  1  1  1
+ 0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+| 						|
+/ 						/
+/ 		     NAME 			/
+| 						|
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|	 	     TYPE 			|
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+| 		     CLASS 			|
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+| 		      TTL 			|
+| 						|	
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+| 		    RDLENGTH 			|
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--|
+/ 		     RDATA 			/
+/ 						/
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+*/
 struct R_DATA {
   unsigned type:16;
   unsigned class:16;
@@ -96,41 +118,79 @@ void print_dns_servers()
   printf("e.root-servers.net	192.203.230.10	NASA (Ames Research Center)\n");
 }
 
-void nametodnsformat(){
+void nametodnsformat(char *dns, char* host){
+  printf(".... nametodnsformat\n");
+  int lock=0 , i;
+  printf("before -> %s\n", host);
+  strcat(host,".");
+  printf("after  -> %s\n", host);
+  //printf("dns  -> %s\n", dns);
+/*
+  for(i=0; i<strlen(host); i++){
+    if(host[i]=='.'){
+      *dns++ = i-lock;
+      for(;lock<i;lock++){
+        *dns++ = host[lock];
+      }
+      lock++;
+    }
+  }
+  *dns++ = '\0';
+*/
+  printf("----flag\n");
 
 }
 
+void builddnsquery( char* host, char* buf ){
 
-void builddnsquery(){}
-void senddnsquery(){}
+  printf(".... builddnsquery\n");
+  char *qname; 
+  struct DNS_HEADER *header; 
+  
+  header = (struct DNS_HEADER *)&buf;
+  header->id = (unsigned short) htons(getpid());
+  header->qr = 0;
+  header->opcode = 0;
+  header->aa = 0;  
+  header->tc = 0;  
+  header->rd = 1;  
+  header->ra = 0;  
+  header->z = 0;  
+  header->ad = 0;  
+  header->cd = 0;  
+  header->rcode = 0;  
+  header->qd_count = htons(1);  
+  header->an_count = 0;  
+  header->ns_count = 0;  
+  header->ar_count = 0;  
 
-void printdnsresponse(){}
+  qname = (unsigned char*)&buf[sizeof(struct DNS_HEADER)];
+  nametodnsformat(qname, host);
+  
+}
+
 void processdnsresponse(){}
-void recvdnsresponse(){}
 
 
-
-
-
-
-
-
-
-
-
-void gethostbyname(char *host){
-  //unsigned char buf[65536], *qname, *reader;
+void gethostbyname(char *host, char *dns_server_ip){
+  printf(".... gethostbyname\n");
+  char buf[65536], *reader;
   int i, j, stop, s;
 
-  struct sockaddr_in a;
+  //struct sockaddr_in a;
   struct sockaddr_in  dest;
-  //struct Res_Record answer[20], auth[20], addit[20];
-
-  struct DNS_HEADER *dns = NULL;
-  //struct Question *qinfo = NULL;
+  //struct RES_RECORD answer[20], auth[20], addit[20];
+  //struct DNS_QUESTION *qinfo = NULL;
  
   s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+  dest.sin_family = AF_INET;
+  dest.sin_port = htons(53);
+  dest.sin_addr.s_addr = inet_addr(dns_server_ip);
 
+  printf("\n------------------------------------------------------\n");
+  printf("DNS server to query: %s\n", dns_server_ip);
+
+  builddnsquery(host, buf);
 
 }
 
@@ -149,10 +209,7 @@ int main (int argc, char* argv []){
   strcpy(dns_server_ip, argv[1]);
   strcpy(domain_name, argv[2]);
 
-  printf("dns_server_ip: %s\n", dns_server_ip);
-  printf("domain_name: %s\n", domain_name);
-
-  gethostbyname(domain_name);
+  gethostbyname(domain_name, dns_server_ip);
 
   return 0;
 }
