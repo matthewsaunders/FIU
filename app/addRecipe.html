@@ -50,6 +50,7 @@
             </div>
             <!-- Top Menu Items -->
             <ul class="nav navbar-right top-nav">
+                                
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-envelope"></i> <b class="caret"></b></a>
                     <ul class="dropdown-menu message-dropdown">
@@ -157,31 +158,58 @@
 							<div class="col-lg-12">
 								<h2 class="text-center">New Recipe</h2>
 							</div>
-							<div class="col-lg-6">
+							<div class="col-md-9">
 								<div class="well well-sm"><strong><span class="glyphicon glyphicon-asterisk"></span>Required Field</strong></div>
 								<div class="form-group">
-									<label for="InputName">Name</label>
-									<div class="input-group">
+									<label for="InputName" class="col-md-2">Name *</label>
+									<div class="input-group col-md-10">
 										<input type="text" class="form-control" name="InputName" id="InputName" placeholder="Enter Name" required>
-										<span class="input-group-addon"><span class="glyphicon glyphicon-asterisk"></span></span>
 									</div>
 								</div>
 								<div class="form-group">
-									<label for="InputEmail">Cooktime</label>
+									<label for="InputDifficulty" class="col-md-2">Difficulty</label>
+									<div class="btn-group" role="group" aria-label="...">
+                                      <button type="button" class="btn btn-default">1</button>
+                                      <button type="button" class="btn btn-default">2</button>
+                                      <button type="button" class="btn btn-default">3</button>
+                                      <button type="button" class="btn btn-default">4</button>
+                                      <button type="button" class="btn btn-default">5</button>
+                                    </div>
+								</div>
+								<div class="form-group">
+									<label for="InputEmail" class="col-md-2">Cooktime</label>
 									<div class="input-group">
-										<input type="email" class="form-control" id="InputEmailFirst" name="InputEmail" placeholder="Enter Email" required>
-										<span class="input-group-addon"><span class="glyphicon glyphicon-asterisk"></span></span>
-									</div>
+                                        <div class="col-md-4">
+										  <input type="number" class="form-control" id="inputHours" name="hours" placeholder="Hours">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="number" class="form-control" id="inputMinutes" name="minutes" placeholder="Minutes">
+                                        </div>
+                                    </div>
 								</div>
+
+                                <div class="form-group">
+                                    <label for="InputMessage" class="col-md-2">Ingredients *</label>
+                                    <div class="input-group col-md-10">
+                                        <input name="Ingredient" id="InputMessage" class="form-control" placeholder="Ingredient 1"></input>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="InputMessage" class="col-md-2"></label>
+                                    <div class="input-group col-md-10">
+                                        <input name="Ingredient" id="InputMessage" class="form-control" placeholder="Ingredient 2"></input>
+                                    </div>
+                                </div>
 								<div class="form-group">
-									<label for="InputEmail">Confirm Email</label>
-									<div class="input-group">
-										<input type="email" class="form-control" id="InputEmailSecond" name="InputEmail" placeholder="Confirm Email" required>
-										<span class="input-group-addon"><span class="glyphicon glyphicon-asterisk"></span></span>
-									</div>
-								</div>
-								<div class="form-group">
-									<label for="InputMessage">Enter Message</label>
+                                    <label for="InputMessage" class="col-md-2"></label>
+                                    <div class="input-group col-md-10">
+                                        <input name="Ingredient" id="InputMessage" class="form-control" placeholder="Ingredient 3"></input>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn col-md-offset-10">Add Ingredient</button>
+                                <br>
+                                <div class="form-group">
+									<label for="InputMessage" class="col-md-2">Cooking Instructions</label>
 									<div class="input-group">
 										<textarea name="InputMessage" id="InputMessage" class="form-control" rows="5" required></textarea>
 										<span class="input-group-addon"><span class="glyphicon glyphicon-asterisk"></span></span>
@@ -190,16 +218,7 @@
 								<input type="submit" name="submit" id="submit" value="Submit" class="btn btn-info pull-right">
 							</div>
 						</form>
-						<div class="col-lg-5 col-md-push-1">
-							<div class="col-md-12">
-								<div class="alert alert-success">
-									<strong><span class="glyphicon glyphicon-ok"></span> Success! Message sent.</strong>
-								</div>
-								<div class="alert alert-danger">
-									<span class="glyphicon glyphicon-remove"></span><strong> Error! Please check all page inputs.</strong>
-								</div>
-							</div>
-						</div>
+						
 					</div>
 				</div>
 				
