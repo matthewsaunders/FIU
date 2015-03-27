@@ -33,8 +33,7 @@
 </head>
 
 <body>
-
-    <div id="wrapper">
+        <div id="wrapper">
 
         <!-- Navigation -->
         <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
@@ -117,7 +116,7 @@
             <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav side-nav">
-                    <li class="active">
+                    <li>
                         <a href="index.html"><span class="glyphicon glyphicon-apple"></span> All Recipes</a>
                     </li>
 					<li class="divider"></li>
@@ -149,74 +148,52 @@
         <div id="page-wrapper">
 
             <div class="container-fluid">
+            <div class="container">
 
-                <!-- Page Heading -->
-                <div class="row">
-                    <div class="col-lg-12">
-                        <h1 class="page-header">
-                            All Recipes <small>John Smith's Recipes</small>
-                        </h1>
-                    </div>
-                </div>
-                <!-- /.row -->
+    <hgroup class="mb20">
+		<h1>Search Results</h1>
+		<h2 class="lead"><strong class="text-danger">2</strong> results were found for the search for <strong class="text-danger">Breakfast</strong></h2>								
+	</hgroup>
 
-                <div class="row">
-                    <div class="col-lg-3">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class=""></i> Chicken Recipe</h3>
-                            </div>
-                            <div class="panel-body">
-                                <img src="img/lunch.jpg" class="img-responsive" alt="chicken" width="100%" height="100%">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class=""></i> Pancake Recipe</h3>
-                            </div>
-                            <div class="panel-body">
-                                <img src="img/breakfast.jpg" class="img-responsive" alt="chicken" width="100%" height="100%">
-                            </div>
-                        </div>
-                    </div>
-					<div class="col-lg-3">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class=""></i> Cookie Recipe</h3>
-                            </div>
-                            <div class="panel-body">
-                                <img src="img/cookies.jpg" class="img-responsive" alt="chicken" width="100%" height="100%">
-                            </div>
-                        </div>
-                    </div>
-					<div class="col-lg-3">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class=""></i> Pizza Recipe</h3>
-                            </div>
-                            <div class="panel-body">
-                                <img src="img/lunch.jpg" class="img-responsive" alt="chicken" width="100%" height="100%">
-                            </div>
-                        </div>
-                    </div>
-				</div>
-                <!-- /.row -->
-				
-				    <div class="col-lg-3">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class=""></i> Omelette Du Fromage</h3>
-                            </div>
-                            <div class="panel-body">
-                                <img src="img/omelette.jpg" class="img-responsive" alt="chicken" width="100%" height="100%">
-							</div>
-						</div>
-					</div>
-                <!-- /.row -->
+    <section class="col-xs-12 col-sm-6 col-md-12">
+		<article class="search-result row">
+			<div class="col-xs-12 col-sm-12 col-md-3">
+				<a href="#" title="Lorem ipsum" class="thumbnail"><img src="img/omelette.jpg" alt="omlette" /></a>
+			</div>
+			<div class="col-xs-12 col-sm-12 col-md-2">
+				<ul class="meta-search">
+					<li><i class="glyphicon glyphicon-calendar"></i> <span>03/24/2015</span></li>
+					<li><i class="glyphicon glyphicon-time"></i> <span>4:28 pm</span></li>
+				</ul>
+			</div>
+			<div class="col-xs-12 col-sm-12 col-md-7 excerpet">
+				<h3><a href="#" title="">Omelette Du Fromage</a></h3>
+				<p>An omelette with cheese.</p>						
+                <span class="plus"><a href="#" title="Add Omelette Du Fromage"><i class="glyphicon glyphicon-plus"></i></a></span>
+			</div>
+			<span class="clearfix borda"></span>
+		</article>
 
-            </div>
+        <article class="search-result row">
+			<div class="col-xs-12 col-sm-12 col-md-3">
+				<a href="#" title="Lorem ipsum" class="thumbnail"><img src="img/breakfast.jpg" alt="Pancakes" /></a>
+			</div>
+			<div class="col-xs-12 col-sm-12 col-md-2">
+				<ul class="meta-search">
+					<li><i class="glyphicon glyphicon-calendar"></i> <span>03/24/2015</span></li>
+					<li><i class="glyphicon glyphicon-time"></i> <span>8:32 pm</span></li>
+				</ul>
+			</div>
+			<div class="col-xs-12 col-sm-12 col-md-7">
+				<h3><a href="#" title="">Pancakes</a></h3>
+				<p>A timeless classic prepared right.</p>						
+                <span class="plus"><a href="#" title="Add Pancakes"><i class="glyphicon glyphicon-plus"></i></a></span>
+			</div>
+			<span class="clearfix borda"></span>
+		</article>
+
+	</section>
+</div>
             <!-- /.container-fluid -->
 
         </div>
@@ -235,7 +212,4 @@
     <script src="js/plugins/morris/raphael.min.js"></script>
     <script src="js/plugins/morris/morris.min.js"></script>
     <script src="js/plugins/morris/morris-data.js"></script>
-
 </body>
-
-</html>
