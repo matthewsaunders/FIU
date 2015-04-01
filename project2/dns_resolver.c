@@ -4,145 +4,99 @@
  *
  */
 //Libraries
-#include<stdio.h> //printf
-#include<string.h>    //strlen
-#include<stdlib.h>    //malloc
-#include<sys/socket.h>    //you know what this is for
-#include<arpa/inet.h> //inet_addr , inet_ntoa , ntohs etc
+#include<stdio.h> 
+#include<string.h>
+#include<stdlib.h>    
+#include<sys/socket.h>
+#include<arpa/inet.h>
 #include<netinet/in.h>
-#include<unistd.h>    //getpid
- 
+#include<unistd.h>
+
 //Macros
-#define Type_A 1 //Ipv4 address
-#define Type_NS 2 //Nameserver
+#define Type_A 1 	//Ipv4 address
+#define Type_NS 2 	//Nameserver
 #define T_CNAME 5
  
-/*
-DNS HEADER
-                                1  1  1  1  1  1
-  0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|                      ID                       |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|QR|  Opcode   |AA|TC|RD|RA|    Z   |   RCODE   |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|                   QDCOUNT                     |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|                   ANCOUNT                     |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|                   NSCOUNT                     |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|                   ARCOUNT                     |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-*/
-struct DNS_HEADER
+struct HEADER
 {
-    unsigned short id; // identification number
+  unsigned short id; 
  
-    unsigned char rd :1; // recursion desired
-    unsigned char tc :1; // truncated message
-    unsigned char aa :1; // authoritive answer
-    unsigned char opcode :4; // purpose of message
-    unsigned char qr :1; // query/response flag
+  //3rd byte
+  unsigned char rd :1; 
+  unsigned char tc :1; 
+  unsigned char aa :1; 
+  unsigned char opcode :4;
+  unsigned char qr :1; 
  
-    unsigned char rcode :4; // response code
-    unsigned char cd :1; // checking disabled
-    unsigned char ad :1; // authenticated data
-    unsigned char z :1; // its z! reserved
-    unsigned char ra :1; // recursion available
+  //4th byte
+  unsigned char rcode :4;
+  unsigned char cd :1; 
+  unsigned char ad :1; 
+  unsigned char z :1; 
+  unsigned char ra :1; 
  
-    unsigned short q_count; // number of question entries
-    unsigned short ans_count; // number of answer entries
-    unsigned short auth_count; // number of authority entries
-    unsigned short add_count; // number of resource entries
+  unsigned short q_count;
+  unsigned short ans_count;
+  unsigned short auth_count;
+  unsigned short add_count; 
 };
  
-/*
-DNS QUERY
-			                   1  1  1  1  1  1
- 0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-| 						                        |
-/ 		     QNAME 			                    /
-/ 						                        /
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-| 		     QTYPE 			                    |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-| 		     QCLASS 			                |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-*/
+
 struct QUESTION
 {
-    unsigned short qtype;
-    unsigned short qclass;
+  unsigned short qtype;
+  unsigned short qclass;
 };
-
-typedef struct
-{
-    unsigned char *name;
-    struct QUESTION *ques;
-} QUERY;
  
-/*
-DNS RESPONSE
-			                   1  1  1  1  1  1
- 0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-| 						                        |
-/ 						                        /
-/ 		     NAME 			                    /
-| 						                        |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|	 	     TYPE 			                    |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-| 		     CLASS 			                    |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-| 		      TTL 			                    |
-| 						                        |	
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-| 		    RDLENGTH 			                |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--|
-/ 		     RDATA 			                    /
-/ 						                        /
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-*/
+//make sure the alighment matches the DNS message format specification
+//i.e., there should not be any padding.
+//(by default, C struct aligment is based on the "widest" field
 #pragma pack(push, 1)
 struct R_DATA
 {
-    unsigned short type;
-    unsigned short _class;
-    unsigned int ttl;
-    unsigned short data_len;
+  unsigned short type;
+  unsigned short class;
+  unsigned int ttl;
+  unsigned short data_len;
 };
 #pragma pack(pop)
  
 struct RES_RECORD
 {
-    unsigned char *name;
-    struct R_DATA *resource;
-    unsigned char *rdata;
+  unsigned char *name;
+  struct R_DATA *resource;
+  unsigned char *rdata;
 };
+ 
+typedef struct
+{
+  unsigned char *name;
+  struct QUESTION *ques;
+} QUERY;
 
 //Variables
 char dns_server_ip[100];
 unsigned char hostname[100];
 unsigned char buf[65536],*qname,*reader;
-int pointer, s;
+int pointer, sock;
  
 struct sockaddr_in a;
 struct sockaddr_in dest;
-struct RES_RECORD answers[20],auth[20],addit[20]; //the replies from the DNS server
-struct DNS_HEADER *header = NULL;
-struct QUESTION *qinfo = NULL;
+struct RES_RECORD answers[10],auth[10],addit[10]; //the replies from the DNS server
+struct HEADER *header = NULL;
+struct QUESTION *question = NULL;
 
 //Function Prototypes
-void getIpOfHostname (unsigned char* , int);
-void nameToDnsFormat (unsigned char*,unsigned char*);
-unsigned char* ReadName (unsigned char*,unsigned char*,int*);
+void getIpOfHostname (unsigned char*);
+void nameToDnsFormat (unsigned char*, unsigned char*);
+unsigned char* ReadName (unsigned char*, unsigned char*, int*);
 void printRootDnsServers ();
+void setQueryHeader();
 void processAnswerRecords();
 void processAuthoritiesRecords();
 void processAdditionalRecords();
+void printRecords();
+unsigned char* nameFromDnsFormat(unsigned char*);
 
 /**
  *
@@ -157,10 +111,10 @@ int main(int argc , char *argv[]){
    
   //Copy command line args to variables
   strcpy(dns_server_ip, argv[1]);
-  strcpy(hostname, argv[2]);
+  strcpy((char*)hostname, argv[2]);
    
   //Query DNS server for host IP
-  getIpOfHostname(hostname , Type_A);
+  getIpOfHostname(hostname);
  
   return 0;
 }
@@ -168,7 +122,7 @@ int main(int argc , char *argv[]){
 /**
  * Perform a DNS query by sending a packet
  */
-void getIpOfHostname(unsigned char *host , int query_type)
+void getIpOfHostname(unsigned char *host)
 {
   int i;
 	
@@ -176,60 +130,39 @@ void getIpOfHostname(unsigned char *host , int query_type)
   printf("DNS server to query: %s\n" , dns_server_ip);
  
   //Create a UDP socket
-  s = socket(AF_INET , SOCK_DGRAM , IPPROTO_UDP); 
+  sock = socket(AF_INET , SOCK_DGRAM , IPPROTO_UDP); 
  
   dest.sin_family = AF_INET;
   dest.sin_port = htons(53);
   dest.sin_addr.s_addr = inet_addr(dns_server_ip); //dns servers
  
-  //Set the DNS header
-  header = (struct DNS_HEADER *)&buf;
-  header->id = (unsigned short) htons(getpid());
-  header->qr = 0; //This is a query
-  header->opcode = 0; //This is a standard query
-  header->aa = 0; //Not Authoritative
-  header->tc = 0; //This message is not truncated
-  header->rd = 1; //Recursion Desired
-  header->ra = 0; //Recursion not available! hey we dont have it (lol)
-  header->z = 0;
-  header->ad = 0;
-  header->cd = 0;
-  header->rcode = 0;
-  header->q_count = htons(1); //we have only 1 question
-  header->ans_count = 0;
-  header->auth_count = 0;
-  header->add_count = 0;
+  //Set DNS header
+  setQueryHeader();
  
   //point to the query portion
-  qname =(unsigned char*)&buf[sizeof(struct DNS_HEADER)];
+  qname =(unsigned char*)&buf[sizeof(struct HEADER)];
  
   nameToDnsFormat(qname, host);
-  qinfo =(struct QUESTION*)&buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 1)]; //fill it
+  question =(struct QUESTION*)&buf[sizeof(struct HEADER) + (strlen((const char*)qname) + 1)]; //fill it
  
-  qinfo->qtype = htons( query_type ); //type of the query , A , MX , CNAME , NS etc
-  qinfo->qclass = htons(1); //its internet (lol)
+  question->qtype = htons( Type_A ); //type of the query , A , MX , CNAME , NS etc
+  question->qclass = htons(1); //its internet (lol)
  
-  size_t queryLength = sizeof(struct DNS_HEADER) + (strlen((const char*)qname)+1) + sizeof(struct QUESTION);
+  size_t queryLength = sizeof(struct HEADER) + (strlen((const char*)qname)+1) + sizeof(struct QUESTION);
     
   //Send DNS query
-  if( sendto(s,(char*)buf,queryLength,0,(struct sockaddr*)&dest,sizeof(dest)) < 0){
+  if( sendto(sock,(char*)buf,queryLength,0,(struct sockaddr*)&dest,sizeof(dest)) < 0){
     perror("Failed to send DNS Query.\n");
   }
      
   //Receive DNS response
   i = sizeof dest;
-  if(recvfrom (s,(char*)buf , 65536 , 0 , (struct sockaddr*)&dest , (socklen_t*)&i ) < 0){
+  if(recvfrom (sock,(char*)buf , 65536 , 0 , (struct sockaddr*)&dest , (socklen_t*)&i ) < 0){
     perror("Failed to receive DNS Response.\n");
   }
    
-  header = (struct DNS_HEADER*) buf;  //set postion of DNS header
-  reader = &buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname)+1) + sizeof(struct QUESTION)]; //move reader to response section
- 
-  //print DNS response section counts
-  printf("Reply received. Content overview: \n");
-  printf("\t%d Answers.\n",ntohs(header->ans_count));
-  printf("\t%d Intermediate Name Servers.\n",ntohs(header->auth_count));
-  printf("\t%d Additional Information Records.\n",ntohs(header->add_count));
+  header = (struct HEADER*) buf;  //set postion of DNS header
+  reader = &buf[sizeof(struct HEADER) + (strlen((const char*)qname)+1) + sizeof(struct QUESTION)]; //move reader to response section
  
   //Start reading answers
   pointer=0;
@@ -238,6 +171,7 @@ void getIpOfHostname(unsigned char *host , int query_type)
   processAnswerRecords();
   processAuthoritiesRecords();
   processAdditionalRecords();
+  printRecords();
 
   //if there is no answer, query an intermediate dns server
   if(ntohs(header->ans_count) < 1){
@@ -246,8 +180,31 @@ void getIpOfHostname(unsigned char *host , int query_type)
     a.sin_addr.s_addr=(*p);
     strcpy(dns_server_ip,inet_ntoa(a.sin_addr));
   
-    getIpOfHostname(host, Type_A);			
+    getIpOfHostname(host);			
   }
+}
+
+void setQueryHeader(){
+  header = (struct HEADER *)&buf;
+	
+  header->id = (unsigned short) htons(getpid());
+	
+  header->rd = 1; 
+  header->tc = 0;
+  header->aa = 0; 
+  header->opcode = 0;	
+  header->qr = 0; 
+   
+  header->rcode = 0;
+  header->cd = 0;	
+  header->ad = 0;
+  header->z = 0;
+  header->ra = 0; 
+	
+  header->q_count = htons(1); 
+  header->ans_count = 0;
+  header->auth_count = 0;
+  header->add_count = 0;
 }
 
 /**
@@ -277,28 +234,8 @@ void processAnswerRecords(){
       answers[i].rdata = ReadName(reader,buf,&pointer);
       reader = reader + pointer;
     }
-  }
-    
-  //print DNS answer records
-  printf("Answer Records : %d \n" , ntohs(header->ans_count) );
-  for(i=0 ; i < ntohs(header->ans_count) ; i++){
-    printf("\tName : %s ",answers[i].name);
- 
-    if( ntohs(answers[i].resource->type) == Type_A){ //IPv4 address
-      long *p;
-      p=(long*)answers[i].rdata;
-      a.sin_addr.s_addr=(*p); //working without ntohl
-      printf("\tIP: %s",inet_ntoa(a.sin_addr));
-    }
-         
-    if(ntohs(answers[i].resource->type)==5){
-      //Canonical name for an alias
-      printf("\tName Server: %s",answers[i].rdata);
-    }
-    printf("\n");
-  }
+  }    
 }
-
 
 void processAuthoritiesRecords(){
   int i;
@@ -313,18 +250,7 @@ void processAuthoritiesRecords(){
  
     auth[i].rdata=ReadName(reader,buf,&pointer);
     reader+=pointer;
-  }
-    
-  //print DNS authorities records
-  printf("Authoritive Records : %d \n" , ntohs(header->auth_count) );
-  for( i=0 ; i < ntohs(header->auth_count) ; i++){
-         
-    printf("\tName : %s ",auth[i].name);
-    if(ntohs(auth[i].resource->type)==Type_NS){
-      printf("\tName Server: %s",auth[i].rdata);
-    }
-    printf("\n");
-  }
+  }    
 }
 
 void processAdditionalRecords(){
@@ -350,18 +276,46 @@ void processAdditionalRecords(){
       reader+=pointer;
     }
   }
+}
 
+void printRecords(){
+  int i;
+	
+  //print section counts
+  printf("Reply received. Content overview: \n");
+  printf("\t%d Answers.\n",ntohs(header->ans_count));
+  printf("\t%d Intermediate Name Servers.\n",ntohs(header->auth_count));
+  printf("\t%d Additional Information Records.\n",ntohs(header->add_count));
+	
+  //print answer records
+  printf("Answer Records : %d \n" , ntohs(header->ans_count) );
+  for(i=0 ; i < ntohs(header->ans_count) ; i++){
+    printf("\tName : %s ",answers[i].name);
+ 
+    if( ntohs(answers[i].resource->type) == Type_A){ //IPv4 address
+      long *p;
+      p=(long*)answers[i].rdata;
+      a.sin_addr.s_addr=(*p); //working without ntohl
+      printf("\tIP: %s",inet_ntoa(a.sin_addr));
+    }
+         
+    if(ntohs(answers[i].resource->type)==5){
+      //Canonical name for an alias
+      printf("\tName Server: %s",answers[i].rdata);
+    }
+    printf("\n");
+  }
+	
+  //print DNS authorities records
+  printf("Authoritive Records : %d \n" , ntohs(header->auth_count) );
+  for( i=0 ; i < ntohs(header->auth_count) ; i++){         
+    printf("\tName : %s \tName Server: %s\n",auth[i].name, auth[i].rdata);
+  }
+	
   //print DNS additional resource records
   printf("Additional Records : %d \n" , ntohs(header->add_count) );
   for(i=0; i < ntohs(header->add_count) ; i++){
-    printf("\tName : %s ",addit[i].name);
-    if(ntohs(addit[i].resource->type)==1){
-      long *p;
-      p=(long*)addit[i].rdata;
-      a.sin_addr.s_addr=(*p);
-      printf("\tIP : %s",inet_ntoa(a.sin_addr));
-    }
-    printf("\n");
+    printf("\tName : %s \tIP : %s\n", addit[i].name, inet_ntoa(a.sin_addr));
   }
 }
 
@@ -400,38 +354,48 @@ u_char* ReadName(unsigned char* reader,unsigned char* buffer,int* count)
   if(jumped==1){
     *count += 1; //number of steps we actually moved forward in the packet
   }
- 
-  //now convert 3www6google3com0 to www.google.com
-  for(i=0;i<(int)strlen((const char*)name);i++){
-    p=name[i];
-    for(j=0;j<(int)p;j++){
-      name[i]=name[i+1];
-      i++;
+
+  return nameFromDnsFormat(name);
+}
+
+unsigned char* nameFromDnsFormat(unsigned char* hostname){
+  int head, tail;
+  unsigned int value;
+  
+  for(head=0; head<strlen((char*)hostname); head++){
+    value = hostname[head];
+    //printf("value: %c, %d\n", value, (int)value);
+    for(tail=0; tail<(int)value; tail++){
+      hostname[head]=hostname[head+1];
+      head++;
     }
-    name[i]='.';
+    hostname[head]='.';
   }
-  name[i-1]='\0'; //remove the last dot
-  return name;
+  hostname[head-1]='\0'; //remove the last dot
+
+  return hostname;
 }
  
 /**
  *
  *
  */
-void nameToDnsFormat(unsigned char* header,unsigned char* host){
-  int lock = 0 , i;
-  strcat((char*)host,".");
+void nameToDnsFormat(unsigned char* buf,unsigned char* hostname){
+  int head, tail;
+  strcat((char*)hostname,".");
      
-  for(i=0; i<strlen((char*)host); i++){
-    if(host[i]=='.'){
-      *header++ = i-lock;
-      for(;lock<i;lock++){
-        *header++=host[lock];
-      }
-      lock++;
-    }
-  }
-  *header++='\0';
+	tail = 0;
+	for( head=0; head < strlen((char*)hostname); head++){
+		//if the character is a dot, change the dot to the number of chars before the dot
+		if(hostname[head] == '.'){
+		 	*buf++ = head - tail;
+			for(; tail < head; tail++){
+			  *buf++ = hostname[tail];
+			}
+			tail++;
+		}
+	}
+	*buf++ = '\0';
 }
 
 void printRootDnsServers(){
