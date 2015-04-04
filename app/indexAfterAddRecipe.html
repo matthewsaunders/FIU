@@ -50,7 +50,6 @@
             </div>
             <!-- Top Menu Items -->
             <ul class="nav navbar-right top-nav">
-                                
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-envelope"></i> <b class="caret"></b></a>
                     <ul class="dropdown-menu message-dropdown">
@@ -87,7 +86,7 @@
                     </ul>
                 </li>
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> John Smith <b class="caret"></b></a>
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> John Doe <b class="caret"></b></a>
                     <ul class="dropdown-menu">
                         <li>
                             <a href="#"><i class="fa fa-fw fa-user"></i> Profile</a>
@@ -102,20 +101,20 @@
                     </ul>
                 </li>
             </ul>
-            <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+            
             <!-- Search Bar -->
             
             <div class="col-sm-3 col-md-3 pull-right">
                 <form class="navbar-form" role="search">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Search" name="srch-term" id="srch-term">
-                <div class="input-group-btn">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search" name="srch-term" id="srch-term">
+            <div class="input-group-btn">
                 <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
             </div>
         </div>
         </form>
         </div>
-            
+            <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav side-nav">
                     <li class="active">
@@ -150,103 +149,94 @@
         <div id="page-wrapper">
 
             <div class="container-fluid">
-					<div class="row">
-						<form role="form">
-							<div class="col-lg-12">
-								<h2 class="text-center">New Recipe</h2>
+
+                <!-- Page Heading -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header">
+                            All Recipes <small>John Doe's Recipes</small>
+							
+							<div class="dropdown pull-right">
+							<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+							Add recipe
+								<span class="caret"></span>
+							</button>
+							<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+								<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Create new recipe</a></li>
+								<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Add existing recipe</a></li>								
+							</ul>
+							
+                        </h1>
+                    </div>
+                </div>
+                <!-- /.row -->
+
+                <div class="row">
+                    <div class="col-lg-3">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class=""></i> Chicken Recipe</h3>
+                            </div>
+                            <div class="panel-body">
+                                <img src="img/lunch.jpg" class="img-responsive" alt="chicken" width="100%" height="100%">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class=""></i> Pancake Recipe</h3>
+                            </div>
+                            <div class="panel-body">
+                                <img src="img/breakfast.jpg" class="img-responsive" alt="chicken" width="100%" height="100%">
+                            </div>
+                        </div>
+                    </div>
+					<div class="col-lg-3">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class=""></i> Cookie Recipe</h3>
+                            </div>
+                            <div class="panel-body">
+                                <img src="img/cookies.jpg" class="img-responsive" alt="chicken" width="100%" height="100%">
+                            </div>
+                        </div>
+                    </div>
+					<div class="col-lg-3">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class=""></i> Pizza Recipe</h3>
+                            </div>
+                            <div class="panel-body">
+                                <img src="img/pizza.jpg" class="img-responsive" alt="chicken" width="100%" height="100%">
+                            </div>
+                        </div>
+                    </div>
+				</div>
+                <!-- /.row -->
+				
+				    <div class="col-lg-3">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class=""></i> Omelette Du Fromage</h3>
+                            </div>
+                            <div class="panel-body">
+                                <img src="img/omelette.jpg" class="img-responsive" alt="chicken" width="100%" height="100%">
 							</div>
-							<div class="col-md-9">
-								<div class="well well-sm"><strong><span class="glyphicon glyphicon-asterisk"></span>Required Field</strong></div>
-								<div class="form-group">
-									<label for="InputName" class="col-md-2">Name *</label>
-									<div class="input-group col-md-10">
-										<input type="text" class="form-control" name="InputName" id="InputName" placeholder="Enter Name" required>
-									</div>
-								</div>
-								<div class="form-group">
-									<label for="InputDifficulty" class="col-md-2">Difficulty</label>
-									<div class="btn-group" role="group" aria-label="...">
-                                      <button type="button" class="btn btn-default">1</button>
-                                      <button type="button" class="btn btn-default">2</button>
-                                      <button type="button" class="btn btn-default">3</button>
-                                      <button type="button" class="btn btn-default">4</button>
-                                      <button type="button" class="btn btn-default">5</button>
-                                    </div>
-								</div>
-								<div class="form-group">
-									<label for="InputEmail" class="col-md-2">Cooktime</label>
-									<div class="input-group">
-                                        <div class="col-md-4">
-										  <input type="number" class="form-control" id="inputHours" name="hours" placeholder="Hours">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <input type="number" class="form-control" id="inputMinutes" name="minutes" placeholder="Minutes">
-                                        </div>
-                                    </div>
-								</div>
-
-                                <div class="form-group">
-                                    <label for="InputMessage" class="col-md-3 pull-left">Ingredients *</label>
-                                    <div class="input-group col-md-2 pull-right">
-                                        <input name="Ingredient" id="InputMessage" class="form-control" placeholder="Units"></input>
-                                    </div>
-                                    <div class="input-group col-md-2 pull-right">
-                                        <input name="Ingredient" id="InputMessage" class="form-control" placeholder="Amount"></input>
-                                    </div>
-                                    <div class="input-group col-md-5 pull-right">
-                                        <input name="Ingredient" id="InputMessage" class="form-control" placeholder="Ingredient 1"></input>
-                                    </div>
-                                </div>
-                                <div style="clear:both"></div>
-
-                                <div class="form-group">
-                                    <label for="InputMessage" class="col-md-2 pull-left"></label>
-                                    <div class="input-group col-md-2 pull-right">
-                                        <input name="Ingredient" id="InputMessage" class="form-control" placeholder="Units"></input>
-                                    </div>
-                                    <div class="input-group col-md-2 pull-right">
-                                        <input name="Ingredient" id="InputMessage" class="form-control" placeholder="Amount"></input>
-                                    </div>
-                                    <div class="input-group col-md-5 pull-right">
-                                        <input name="Ingredient" id="InputMessage" class="form-control" placeholder="Ingredient 2"></input>
-                                    </div>
-                                </div>
-                                <div style="clear:both"></div>
-
-                                <div class="form-group">
-                                    <label for="InputMessage" class="col-md-2 pull-left"></label>
-                                    <div class="input-group col-md-2 pull-right">
-                                        <input name="Ingredient" id="InputMessage" class="form-control" placeholder="Units"></input>
-                                    </div>
-                                    <div class="input-group col-md-2 pull-right">
-                                        <input name="Ingredient" id="InputMessage" class="form-control" placeholder="Amount"></input>
-                                    </div>
-                                    <div class="input-group col-md-5 pull-right">
-                                        <input name="Ingredient" id="InputMessage" class="form-control" placeholder="Ingredient 3"></input>
-                                    </div>
-                                </div>
-                                <div style="clear:both"></div>
-                                
-                                <div class="form-group" style="margin-top:10px;">
-                                    <button type="button" class="btn btn-info col-md-offset-10">Add Ingredient</button>
-                                    <br>
-                                </div>
-                                <div class="form-group">
-									<label for="InputMessage" class="col-md-2">Cooking Instructions</label>
-									<div class="input-group">
-										<textarea name="InputMessage" id="InputMessage" class="form-control" rows="5" required></textarea>
-										<span class="input-group-addon"><span class="glyphicon glyphicon-asterisk"></span></span>
-									</div>
-								</div>
-								<div class="form-actions pull-right">
-									<button type="submit" class="btn btn-primary">Submit</button>
-									<button type="button" class="btn">Cancel</button>
-								</div>	
-								
-							</div>
-						</form>
-						
+						</div>
 					</div>
+
+                    <div class="col-lg-3">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class=""></i> Peanut Butter</h3>
+                            </div>
+                            <div class="panel-body">
+                                <img src="img/PeanutButter.jpg" class="img-responsive" alt="chicken" width="100%" height="100%">
+                            </div>
+                        </div>
+                    </div>
+                <!-- /.row -->
 
             </div>
             <!-- /.container-fluid -->
