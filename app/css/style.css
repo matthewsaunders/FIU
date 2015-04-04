@@ -34,11 +34,11 @@ body {
 
 @media(min-width:768px) {
     #wrapper {
-        padding-left: 0px;
+        padding-left: 225px;
     }
 
     #page-wrapper {
-        padding: 0px;
+        padding: 10px;
     }
 }
 
