@@ -1,4 +1,4 @@
-all:	generatePoints hermiteCode
+all:	generateParticles hermiteCode
 
 CFLAGS = -Wall
 MPI = mpicc
@@ -9,11 +9,11 @@ hermiteCode:	hermiteCode.o
 hermiteCode.o: hermiteCode.c
 	$(CC) -Wall -c $< -o $@ -lm
 
-generatePoints:	generatePoints.o
-	$(CC) generatePoints.o -o $@ -lm
+generateParticles:	generateParticles.o
+	$(CC) generateParticles.o -o $@ -lm
 
-generatePoints.o:	generatePoints.c
+generateParticles.o:	generateParticles.c
 	$(CC) -Wall -c $< -o $@ -lm
 
 clean:
-	rm -f generatePoints *.o core *~
+	rm -f generateParticles hermiteCode *.o core *~
