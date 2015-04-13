@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------
  * usage: 
- *
+ * $ cat out | ./hermiteCode 10000 2>&1
  *
  *----------------------------------------------------------------------
  */
@@ -25,7 +25,12 @@ int main(int argc, char* argv[]){
 	double t = 0;	// assume time is zero
 	double dt = 0.001;	//time step
 	double t_final = 10;	//final time
+	double t_energy;
+	double t_output;
+	double dt_energy = 1.0;
+	double dt_output = 0.1;
 	char fname[100];
+	int num_steps = 0;
 	
 	if(read_options(argc, argv, &n, &fname[0]))
 		return 1;
@@ -36,66 +41,53 @@ int main(int argc, char* argv[]){
 	
 	parse_input(&n, &t, mass, pos, vel);
 	
-	/*
-	printf("fname: %s\n", fname);
-	int i;
-	printf("READ INPUT:\n");
-	printf("n = %d\nt = %f\n", n, t);
-	for(i=0; i<n; i++)
-		printf("mass: %f\t\tpos: %f %f %f\t\tvel: %f %f %f\n", mass[i], pos[i][0],pos[i][1],pos[i][2], vel[i][0],vel[i][1], vel[i][2]);
-	*/
 	
+	//initial_energy(mass, pos, vel, n, t, dt, t_final);
+	
+	//calculate_energy(mass, pos, vel, n, t, dt, num_steps);
+	
+	//initial output
 	output_snapshot(mass, pos, vel, n, t);
+	t_output = t + dt_output;
+	
+	for(;;){
+		while(t < t_output && t < t_final){
+			//step_forward(mass, pos, vel, acc, jerk, n, t, dt, epot, coll_time);
+			num_steps++;
+		}
+		if(t >= t_output){
+			output_snapshot(mass, pos, vel, n, t);
+			t_output += dt_output;
+		}
+		if(t >= t_final)
+			break;
+	}
+	
+	
+	
 	
 	return 0;
 }
 
-/*
-int read_options(int argc, char* argv[], int* n, char* fname){
-	
-	if(argc < 2 || argc > 3){
-		printf("usage: \n\t%s ", argv[0]);
-		printf("[number of particles] \n");
-		return 1;
-	}
-	
-	*n = atoi(argv[1]);
-	
-	if(argc = 3){
-		strcpy(fname, argv[2]);
-	}
-	
-	return 0;
-}
 
 
-int parse_input(int* n, double* t, double mass[], double pos[][NDIM], double vel[][NDIM]){
-	
-	scanf("%d", n);
-	scanf("%lf", t);
-	
-	int i, j;
-	
-	for(i=0; i<*n; i++){
-		scanf("%lf", &mass[i]);
-		scanf("%lf %lf %lf", &pos[i][0], &pos[i][1], &pos[i][2]);	
-		scanf("%lf %lf %lf", &vel[i][0], &vel[i][1], &vel[i][2]);
-	}
-	return 0;	
-}
 
-void output_snapshot(double mass[], double pos[][NDIM], double vel[][NDIM], int n, double t){
 
-	int i,j;
-	
-	printf("%d\n", n);
-	printf("%f\n", t);
-	
-	for(i=0; i<n; i++){
-		printf("%.16f ", mass[i]);
-		printf("%.16f %.16f %.16f", pos[i][0], pos[i][1], pos[i][2]);
-		printf("%.16f %.16f %.16f", vel[i][0], vel[i][1], vel[i][2]);
-		printf("\n");
-	}
-}
-*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
