@@ -6,9 +6,6 @@
 #include <time.h>
 #include "utilities.h"
 
-//const int NDIM = 3;	//Number of dimensions
-//const double PI = 2.0*asin(1);
-
 /*
  *
  *

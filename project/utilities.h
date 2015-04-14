@@ -17,7 +17,5 @@ typedef struct{
 int read_options(int, char* [], int*, char*);
 int parse_input(int*, double*, double[], double[][NDIM], double[][NDIM], double[][NDIM]);
 void output_snapshot(double[], double[][NDIM], double[][NDIM], int, double);
-void initial_energy(double mass[], double pos[][NDIM], double vel[][NDIM], int n, 
-					  double t, double dt, double t_final);
 
 #endif
