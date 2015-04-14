@@ -1,12 +1,12 @@
-all:	generateParticles hermiteCode
+all:	generateParticles p-p
 
 CFLAGS = -Wall
 MPI = mpicc
 
-hermiteCode:	hermiteCode.o commonUtilities.o
-	$(CC) utilities.h hermiteCode.o commonUtilities.o -o $@
+p-p:	p-p.o commonUtilities.o
+	$(CC) utilities.h p-p.o commonUtilities.o -o $@ -lm
 	
-hermiteCode.o: hermiteCode.c
+p-p.o: p-p.c
 	$(CC) -Wall -c $< -o $@ -lm
 	
 commonUtilities.o:	commonUtilities.c
@@ -19,4 +19,4 @@ generateParticles.o:	generateParticles.c
 	$(CC) -Wall -c $< -o $@ -lm
 
 clean:
-	rm -f generateParticles hermiteCode *.o core *~
+	rm -f generateParticles p-p *.o core *~

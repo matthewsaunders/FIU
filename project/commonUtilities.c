@@ -34,17 +34,19 @@ int read_options(int argc, char* argv[], int* n, char* fname){
  *
  *
  */
-int parse_input(int* n, double* t, double mass[], double pos[][NDIM], double vel[][NDIM]){
+int parse_input(int* n, double* t, double mass[], double pos[][NDIM], double vel[][NDIM], double acc[][NDIM]){
 	
 	scanf("%d", n);
 	scanf("%lf", t);
 	
-	int i;
+	int i,j;
 	
 	for(i=0; i<*n; i++){
 		scanf("%lf", &mass[i]);
 		scanf("%lf %lf %lf", &pos[i][0], &pos[i][1], &pos[i][2]);	
 		scanf("%lf %lf %lf", &vel[i][0], &vel[i][1], &vel[i][2]);
+		for(j=0; j<NDIM; j++)
+			acc[i][j] = 0;
 	}
 	return 0;	
 }
@@ -69,44 +71,6 @@ void output_snapshot(double mass[], double pos[][NDIM], double vel[][NDIM], int 
 }
 
 
-/*
- *
- */
-void initial_energy(double mass[], double pos[][NDIM], double vel[][NDIM], int n, 
-					  double t, double dt, double t_final){
-	
-	fprintf(stderr, "Starting Experiment...\n\n");
-	fprintf(stderr, "Number of bodies: %d\n", n);
-	fprintf(stderr, "Time step size: %f\n", dt);
-	fprintf(stderr, "Time interval: %f - %f\n\n", t, t_final);
-	
-}
-
-/*
- *
- */
-void calculate_energy(double mass[], double pos[][NDIM], double vel[][NDIM], int n, 
-					  double t, double dt, int num_steps){
-	
-	int i,j;
-	double E_kin, E_pot, E_tot;
-	
-	E_kin = E_pot = 0.0;
-	
-	for(i=0; i<n; i++)
-		for(j=0; j<NDIM; j++)
-			E_kin += 0.5*mass[i] + vel[i][j]*vel[i][j];
-	
-	E_tot = E_kin + E_pot;
-	
-	fprintf(stderr, "Time t = %f:\n", t);
-	fprintf(stderr, "\tstep = %d:\n", num_steps);
-	fprintf(stderr, "\tE_kin = %f:\n", E_kin);
-	fprintf(stderr, "\tE_pot = %f:\n", E_pot);
-	fprintf(stderr, "\tE_tot = %f:\n", E_tot);
-	//fprintf(stderr, );
-	
-}
 
 
 

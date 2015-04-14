@@ -3,11 +3,21 @@
 
 #ifndef COMMON_UTILITIES_H
 #define COMMON_UTILITIES_H
+
+typedef struct{
+	double mass;
+	double pos_x;
+	double pos_y;
+	double pos_z;
+	double vel_x;
+	double vel_y;
+	double vel_z;	
+} particle;
+
 int read_options(int, char* [], int*, char*);
-int parse_input(int*, double*, double[], double[][NDIM], double[][NDIM]);
+int parse_input(int*, double*, double[], double[][NDIM], double[][NDIM], double[][NDIM]);
 void output_snapshot(double[], double[][NDIM], double[][NDIM], int, double);
 void initial_energy(double mass[], double pos[][NDIM], double vel[][NDIM], int n, 
 					  double t, double dt, double t_final);
-void calculate_energy(double mass[], double pos[][NDIM], double vel[][NDIM], int n, 
-					  double t, double dt, int num_steps);
+
 #endif
