@@ -97,7 +97,7 @@ function displayLoginForm( $message ) {
 
     <div id="wrapper">
 	    <div class="container">    
-        <div id="loginbox" style="margin-top:50px;" class="mainbox col-md-6 col-sm-offset-3 col-sm-8 ">                    
+        <div id="loginbox" style="margin-top:50px;" class="mainbox col-md-6 col-sm-offset-1 col-sm-8 ">                    
             <div class="panel panel-info" >
                     <div class="panel-heading">
                         <div class="panel-title">Sign In</div>
