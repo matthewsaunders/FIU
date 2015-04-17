@@ -1,3 +1,61 @@
+<?php
+session_start();
+$_POST["login"] = true;
+//$_GET["action"] = "logout";
+$_POST["username"] = "John Doe";
+$_POST["password"] = "password123";
+//$_SESSION["username"] = "John Doe";
+
+if ( isset( $_POST["login"] ) ) {
+	login();
+}elseif( isset($_GET["action"]) and $_GET["action"] == "logout"){
+	logout();
+}elseif ( isset($_SESSION["username"]) ) {
+	displayHomePage();
+}else{
+	displayLoginForm('Sorry, that username/password could not be found. Please try again.');
+}
+
+function login() {
+	if (isset($_POST["username"]) and isset($_POST["password"])) {
+		
+		try{
+			include 'db/connectDatabase.php';
+			$sql = "SELECT name, password FROM users WHERE name = :username";
+			$result = $conn->prepare($sql);
+			$result->bindValue(":username", $_POST["username"], PDO::PARAM_STR);
+			$result-> execute();
+			$row = $result->fetch();
+		}catch(PDOException $e){
+			$conn = null;
+			print($e->getMessage()."<br>");
+		}
+		
+		if ($row and $_POST["username"] == $row['name'] and $_POST["password"] == $row['password'] ) {
+			$_SESSION["username"] = $row['name'];
+			session_write_close();
+			header( "Location: login.php" );
+		} else {
+			//displayLoginForm( 'Sorry, that username/password could not be found. Please try again.' );
+			displayLoginForm('Sorry, that username/password could not be found. Please try again.' );
+		}
+		
+	}
+}
+
+function logout() {
+	unset( $_SESSION["username"] );
+	session_write_close();
+	displayLoginForm("Successfully Logged Out!");
+}
+
+function displayHomePage(){
+	header( "Location: /home" );
+}
+
+function displayLoginForm( $message ) {
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -47,21 +105,24 @@
 
                         <div style="display:none" id="login-alert" class="alert alert-danger col-sm-12"></div>
                             
-                        <form id="loginform" class="form-horizontal" role="form">
+                        <form id="loginform" action="index.php" class="form-horizontal" role="form">
 
-                            <!--
-                            <div class="alert alert-danger" role="alert">
-                                  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                  <strong>Login Failed:</strong> Username and password DO NOT match..
-                            </div>
-                            -->
-
-                            <!--
-                            <div class="alert alert-danger" role="alert">
-                                  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                  <strong>Login Failed:</strong> Invalid Username.  Click <a href="#">here</a> to register this username.
-                            </div>
-                        -->
+                            <?php if($message){
+								if( isset($_GET["action"]) and $_GET["action"] == "logout"){
+									print("
+									<div class='alert alert-info' role='alert'>
+									");
+								}else{
+									print("
+									<div class='alert alert-danger' role='alert'>
+									");
+								}
+									print("
+										  <button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button>
+										  <strong>$message</strong>
+										</div>
+									");
+							}?>
 
                             <div style="margin-bottom: 25px" class="input-group">
                                         <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
@@ -186,5 +247,11 @@
     <script src="js/plugins/morris/morris-data.js"></script>
 
 </body>
-
 </html>
+
+
+
+
+<?php
+}
+?>
