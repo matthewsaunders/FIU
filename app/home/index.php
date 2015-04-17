@@ -167,7 +167,7 @@ function displayHomePage(){
 							while( $cookbook = $result->fetch() ){
 								print("
 									<li>
-										<a href='#'>$cookbook[name]</a>
+										<a href='../cookbook?cookbook=$cookbook[name]'>$cookbook[name]</a>
 									</li>
 								");
 							}
