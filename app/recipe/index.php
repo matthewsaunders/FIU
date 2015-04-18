@@ -354,19 +354,23 @@ function displayRecipe(){
 												$result->bindValue(":recipeID", $_GET["recipe"], PDO::PARAM_INT);
 												$result-> execute();
 												
-												print("<table>");
+												print("<table class='ingredientsTable'>");
 												while( $ingredient = $result->fetch() ){
-													$sql2 = "SELECT * FROM ingredient WHERE name = :ingredientName";
-													//$result2 = $conn->prepare($sql);
-													//$result2->bindValue(":ingredientName", $ingredient['ingredientName'], PDO::PARAM_STR);
-													//$result2-> execute();
-													//$unit = $result2->fetch();
-													//<td>$unit[measurementUnit]</td>
+													$sql = "SELECT * FROM ingredient WHERE name = :ingredientName";
+													$result2 = $conn->prepare($sql);
+													$result2->bindValue(":ingredientName", trim($ingredient['ingredientName']), PDO::PARAM_STR);
+													$result2-> execute();
+													$unit = $result2->fetch();
+													
 													print("
 													<tr>
-														<td>$ingredient[amount]</td>
-														
-														<td>$ingredient[ingredientName]</td>
+														<td>$ingredient[amount]</td>");
+														if( $unit['measurementUnit'] != "NULL"){
+															print("<td> $unit[measurementUnit]</td>");
+														}else{
+															print("<td></td>");
+														}
+														print("<td>$ingredient[ingredientName]</td>
 													</tr>
 													");
 													

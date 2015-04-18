@@ -242,3 +242,7 @@ ul.alert-dropdown {
         margin-top:0.5em;
     }
 }
+
+.ingredientsTable td{
+	padding-right: 10px;
+}
