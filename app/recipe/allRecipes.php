@@ -1,29 +1,23 @@
 <?php
 session_start();
 
-if( !isset($_SESSION["username"]) ){
-	displayLogin();
-}else{
-	displayHomePage();
-}
-
-function displayLogin(){
-	header( "Location: ../login.php" );
-}
-
-function displayHomePage(){
-	try{
-		include '../db/connectDatabase.php';
-		
-		//get user profile
-		$sql = "SELECT * FROM users WHERE name = :username";
-		$result = $conn->prepare($sql);
-		$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
-		$result-> execute();
-		$profile = $result->fetch();
-	}catch(PDOException $e){
-		$conn = null;
-		print($e->getMessage()."<br>");
+	//connect to DB
+	include '../db/connectDatabase.php';
+	
+	if( isset($_SESSION["username"]) ){
+		try{
+			include '../db/connectDatabase.php';
+			
+			//get user profile
+			$sql = "SELECT * FROM users WHERE name = :username";
+			$result = $conn->prepare($sql);
+			$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
+			$result-> execute();
+			$profile = $result->fetch();
+		}catch(PDOException $e){
+			$conn = null;
+			print($e->getMessage()."<br>");
+		}
 	}
 ?>
 <!DOCTYPE html>
@@ -39,23 +33,23 @@ function displayHomePage(){
 
     <title>Cookbook Application</title>
 
-    <!-- Bootstrap Core ../css -->
+    <!-- Bootstrap Core css -->
     <link href="../css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Custom ../css -->
+    <!-- Custom css -->
     <link href="../css/style.css" rel="stylesheet">
 
-    <!-- Morris Charts ../css -->
+    <!-- Morris Charts css -->
     <link href="../css/plugins/morris.css" rel="stylesheet">
 
     <!-- Custom Fonts -->
-    <link href="../font-awesome/css/font-awesome.css" rel="stylesheet" type="text/../css">
+    <link href="../font-awesome/css/font-awesome.css" rel="stylesheet" type="text/css">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.../js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
 </head>
@@ -64,7 +58,7 @@ function displayHomePage(){
 
     <div id="wrapper">
 
-        <!-- Navigation -->
+                <!-- Navigation -->
         <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
             <!-- Brand and toggle get grouped for better mobile display -->
             <div class="navbar-header">
@@ -78,6 +72,9 @@ function displayHomePage(){
             </div>
             <!-- Top Menu Items -->
             <ul class="nav navbar-right top-nav">
+				<?php 
+				if( isset($_SESSION["username"]) ){
+				?>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-envelope"></i> <b class="caret"></b></a>
                     <ul class="dropdown-menu message-dropdown">
@@ -113,25 +110,41 @@ function displayHomePage(){
                         </li>
                     </ul>
                 </li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i>
-					<?php 
-						print($profile["name"]);
-					?>
-					<b class="caret"></b></a>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <a href="#"><i class="fa fa-fw fa-user"></i> Profile</a>
-                        </li>
-                        <li>
-                            <a href="#"><i class="fa fa-fw fa-gear"></i> Settings</a>
-                        </li>
-                        <li class="divider"></li>
-                        <li>
-                            <a href="../login.php?action=logout"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
-                        </li>
-                    </ul>
-                </li>
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i>
+						<?php 
+							print($profile["name"]);
+						?>
+						<b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li>
+								<a href="#"><i class="fa fa-fw fa-user"></i> Profile</a>
+							</li>
+							<li>
+								<a href="#"><i class="fa fa-fw fa-gear"></i> Settings</a>
+							</li>
+							<li class="divider"></li>
+							<li>
+								<a href="../login.php?action=logout"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
+							</li>
+						</ul>
+					</li>
+				<?php
+				}else{
+				?>
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i>
+						Guest
+						<b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li>
+								<a href="../login.php"><i class="fa fa-fw fa-user"></i> Login</a>
+							</li>
+						</ul>
+					</li>				
+				<?php
+				}
+				?>
             </ul>
             
             <!-- Search Bar -->
@@ -148,42 +161,48 @@ function displayHomePage(){
             <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav side-nav">
-                    <li>
+                    <li class="active">
                         <a href="../recipe"><span class="glyphicon glyphicon-apple"></span> All Recipes</a>
                     </li>
-					<li class="divider"></li>
-					<li class="active">
-                        <a href="/"><span class="fa fa-bookmark"></span> My Recipes</a>
-                    </li>
-                    <li>
-                        <a href="javascript:;" data-toggle="collapse" data-target="#booklist"><span class="glyphicon glyphicon-book"></span> Cookbooks <i class="fa fa-fw fa-caret-down"></i></a>
-                        <ul id="booklist" class="collapse">
-						<?php
-						
-						try{
-							//get user cookbooks
-							$sql = "SELECT name FROM cookbook WHERE author = :username";
-							$result = $conn->prepare($sql);
-							$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
-							$result-> execute();
+					<?php
+					if( isset($_SESSION["username"]) ){
+					?>
+						<li class="divider"></li>
+						<li>
+							<a href="/"><span class="fa fa-bookmark"></span> My Recipes</a>
+						</li>
+						<li>
+							<a href="javascript:;" data-toggle="collapse" data-target="#booklist"><span class="glyphicon glyphicon-book"></span> Cookbooks <i class="fa fa-fw fa-caret-down"></i></a>
+							<ul id="booklist" class="collapse">
+							<?php
 							
-							while( $cookbook = $result->fetch() ){
-								print("
-									<li>
-										<a href='../cookbook?cookbook=$cookbook[name]'>$cookbook[name]</a>
-									</li>
-								");
+							try{
+								//get user cookbooks
+								$sql = "SELECT name FROM cookbook WHERE author = :username";
+								$result = $conn->prepare($sql);
+								$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
+								$result-> execute();
+								
+								while( $cookbook = $result->fetch() ){
+									print("
+										<li>
+											<a href='../cookbook?cookbook=$cookbook[name]'>$cookbook[name]</a>
+										</li>
+									");
+								}
+							}catch(PDOException $e){
+								//do nothing
 							}
-						}catch(PDOException $e){
-							//do nothing
-						}
-						
-						?>
-                        </ul>
-                    </li>
-					<li>
-                        <a href="index.html"><span class="glyphicon glyphicon-plus-sign"></span> Add a Cookbook</a>
-                    </li>
+							
+							?>
+							</ul>
+						</li>
+						<li>
+							<a href="../"><span class="glyphicon glyphicon-plus-sign"></span> Add a Cookbook</a>
+						</li>
+					<?php
+					}
+					?>
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
@@ -197,11 +216,7 @@ function displayHomePage(){
                 <div class="row">
                     <div class="col-lg-12">
                         <h1 class="page-header">
-                            All Recipes <small>
-							<?php
-							print($_SESSION['username']);
-							?>
-							's Recipes</small>
+                            All Recipes <small></small>
 							
 							<div class="dropdown pull-right">
 							<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
@@ -222,9 +237,8 @@ function displayHomePage(){
 				<?php
 				try{
 					//get user recipes
-					$sql = "SELECT * FROM recipe WHERE author = :username";
+					$sql = "SELECT * FROM recipe";
 					$result = $conn->prepare($sql);
-					$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
 					$result-> execute();
 					
 					$count = 1;
@@ -278,6 +292,3 @@ function displayHomePage(){
 </body>
 
 </html>
-<?php
-}
-?>

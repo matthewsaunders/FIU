@@ -63,7 +63,7 @@ function displayDefaultPage(){
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="index.html">Cookbook Application</a>
+                <a class="navbar-brand" href="/">Cookbook Application</a>
             </div>
             <!-- Top Menu Items -->
             <ul class="nav navbar-right top-nav">
@@ -94,7 +94,7 @@ function displayDefaultPage(){
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav side-nav">
                     <li class="active">
-                        <a href="index.html"><span class="glyphicon glyphicon-apple"></span> All Recipes</a>
+                        <a href="/recipe"><span class="glyphicon glyphicon-apple"></span> All Recipes</a>
                     </li>
                 </ul>
             </div>
@@ -139,6 +139,7 @@ function displayDefaultPage(){
 					while( $recipe = $result->fetch() ){
 						print("
 							<div class='col-lg-3'>
+							<a href='../recipe?recipe=$recipe[ID]'>
 								<div class='panel panel-default'>
 									<div class='panel-heading'>
 										<h3 class='panel-title'><i class=''></i>$recipe[name]</h3>
@@ -147,6 +148,7 @@ function displayDefaultPage(){
 										<img src='../img/default.jpg' class='img-responsive' alt='default' width='100%' height='100%'>
 									</div>
 								</div>
+							</a>
 							</div>
 						");
 					

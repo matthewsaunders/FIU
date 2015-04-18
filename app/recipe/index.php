@@ -1,18 +1,31 @@
 <?php
 session_start();
 
-	try{
-		include '../db/connectDatabase.php';
-		
-		//get user profile
-		$sql = "SELECT * FROM users WHERE name = :username";
-		$result = $conn->prepare($sql);
-		$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
-		$result-> execute();
-		$profile = $result->fetch();
-	}catch(PDOException $e){
-		$conn = null;
-		print($e->getMessage()."<br>");
+if( isset($_GET['recipe']) ){
+	displayRecipe();
+}else{
+	displayAllRecipes();
+}
+
+function displayAllRecipes(){
+	header( "Location: allRecipes.php" );
+}
+
+function displayRecipe(){
+	include '../db/connectDatabase.php';
+
+	if( isset($_SESSION["username"]) ){
+		try{
+			//get user profile
+			$sql = "SELECT * FROM users WHERE name = :username";
+			$result = $conn->prepare($sql);
+			$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
+			$result-> execute();
+			$profile = $result->fetch();
+		}catch(PDOException $e){
+			$conn = null;
+			print($e->getMessage()."<br>");
+		}
 	}
 	
 	try{
@@ -79,6 +92,9 @@ session_start();
             </div>
             <!-- Top Menu Items -->
             <ul class="nav navbar-right top-nav">
+				<?php
+				if( isset($_SESSION["username"]) ){
+				?>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-envelope"></i> <b class="caret"></b></a>
                     <ul class="dropdown-menu message-dropdown">
@@ -133,8 +149,24 @@ session_start();
                         </li>
                     </ul>
                 </li>
-            </ul>
-            
+			<?php
+			}else{
+			?>
+				<li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i>
+					Guest
+					<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="../login.php"><i class="fa fa-fw fa-user"></i> Login</a>
+                        </li>
+                    </ul>
+                </li>
+			<?php
+			}
+			?>
+			</ul>
+			
             <!-- Search Bar -->
             <div class="col-sm-3 col-md-3 pull-right">
                 <form class="navbar-form" role="search">
@@ -150,12 +182,16 @@ session_start();
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav side-nav">
                     <li>
-                        <a href="/"><span class="glyphicon glyphicon-apple"></span> All Recipes</a>
+                        <a href="../recipe"><span class="glyphicon glyphicon-apple"></span> All Recipes</a>
                     </li>
 					<li class="divider"></li>
 					<?php
 					if( isset($_SESSION["username"]) ){
 					?>
+					<li class="divider"></li>
+					<li class="active">
+                        <a href="/"><span class="fa fa-bookmark"></span> My Recipes</a>
+                    </li>
 						<li>
 							<a href="javascript:;" data-toggle="collapse" data-target="#booklist"><span class="glyphicon glyphicon-book"></span> Cookbooks <i class="fa fa-fw fa-caret-down"></i></a>
 							<ul id="booklist" class="collapse">
@@ -321,15 +357,15 @@ session_start();
 												print("<table>");
 												while( $ingredient = $result->fetch() ){
 													$sql2 = "SELECT * FROM ingredient WHERE name = :ingredientName";
-													$result2 = $conn->prepare($sql);
+													//$result2 = $conn->prepare($sql);
 													//$result2->bindValue(":ingredientName", $ingredient['ingredientName'], PDO::PARAM_STR);
 													//$result2-> execute();
 													//$unit = $result2->fetch();
-													
+													//<td>$unit[measurementUnit]</td>
 													print("
 													<tr>
 														<td>$ingredient[amount]</td>
-														<td>$unit[measurementUnit]</td>
+														
 														<td>$ingredient[ingredientName]</td>
 													</tr>
 													");
@@ -388,3 +424,7 @@ session_start();
 </body>
 
 </html>
+
+<?php
+}
+?>
