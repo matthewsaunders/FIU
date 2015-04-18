@@ -33,6 +33,7 @@ function login() {
 		
 		if ($row and $_POST["username"] == $row['name'] and $_POST["password"] == $row['password'] ) {
 			$_SESSION["username"] = $row['name'];
+			$_POST["message"] = "Welcome Back!!";
 			session_write_close();
 			header( "Location: /home" );
 		} else {

@@ -189,7 +189,7 @@ function displayRecipe(){
 					if( isset($_SESSION["username"]) ){
 					?>
 					<li class="divider"></li>
-					<li class="active">
+					<li>
                         <a href="/"><span class="fa fa-bookmark"></span> My Recipes</a>
                     </li>
 						<li>
