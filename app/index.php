@@ -110,17 +110,6 @@ function displayDefaultPage(){
                     <div class="col-lg-12">
                         <h1 class="page-header">
                             All Recipes <small></small>
-							
-							<div class="dropdown pull-right">
-							<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-							Add recipe
-								<span class="caret"></span>
-							</button>
-							<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-								<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Create new recipe</a></li>
-								<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Add existing recipe</a></li>								
-							</ul>
-							
                         </h1>
                     </div>
                 </div>
