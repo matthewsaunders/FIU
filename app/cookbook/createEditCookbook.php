@@ -3,8 +3,10 @@ session_start();
 
 if( !isset($_SESSION['username']) ){
 	displayLogin();
-}elseif( isset($_POST["submit"]) ){
+}elseif( isset($_POST["submit"]) and isset($_POST["cookbook-id"]) ){
 	updateDB();
+}elseif( isset($_POST["submit"]) ){
+	createInDB();
 }else{
 	displayCookbookForm();
 }
@@ -13,7 +15,7 @@ function displayLogin(){
 	header( "Location: ../login.php" );
 }
 
-function updateDB(){
+function createInDB(){
 	include '../db/connectDatabase.php';
 	
 	if( isset($_SESSION["username"]) ){
@@ -31,6 +33,25 @@ function updateDB(){
 			$conn = null;
 			print($e->getMessage()."<br>");
 		}
+	}
+}
+
+function updateDB(){
+	include '../db/connectDatabase.php';
+	
+	try{
+		//get user profile
+		$sql = "UPDATE cookbook SET name = :cookbookName WHERE ID = :cookbookID";
+		$result = $conn->prepare($sql);
+		$result->bindValue(":cookbookName", trim($_POST['cookbook-name']), PDO::PARAM_STR);
+		$result->bindValue(":cookbookID", trim($_POST['cookbook-id']), PDO::PARAM_STR);
+		$result-> execute();
+			
+		//$_POST["message"] = "Cookbook ".$_POST['cookbook-name']." updated successfully!";
+		header( "Location: ../cookbook?cookbook=".$_POST['cookbook-id'] );
+	}catch(PDOException $e){
+		$conn = null;
+		print($e->getMessage()."<br>");
 	}
 }
 
@@ -61,8 +82,8 @@ function displayCookbookForm(){
 			$result->bindValue(":cookbookID", $_GET['cookbook'], PDO::PARAM_STR);
 			$result-> execute();
 			
-			if( $cookbook = $result->fetch() ){
-				if( $cookbook['author'] == $_SESSION["username"] ){
+			if( $cookbookEditing = $result->fetch() ){
+				if( $cookbookEditing['author'] == $_SESSION["username"] ){
 					$cookbookExists = true;
 				}
 			}
@@ -251,7 +272,7 @@ function displayCookbookForm(){
 							</ul>
 						</li>
 						<li>
-							<a href="index.html"><span class="glyphicon glyphicon-plus-sign"></span> Add a Cookbook</a>
+							<a href="createEditCookbook.php"><span class="glyphicon glyphicon-plus-sign"></span> Add a Cookbook</a>
 						</li>
 					<?php
 					}
@@ -267,7 +288,14 @@ function displayCookbookForm(){
 					<div class="row">
 						<form role="form" action="createEditCookbook.php" method="post">
 							<div class="col-lg-12">
-								<h2 class="text-center">New Cookbook</h2>
+								<?php
+								if( isset($_GET['cookbook']) ){
+									print("<h2 class='text-center'>Edit Cookbook</h2>");
+								}else{
+									print("<h2 class='text-center'>New Cookbook</h2>");
+								}
+								?>
+								
 							</div>
 							<div class="col-md-9">
 								<div class="well well-sm"><strong><span class="glyphicon glyphicon-asterisk"></span>Required Field</strong></div>
@@ -275,12 +303,12 @@ function displayCookbookForm(){
 									<label for="InputName" class="col-md-2">Name *</label>
 									<div class="input-group col-md-10">
 										<?php
-										//if( $cookbookExists ){
-										//	print_r($cookbook);
-										//	print("<input type='text' class='form-control' name='cookbook-name' id='InputName' value='".$cookbook["name"]."' required>");
-										//}else{
+										if( $cookbookExists ){
+											print_r($cookbook);
+											print("<input type='text' class='form-control' name='cookbook-name' id='InputName' value='".$cookbookEditing["name"]."' required>");
+										}else{
 											print("<input type='text' class='form-control' name='cookbook-name' id='InputName' placeholder='Enter Name' required>");
-										//}
+										}
 										?>
 									</div>
 								</div>								
@@ -291,6 +319,11 @@ function displayCookbookForm(){
 								?>
 								"></input>
 								<div class="form-actions pull-right">
+									<?php
+									if($_GET['cookbook']){
+										print("<input type='hidden' name='cookbook-id' value='$cookbookEditing[ID]'></input>");
+									}
+									?>
 									<input type="submit" name="submit" value="Submit" class="btn btn-primary"></input>
 									<button type="button" class="btn">Cancel</button>
 								</div>	
