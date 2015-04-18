@@ -320,7 +320,7 @@ function displayCookbookForm(){
 								"></input>
 								<div class="form-actions pull-right">
 									<?php
-									if($_GET['cookbook']){
+									if( isset($_GET['cookbook']) ){
 										print("<input type='hidden' name='cookbook-id' value='$cookbookEditing[ID]'></input>");
 									}
 									?>
