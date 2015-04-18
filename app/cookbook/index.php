@@ -1,75 +1,52 @@
 <?php
 session_start();
 
-if( !isset($_SESSION['username']) ){
+if( !isset($_SESSION["username"]) ){
 	displayLogin();
-}elseif( isset($_POST["submit"]) ){
-	updateDB();
 }else{
-	displayCookbookForm();
+	displayHomePage();
 }
 
 function displayLogin(){
 	header( "Location: ../login.php" );
 }
 
-function updateDB(){
+function displayHomePage(){
 	include '../db/connectDatabase.php';
 	
-	if( isset($_SESSION["username"]) ){
-		try{
-			//get user profile
-			$sql = "INSERT INTO cookbook (author, name) VALUES (:author, :name)";
-			$result = $conn->prepare($sql);
-			$result->bindValue(":author", trim($_POST['cookbook-author']), PDO::PARAM_STR);
-			$result->bindValue(":name", trim($_POST['cookbook-name']), PDO::PARAM_STR);
-			$result-> execute();
-			
-			$_POST["message"] = "Cookbook ".$_POST['cookbook-name']." added successfully!";
-			header( "Location: ../home" );
-		}catch(PDOException $e){
-			$conn = null;
-			print($e->getMessage()."<br>");
-		}
+	try{
+		//get user profile
+		$sql = "SELECT * FROM users WHERE name = :username";
+		$result = $conn->prepare($sql);
+		$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
+		$result-> execute();
+		$profile = $result->fetch();
+	}catch(PDOException $e){
+		$conn = null;
+		print($e->getMessage()."<br>");
 	}
-}
-
-function displayCookbookForm(){
-	include '../db/connectDatabase.php';
-	
-	if( isset($_SESSION["username"]) ){
-		try{
-			//get user profile
-			$sql = "SELECT * FROM users WHERE name = :username";
-			$result = $conn->prepare($sql);
-			$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
-			$result-> execute();
-			$profile = $result->fetch();
-		}catch(PDOException $e){
-			$conn = null;
-			print($e->getMessage()."<br>");
-		}
-	}
-	
-	$cookbookExists = false;
-	
-	if( isset($_GET["cookbook"]) ){
-		try{
-			//get user profile
-			$sql = "SELECT * FROM cookbook WHERE ID = :cookbookID";
-			$result = $conn->prepare($sql);
-			$result->bindValue(":cookbookID", $_GET['cookbook'], PDO::PARAM_STR);
-			$result-> execute();
-			
-			if( $cookbook = $result->fetch() ){
-				if( $cookbook['author'] == $_SESSION["username"] ){
-					$cookbookExists = true;
-				}
+								
+	$isOwner = false;
+							
+	try{
+		$sql = "SELECT * FROM cookbook WHERE ID = :cookbookID";
+		$result = $conn->prepare($sql);
+		$result->bindValue(":cookbookID", $_GET["cookbook"], PDO::PARAM_INT);
+		$result-> execute();
+						
+		if($cookbookDisplay = $result->fetch()){
+			if( $_SESSION["username"] == $cookbookDisplay["author"]){
+				$isOwner = true;
 			}
-		}catch(PDOException $e){
-			$conn = null;
-			print($e->getMessage()."<br>");
 		}
+	}catch(PDOException $e){
+		$conn = null;
+		print($e->getMessage()."<br>");
+	}
+							
+	if( !$isOwner ){
+		$_POST["message"] = "Access Denied: You do not own the cookbook being accessed!";
+		header("Location: ../home");
 	}
 ?>
 <!DOCTYPE html>
@@ -124,9 +101,6 @@ function displayCookbookForm(){
             </div>
             <!-- Top Menu Items -->
             <ul class="nav navbar-right top-nav">
-				<?php
-				if( isset($_SESSION["username"]) ){
-				?>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-envelope"></i> <b class="caret"></b></a>
                     <ul class="dropdown-menu message-dropdown">
@@ -181,24 +155,8 @@ function displayCookbookForm(){
                         </li>
                     </ul>
                 </li>
-			<?php
-			}else{
-			?>
-				<li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i>
-					Guest
-					<b class="caret"></b></a>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <a href="../login.php"><i class="fa fa-fw fa-user"></i> Login</a>
-                        </li>
-                    </ul>
-                </li>
-			<?php
-			}
-			?>
-			</ul>
-			
+            </ul>
+            
             <!-- Search Bar -->
             <div class="col-sm-3 col-md-3 pull-right">
                 <form class="navbar-form" role="search">
@@ -217,45 +175,42 @@ function displayCookbookForm(){
                         <a href="../recipe"><span class="glyphicon glyphicon-apple"></span> All Recipes</a>
                     </li>
 					<li class="divider"></li>
-					<?php
-					if( isset($_SESSION["username"]) ){
-					?>
-					<li class="divider"></li>
 					<li>
                         <a href="/"><span class="fa fa-bookmark"></span> My Recipes</a>
                     </li>
-						<li>
-							<a href="javascript:;" data-toggle="collapse" data-target="#booklist"><span class="glyphicon glyphicon-book"></span> Cookbooks <i class="fa fa-fw fa-caret-down"></i></a>
-							<ul id="booklist" class="collapse">
-							<?php
+                    <li>
+                        <a href="javascript:;" data-toggle="collapse" data-target="#booklist"><span class="glyphicon glyphicon-book"></span> Cookbooks <i class="fa fa-fw fa-caret-down"></i></a>
+                        <ul id="booklist" class="collapse">
+						<?php
+						
+						try{
+							//get user cookbooks
+							$sql = "SELECT * FROM cookbook WHERE author = :username";
+							$result = $conn->prepare($sql);
+							$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
+							$result-> execute();
 							
-							try{
-								//get user cookbooks
-								$sql = "SELECT * FROM cookbook WHERE author = :username";
-								$result = $conn->prepare($sql);
-								$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
-								$result-> execute();
-								
-								while( $cookbook = $result->fetch() ){
-									print("
-										<li>
-											<a href='../cookbook?cookbook=$cookbook[ID]'>$cookbook[name]</a>
-										</li>
-									");
+							while( $cookbook = $result->fetch() ){
+								if( $cookbook['ID'] == $_GET['cookbook'] ){
+									print("<li class='active'>");
+								}else{
+									print("<li>");
 								}
-							}catch(PDOException $e){
-								//do nothing
+								print("
+										<a href='../cookbook?cookbook=$cookbook[ID]'>$cookbook[name]</a>
+									</li>
+								");
 							}
-							
-							?>
-							</ul>
-						</li>
-						<li>
-							<a href="index.html"><span class="glyphicon glyphicon-plus-sign"></span> Add a Cookbook</a>
-						</li>
-					<?php
-					}
-					?>
+						}catch(PDOException $e){
+							//do nothing
+						}
+						
+						?>
+                        </ul>
+                    </li>
+					<li>
+                        <a href="../cookbook/createEditCookbook.php"><span class="glyphicon glyphicon-plus-sign"></span> Add a Cookbook</a>
+                    </li>
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
@@ -264,39 +219,94 @@ function displayCookbookForm(){
         <div id="page-wrapper">
 
             <div class="container-fluid">
-					<div class="row">
-						<form role="form" action="createEditCookbook.php" method="post">
-							<div class="col-lg-12">
-								<h2 class="text-center">New Cookbook</h2>
-							</div>
-							<div class="col-md-9">
-								<div class="well well-sm"><strong><span class="glyphicon glyphicon-asterisk"></span>Required Field</strong></div>
-								<div class="form-group">
-									<label for="InputName" class="col-md-2">Name *</label>
-									<div class="input-group col-md-10">
-										<?php
-										//if( $cookbookExists ){
-										//	print_r($cookbook);
-										//	print("<input type='text' class='form-control' name='cookbook-name' id='InputName' value='".$cookbook["name"]."' required>");
-										//}else{
-											print("<input type='text' class='form-control' name='cookbook-name' id='InputName' placeholder='Enter Name' required>");
-										//}
-										?>
-									</div>
-								</div>								
-                                <div style="clear:both"></div> 
-								<input type="hidden" name="cookbook-author" value="
-								<?php
-								print($_SESSION["username"]);
-								?>
-								"></input>
-								<div class="form-actions pull-right">
-									<input type="submit" name="submit" value="Submit" class="btn btn-primary"></input>
-									<button type="button" class="btn">Cancel</button>
-								</div>	
-							</div>
-						</form>
+				<?php
+				if( isset($_POST['message']) ){
+				?>
+				<div class="row">
+					<div class="col-lg-12">
+						<div class='alert alert-info' role='alert'>
+							<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button>
+							<strong>test 123</strong>
+						</div>
 					</div>
+				</div>
+				<?php
+				}
+				?>
+
+                <!-- Page Heading -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header">
+                            <?php
+							print($cookbookDisplay['name']);
+							print("
+							<small>
+							- <a href='createEditCookbook.php?cookbook=$cookbookDisplay[ID]'>edit cookbook</a>
+							- <a href='createEditCookbook.php?cookbook=$cookbookDisplay[ID]'>remove cookbook</a>
+							</small>
+							");
+							?>
+							<div class="dropdown pull-right">
+							<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+							Add recipe
+								<span class="caret"></span>
+							</button>
+							<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+								<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Create new recipe</a></li>
+								<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Add existing recipe</a></li>								
+							</ul>
+							
+                        </h1>
+                    </div>
+                </div>
+                <!-- /.row -->
+
+                <div class="row">
+				<?php
+				try{
+					//get user recipes
+					$sql = "SELECT * FROM containsRecipe WHERE cookbookId = :cookbookID";
+					$result = $conn->prepare($sql);
+					$result->bindValue(":cookbookID", $cookbookDisplay["ID"], PDO::PARAM_INT);
+					$result-> execute();
+					
+					$count = 1;
+					
+					while( $recipeID = $result->fetch() ){
+						$sql = "SELECT * FROM recipe WHERE ID = :recipeID";
+						$result2 = $conn->prepare($sql);
+						$result2->bindValue(":recipeID", $recipeID["recipeId"], PDO::PARAM_INT);
+						$result2-> execute();
+					
+						while( $recipe = $result2->fetch() ){
+							print("
+								<div class='col-lg-3'>
+								<a href='../recipe?recipe=$recipe[ID]'>
+									<div class='panel panel-default'>
+										<div class='panel-heading'>
+											<h3 class='panel-title'><i class=''></i>$recipe[name]</h3>
+										</div>
+										<div class='panel-body'>
+											<img src='../img/default.jpg' class='img-responsive' alt='default' width='100%' height='100%'>
+										</div>
+									</div>
+								</a>
+								</div>
+							");
+							
+							//start a new row every 3rd recipe
+							if($count++ % 3 == 0){
+								print("</div><div class='row'>");
+							}
+						}
+					
+					}	
+				}catch(PDOException $e){
+					//do nothing
+				}
+				?>
+
             </div>
             <!-- /.container-fluid -->
 
@@ -305,7 +315,7 @@ function displayCookbookForm(){
 
     </div>
     <!-- /#wrapper -->
-	
+
     <!-- jQuery -->
     <script src="../js/jquery.js"></script>
 
@@ -320,7 +330,6 @@ function displayCookbookForm(){
 </body>
 
 </html>
-
 <?php
 }
 ?>

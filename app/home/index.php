@@ -162,7 +162,7 @@ function displayHomePage(){
 						
 						try{
 							//get user cookbooks
-							$sql = "SELECT name FROM cookbook WHERE author = :username";
+							$sql = "SELECT * FROM cookbook WHERE author = :username";
 							$result = $conn->prepare($sql);
 							$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
 							$result-> execute();
@@ -170,7 +170,7 @@ function displayHomePage(){
 							while( $cookbook = $result->fetch() ){
 								print("
 									<li>
-										<a href='../cookbook?cookbook=$cookbook[name]'>$cookbook[name]</a>
+										<a href='../cookbook?cookbook=$cookbook[ID]'>$cookbook[name]</a>
 									</li>
 								");
 							}
