@@ -211,12 +211,10 @@ function displayHomePage(){
                 <div class="row">
                     <div class="col-lg-12">
                         <h1 class="page-header">
-                            All Recipes <small>
 							<?php
 							print($_SESSION['username']);
 							?>
-							's Recipes</small>
-							
+							's Recipes
 							<div class="dropdown pull-right">
 							<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
 							Add recipe
