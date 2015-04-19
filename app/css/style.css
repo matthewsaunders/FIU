@@ -246,3 +246,13 @@ ul.alert-dropdown {
 .ingredientsTable td{
 	padding-right: 10px;
 }
+
+.ingredientTable td, th {
+	padding: 5px;
+	border:1px solid black;
+}
+
+.ingredientTable th {
+	text-align: center;
+	background-color: #F0F0F0;
+}

@@ -149,8 +149,17 @@ function displayHomePage(){
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav side-nav">
                     <li>
-                        <a href="../recipe"><span class="glyphicon glyphicon-apple"></span> All Recipes</a>
+                        <a href="../recipe"><i class="fa fa-cutlery"></i>  All Recipes</a>
                     </li>
+					<?php
+					if( $profile['adminStatus'] == "Y" ){
+						print("
+						<li>
+							<a href='../ingredient'><span class='glyphicon glyphicon-apple'></span> All Ingredients</a>
+						</li>
+						");
+					}
+					?>
 					<li class="divider"></li>
 					<li class="active">
                         <a href="/"><span class="fa fa-bookmark"></span> My Recipes</a>

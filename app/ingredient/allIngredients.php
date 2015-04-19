@@ -1,53 +1,24 @@
 <?php
 session_start();
+displayAllIngredients();
 
-if( !isset($_SESSION["username"]) ){
-	displayLogin();
-}else{
-	displayHomePage();
-}
-
-function displayLogin(){
-	header( "Location: ../login.php" );
-}
-
-function displayHomePage(){
+function displayAllIngredients(){
 	include '../db/connectDatabase.php';
-	
-	try{
-		//get user profile
-		$sql = "SELECT * FROM users WHERE name = :username";
-		$result = $conn->prepare($sql);
-		$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
-		$result-> execute();
-		$profile = $result->fetch();
-	}catch(PDOException $e){
-		$conn = null;
-		print($e->getMessage()."<br>");
-	}
-								
-	$isOwner = false;
-							
-	try{
-		$sql = "SELECT * FROM cookbook WHERE ID = :cookbookID";
-		$result = $conn->prepare($sql);
-		$result->bindValue(":cookbookID", $_GET["cookbook"], PDO::PARAM_INT);
-		$result-> execute();
-						
-		if($cookbookDisplay = $result->fetch()){
-			if( $_SESSION["username"] == $cookbookDisplay["author"]){
-				$isOwner = true;
-			}
+
+	if( isset($_SESSION["username"]) ){
+		try{
+			//get user profile
+			$sql = "SELECT * FROM users WHERE name = :username";
+			$result = $conn->prepare($sql);
+			$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
+			$result-> execute();
+			$profile = $result->fetch();
+		}catch(PDOException $e){
+			$conn = null;
+			print($e->getMessage()."<br>");
 		}
-	}catch(PDOException $e){
-		$conn = null;
-		print($e->getMessage()."<br>");
 	}
-							
-	if( !$isOwner ){
-		$_POST["message"] = "Access Denied: You do not own the cookbook being accessed!";
-		header("Location: ../home");
-	}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -101,6 +72,9 @@ function displayHomePage(){
             </div>
             <!-- Top Menu Items -->
             <ul class="nav navbar-right top-nav">
+				<?php
+				if( isset($_SESSION["username"]) ){
+				?>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-envelope"></i> <b class="caret"></b></a>
                     <ul class="dropdown-menu message-dropdown">
@@ -155,8 +129,24 @@ function displayHomePage(){
                         </li>
                     </ul>
                 </li>
-            </ul>
-            
+			<?php
+			}else{
+			?>
+				<li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i>
+					Guest
+					<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="../login.php"><i class="fa fa-fw fa-user"></i> Login</a>
+                        </li>
+                    </ul>
+                </li>
+			<?php
+			}
+			?>
+			</ul>
+			
             <!-- Search Bar -->
             <div class="col-sm-3 col-md-3 pull-right">
                 <form class="navbar-form" role="search">
@@ -175,53 +165,54 @@ function displayHomePage(){
                         <a href="../recipe"><i class="fa fa-cutlery"></i> All Recipes</a>
                     </li>
 					<?php
-					if( isset($_SESSION["username"]) ){
-						if( $profile['adminStatus'] == "Y" ){
-							print("
-							<li>
-								<a href='../ingredient'><span class='glyphicon glyphicon-apple'></span> All Ingredients</a>
-							</li>
-							");
-						}
+					if( $profile['adminStatus'] == "Y" ){
+						print("
+						<li class='active'>
+							<a href='../ingredient'><span class='glyphicon glyphicon-apple'></span> All Ingredients</a>
+						</li>
+						");
 					}
+					?>
+					<li class="divider"></li>
+					<?php
+					if( isset($_SESSION["username"]) ){
 					?>
 					<li class="divider"></li>
 					<li>
                         <a href="/"><span class="fa fa-bookmark"></span> My Recipes</a>
                     </li>
-                    <li>
-                        <a href="javascript:;" data-toggle="collapse" data-target="#booklist"><span class="glyphicon glyphicon-book"></span> Cookbooks <i class="fa fa-fw fa-caret-down"></i></a>
-                        <ul id="booklist" class="collapse">
-						<?php
-						
-						try{
-							//get user cookbooks
-							$sql = "SELECT * FROM cookbook WHERE author = :username";
-							$result = $conn->prepare($sql);
-							$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
-							$result-> execute();
+						<li>
+							<a href="javascript:;" data-toggle="collapse" data-target="#booklist"><span class="glyphicon glyphicon-book"></span> Cookbooks <i class="fa fa-fw fa-caret-down"></i></a>
+							<ul id="booklist" class="collapse">
+							<?php
 							
-							while( $cookbook = $result->fetch() ){
-								if( $cookbook['ID'] == $_GET['cookbook'] ){
-									print("<li class='active'>");
-								}else{
-									print("<li>");
+							try{
+								//get user cookbooks
+								$sql = "SELECT name FROM cookbook WHERE author = :username";
+								$result = $conn->prepare($sql);
+								$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
+								$result-> execute();
+								
+								while( $cookbook = $result->fetch() ){
+									print("
+										<li>
+											<a href='../cookbook?cookbook=$cookbook[name]'>$cookbook[name]</a>
+										</li>
+									");
 								}
-								print("
-										<a href='../cookbook?cookbook=$cookbook[ID]'>$cookbook[name]</a>
-									</li>
-								");
+							}catch(PDOException $e){
+								//do nothing
 							}
-						}catch(PDOException $e){
-							//do nothing
-						}
-						
-						?>
-                        </ul>
-                    </li>
-					<li>
-                        <a href="../cookbook/createEditCookbook.php"><span class="glyphicon glyphicon-plus-sign"></span> Add a Cookbook</a>
-                    </li>
+							
+							?>
+							</ul>
+						</li>
+						<li>
+							<a href="index.html"><span class="glyphicon glyphicon-plus-sign"></span> Add a Cookbook</a>
+						</li>
+					<?php
+					}
+					?>
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
@@ -230,94 +221,50 @@ function displayHomePage(){
         <div id="page-wrapper">
 
             <div class="container-fluid">
-				<?php
-				if( isset($_POST['message']) ){
-				?>
-				<div class="row">
-					<div class="col-lg-12">
-						<div class='alert alert-info' role='alert'>
-							<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button>
-							<strong>test 123</strong>
-						</div>
-					</div>
-				</div>
-				<?php
-				}
-				?>
-
-                <!-- Page Heading -->
+					<!-- Page Heading -->
                 <div class="row">
                     <div class="col-lg-12">
                         <h1 class="page-header">
-                            <?php
-							print($cookbookDisplay['name']);
-							print("
-							<small>
-							- <a href='createEditCookbook.php?cookbook=$cookbookDisplay[ID]'>edit cookbook</a>
-							- <a href='createEditCookbook.php?cookbook=$cookbookDisplay[ID]'>remove cookbook</a>
-							</small>
-							");
-							?>
-							<div class="dropdown pull-right">
-							<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-							Add recipe
-								<span class="caret"></span>
-							</button>
-							<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-								<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Create new recipe</a></li>
-								<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Add existing recipe</a></li>								
-							</ul>
-							
+							All Ingredients
                         </h1>
                     </div>
                 </div>
                 <!-- /.row -->
-
-                <div class="row">
-				<?php
-				try{
-					//get user recipes
-					$sql = "SELECT * FROM containsRecipe WHERE cookbookId = :cookbookID";
-					$result = $conn->prepare($sql);
-					$result->bindValue(":cookbookID", $cookbookDisplay["ID"], PDO::PARAM_INT);
-					$result-> execute();
-					
-					$count = 1;
-					
-					while( $recipeID = $result->fetch() ){
-						$sql = "SELECT * FROM recipe WHERE ID = :recipeID";
-						$result2 = $conn->prepare($sql);
-						$result2->bindValue(":recipeID", $recipeID["recipeId"], PDO::PARAM_INT);
-						$result2-> execute();
-					
-						while( $recipe = $result2->fetch() ){
-							print("
-								<div class='col-lg-3'>
-								<a href='../recipe?recipe=$recipe[ID]'>
-									<div class='panel panel-default'>
-										<div class='panel-heading'>
-											<h3 class='panel-title'><i class=''></i>$recipe[name]</h3>
-										</div>
-										<div class='panel-body'>
-											<img src='../img/default.jpg' class='img-responsive' alt='default' width='100%' height='100%'>
-										</div>
-									</div>
-								</a>
-								</div>
-							");
+				
+				<div class="row">
+                    <div class="col-lg-8 col-lg-offset-2">
+						<table class="ingredientTable">
+						<tr>
+							<th>Ingredient</th>
+							<th>Unit of Measure</th>
+							<th></th>
+						</tr>
+						<?php
+						try{
+							//get recipe information
+							$sql = "SELECT * FROM ingredient";
+							$result = $conn->prepare($sql);
+							$result-> execute();
 							
-							//start a new row every 3rd recipe
-							if($count++ % 3 == 0){
-								print("</div><div class='row'>");
+							while( $ingredient = $result->fetch() ){
+								print("
+								<tr>
+									<td>$ingredient[name]</td>
+									<td>$ingredient[measurementUnit]</td>
+									<td><a href='createEditIngredient.php?ingredient=$ingredient[name]'>Edit</a></td>
+								</tr>
+								");
 							}
+						}catch(PDOException $e){
+							$conn = null;
+							print($e->getMessage()."<br>");
 						}
+						?>
+						</table>
+					</div>
+                </div>
+                <!-- /.row -->
 					
-					}	
-				}catch(PDOException $e){
-					//do nothing
-				}
-				?>
-
             </div>
             <!-- /.container-fluid -->
 
@@ -326,7 +273,7 @@ function displayHomePage(){
 
     </div>
     <!-- /#wrapper -->
-
+	
     <!-- jQuery -->
     <script src="../js/jquery.js"></script>
 
@@ -341,6 +288,7 @@ function displayHomePage(){
 </body>
 
 </html>
+
 <?php
 }
 ?>
