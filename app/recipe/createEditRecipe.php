@@ -1,42 +1,160 @@
 <?php
 session_start();
 
+//user needs to login
 if( !isset($_SESSION['username']) ){
 	displayLogin();
-}elseif( isset($_POST["submit"]) and isset($_POST["recipe-id"]) ){
-	updateDB();
+}
+
+include '../db/connectDatabase.php';
+try{
+	//get user profile
+	$sql = "SELECT * FROM users WHERE name = :username";
+	$result = $conn->prepare($sql);
+	$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
+	$result-> execute();
+	$profile = $result->fetch();
+}catch(PDOException $e){
+	$conn = null;
+	print($e->getMessage()."<br>");
+}
+	
+$recipeExists = false;
+
+//user wants to display existing recipe
+if( isset($_GET["recipe"]) ){
+	print("Flag 1");
+	try{
+		//get recipe to edit
+		$sql = "SELECT * FROM recipe WHERE ID = :recipeID";
+		$result = $conn->prepare($sql);
+		$result->bindValue(":recipeID", $_GET['recipe'], PDO::PARAM_INT);
+		$result-> execute();
+		
+		if( $recipeEditing = $result->fetch() ){
+			if( $recipeEditing['author'] == $_SESSION["username"] ){
+				$recipeExists = true;
+			}
+		}
+	}catch(PDOException $e){
+		$conn = null;
+		print($e->getMessage()."<br>");
+	}
+	
+	displayRecipeForm($conn, $profile, $recipeEditing, $recipeExists);
 }elseif( isset($_POST["submit"]) ){
-	createInDB();
+	print("Flag 2");
+	print_r($_POST);
+	if( isset($_POST['recipe-id']) ){
+		//user has submitted recipe form
+		try{
+			//get recipe to edit
+			$sql = "SELECT * FROM recipe WHERE ID = :recipeID";
+			$result = $conn->prepare($sql);
+			$result->bindValue(":recipeID", $_POST['recipe-id'], PDO::PARAM_INT);
+			$result-> execute();
+				
+			if( $recipeEditing = $result->fetch() ){
+				if( $recipeEditing['author'] == $_SESSION["username"] ){
+					$recipeExists = true;
+				}
+			}
+		}catch(PDOException $e){
+			$conn = null;
+			print($e->getMessage()."<br>");
+		}
+	}
+		
+	if( $recipeExists ){
+		//updat existing record
+		updateDB($conn, $profile);
+	}else{
+		//create new record
+		createInDB($conn, $profile);
+	}
 }else{
-	displayRecipeForm();
+	print("Flag 3");
+	//user is creating new recipe
+	displayRecipeForm($conn, $profile, NULL, $recipeExists);
 }
 
 function displayLogin(){
 	header( "Location: ../login.php" );
 }
 
-function createInDB(){
+function createInDB($conn, $profile){
 	include '../db/connectDatabase.php';
 	
-	if( isset($_SESSION["username"]) ){
+	$error = false;
+	
+	if( isset($_POST["recipe-hours"]) and $_POST["recipe-hours"] >= 0 ){
+		$hours = $_POST["recipe-hours"];
+	}else{
+		$hours = 0;
+	}
+		
+	if( isset($_POST["recipe-minutes"]) and $_POST["recipe-minutes"] >= 0 ){
+		$minutes = $_POST["recipe-minutes"];
+	}else{
+		$minutes = 0;
+	}
+
+	$cooktime = $hours*60 + $minutes;
+	
+	try{
+		//insert recipe into DB
+		$sql = "INSERT INTO recipe (name, author, cooktime, difficulty, instructions) VALUES (:name, :author, :cooktime, :difficulty, :instructions)";
+		$result = $conn->prepare($sql);
+		$result->bindValue(":name", trim($_POST['recipe-name']), PDO::PARAM_STR);
+		$result->bindValue(":author", trim($_POST['recipe-author']), PDO::PARAM_STR);
+		$result->bindValue(":cooktime", $cooktime, PDO::PARAM_INT);
+		$result->bindValue(":difficulty", trim($_POST['recipe-difficulty']), PDO::PARAM_STR);
+		$result->bindValue(":instructions", trim($_POST['recipe-instructions']), PDO::PARAM_STR);
+		$result-> execute();
+		$recipeId = $conn->lastInsertId();
+		print("<br>$recipeId<br>");
+	}catch(PDOException $e){
+		//$conn = null;
+		print($e->getMessage()."<br>");
+	}
+	
+	$count = 1;
+	while( isset($_POST["recipe-ingredient-name-".$count]) ){
 		try{
-			//get user profile
-			$sql = "INSERT INTO cookbook (author, name) VALUES (:author, :name)";
+			//check if ingredient exists
+			$sql = "SELECT * FROM ingredient WHERE name = :name";
 			$result = $conn->prepare($sql);
-			$result->bindValue(":author", trim($_POST['cookbook-author']), PDO::PARAM_STR);
-			$result->bindValue(":name", trim($_POST['cookbook-name']), PDO::PARAM_STR);
+			$result->bindValue(":name", $_POST["recipe-ingredient-name-".$count], PDO::PARAM_STR);
 			$result-> execute();
 			
-			$_POST["message"] = "Cookbook ".$_POST['cookbook-name']." added successfully!";
-			header( "Location: ../home" );
+			if( !($ingredient = $result->fetch()) ){
+				//ingredient does not already exist, add it to db
+				$sql = "INSERT INTO ingredient (name, measurementUnit) VALUES (:name, :measurementUnit)";
+				$result = $conn->prepare($sql);
+				$result->bindValue(":name", $_POST["recipe-ingredient-name-".$count], PDO::PARAM_STR);
+				$result->bindValue(":measurementUnit", $_POST["recipe-ingredient-unit-".$count], PDO::PARAM_STR);
+				$result-> execute();
+			}
+				
+			//add ingredient and recipe to containsIngredient
+			$sql = "INSERT INTO containsIngredient (recipeId, ingredientName, amount) VALUES (:recipeId, :ingredientName, :amount)";
+			$result = $conn->prepare($sql);
+			$result->bindValue(":recipeId", $recipeId, PDO::PARAM_INT);
+			$result->bindValue(":ingredientName", $_POST["recipe-ingredient-name-".$count], PDO::PARAM_STR);
+			$result->bindValue(":amount", $_POST["recipe-ingredient-amount-".$count], PDO::PARAM_STR);
+			$result-> execute();
 		}catch(PDOException $e){
 			$conn = null;
 			print($e->getMessage()."<br>");
 		}
+		
+		//move on to the next ingredient
+		$count++;
 	}
+	header( "Location: ../recipe?recipe=$recipeId" );
 }
 
-function updateDB(){
+function updateDB($conn, $profile){
 	include '../db/connectDatabase.php';
 	
 	try{
@@ -55,43 +173,7 @@ function updateDB(){
 	}
 }
 
-function displayRecipeForm(){
-	include '../db/connectDatabase.php';
-	
-	if( isset($_SESSION["username"]) ){
-		try{
-			//get user profile
-			$sql = "SELECT * FROM users WHERE name = :username";
-			$result = $conn->prepare($sql);
-			$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
-			$result-> execute();
-			$profile = $result->fetch();
-		}catch(PDOException $e){
-			$conn = null;
-			print($e->getMessage()."<br>");
-		}
-	}
-	
-	$recipeExists = false;
-	
-	if( isset($_GET["recipe"]) ){
-		try{
-			//get user profile
-			$sql = "SELECT * FROM recipe WHERE ID = :recipeID";
-			$result = $conn->prepare($sql);
-			$result->bindValue(":recipeID", $_GET['recipe'], PDO::PARAM_INT);
-			$result-> execute();
-			
-			if( $recipeEditing = $result->fetch() ){
-				if( $recipeEditing['author'] == $_SESSION["username"] ){
-					$recipeExists = true;
-				}
-			}
-		}catch(PDOException $e){
-			$conn = null;
-			print($e->getMessage()."<br>");
-		}
-	}
+function displayRecipeForm($conn, $profile, $recipeEditing, $recipeExists){
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -124,7 +206,18 @@ function displayRecipeForm(){
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
-
+	
+	<script>
+	//global count
+	var count = 3;
+	
+	function addIngredient(){
+		var blankIngredient = "<div class='input-group col-md-2 pull-right'> <input name='recipe-ingredient-unit-"+count+"' id='InputMessage' class='form-control' placeholder='Units'></input></div><div class='input-group col-md-2 pull-right'><input name='recipe-ingredient-amount-"+count+"' id='InputMessage' class='form-control' placeholder='Amount'></input></div><div class='input-group col-md-5 pull-right'><input name='recipe-ingredient-name-"+count+"' id='InputMessage' class='form-control' placeholder='Ingredient'></input></div><div style='clear:both'></div>";
+		var div = document.getElementById('ingredient-block');
+		div.innerHTML = div.innerHTML + blankIngredient;
+		count++;
+	}
+	</script>
 </head>
 
 <body>
@@ -258,7 +351,6 @@ function displayRecipeForm(){
 							<a href="javascript:;" data-toggle="collapse" data-target="#booklist"><span class="glyphicon glyphicon-book"></span> Cookbooks <i class="fa fa-fw fa-caret-down"></i></a>
 							<ul id="booklist" class="collapse">
 							<?php
-							
 							try{
 								//get user cookbooks
 								$sql = "SELECT * FROM cookbook WHERE author = :username";
@@ -281,7 +373,7 @@ function displayRecipeForm(){
 							</ul>
 						</li>
 						<li>
-							<a href="createEditCookbook.php"><span class="glyphicon glyphicon-plus-sign"></span> Add a Cookbook</a>
+							<a href="../cookbook/createEditCookbook.php"><span class="glyphicon glyphicon-plus-sign"></span> Add a Cookbook</a>
 						</li>
 					<?php
 					}
@@ -295,7 +387,7 @@ function displayRecipeForm(){
 
             <div class="container-fluid">
 					<div class="row">
-						<form role="form" action="createEditCookbook.php" method="post">
+						<form role="form" action="createEditRecipe.php" method="post">
 							<div class="col-lg-12">
 								<?php
 								if( isset($_GET['recipe']) ){
@@ -324,36 +416,36 @@ function displayRecipeForm(){
 								
 								<div class="form-group">
 									<label for="InputDifficulty" class="col-md-2">Difficulty</label>
-									<div class="btn-group" role="group" aria-label="...">
+									<div class="btn-group" name="recipe-difficulty" role="group" aria-label="...">
                                       <?php
 												if( $recipeExists and $recipeEditing['difficulty'] == 1){
-													print("<button type='button' class='btn btn-default active'>1</button>");
+													print("<input type='radio' class='btn btn-default' name='recipe-difficulty' value='1' checked>1</input><br>");
 												}else{
-													print("<button type='button' class='btn btn-default'>1</button>");
+													print("<input type='radio' class='btn btn-default' name='recipe-difficulty' value='1'>1</input><br>");
 												}
 												
 												if( $recipeExists and $recipeEditing['difficulty'] == 2){
-													print("<button type='button' class='btn btn-default active'>2</button>");
+													print("<input type='radio' class='btn btn-default' name='recipe-difficulty' value='2' checked>2</input><br>");
 													}else{
-													print("<button type='button' class='btn btn-default'>2</button>");
+													print("<input type='radio' class='btn btn-default' name='recipe-difficulty' value='2'>2</input><br>");
 												}
 												
 												if($recipeExists and $recipeEditing['difficulty'] == 3){
-													print("<button type='button' class='btn btn-default active'>3</button>");
+													print("<input type='radio' class='btn btn-default' name='recipe-difficulty' value='3' checked>3</input><br>");
 													}else{
-													print("<button type='button' class='btn btn-default'>3</button>");
+													print("<input type='radio' class='btn btn-default' name='recipe-difficulty' value='3'>3</input><br>");
 												}
 												
 												if($recipeExists and $recipeEditing['difficulty'] == 4){
-													print("<button type='button' class='btn btn-default active'>4</button>");
+													print("<input type='radio' class='btn btn-default' name='recipe-difficulty' value='4' checked>4</input><br>");
 													}else{
-													print("<button type='button' class='btn btn-default'>4</button>");
+													print("<input type='radio' class='btn btn-default' name='recipe-difficulty' value='4'>4</input><br>");
 												}
 												
 												if($recipeExists and $recipeEditing['difficulty'] == 5){
-													print("<button type='button' class='btn btn-default active'>5</button>");
+													print("<input type='radio' class='btn btn-default' name='recipe-difficulty' value='5' checked>5</input><br>");
 													}else{
-													print("<button type='button' class='btn btn-default'>5</button>");
+													print("<input type='radio' class='btn btn-default' name='recipe-difficulty' value='5'>5</input><br>");
 												}
 											?>
                                     </div>
@@ -362,7 +454,7 @@ function displayRecipeForm(){
 									<label for="InputEmail" class="col-md-2">Cooktime</label>
 									<div class="input-group">
 										<?php
-											if( $recipeExists and $recipeEditing['difficulty'] == 1){
+											if( $recipeExists){
 												$hours = intval($recipeEditing['cooktime'] / 60);
 												$minutes = $recipeEditing['cooktime'] % 60;
 											}
@@ -388,7 +480,8 @@ function displayRecipeForm(){
                                     </div>
 								</div>
 
-                                <div class="form-group">
+								
+                                <div class="form-group" id="ingredient-block">
                                     <label for="InputMessage" class="col-md-3 pull-left">Ingredients *</label>
 									<?php
 									if($recipeExists){
@@ -399,6 +492,7 @@ function displayRecipeForm(){
 											$result->bindValue(":recipeID", $_GET["recipe"], PDO::PARAM_INT);
 											$result-> execute();
 												
+											$count = 1;
 											while( $ingredient = $result->fetch() ){
 												$sql = "SELECT * FROM ingredient WHERE name = :ingredientName";
 												$result2 = $conn->prepare($sql);
@@ -406,7 +500,6 @@ function displayRecipeForm(){
 												$result2-> execute();
 												$unit = $result2->fetch();
 												
-												$count = 1;
 												//print_r($unit);
 												print("
 													<div class='input-group col-md-2 pull-right'>
@@ -426,7 +519,6 @@ function displayRecipeForm(){
 											//do nothing
 										}
 										print("
-										<div class='form-group'>
 											<label for='InputMessage' class='col-md-2 pull-left'></label>
 											<div class='input-group col-md-2 pull-right'>
 												<input name='recipe-ingredient-unit-$count' id='InputMessage' class='form-control' placeholder='Units'></input>
@@ -437,7 +529,7 @@ function displayRecipeForm(){
 											<div class='input-group col-md-5 pull-right'>
 												<input name='recipe-ingredient-name-$count' id='InputMessage' class='form-control' placeholder='Ingredient'></input>
 											</div>
-										</div>
+											<div style='clear:both'></div>
 										");
 									}else{
 										for($count = 1; $count <= 3; $count++){
@@ -458,6 +550,9 @@ function displayRecipeForm(){
 											");
 										}
 									}
+									//update the count to javascript
+									$count++;
+									print("<script>count = $count</script>");
 									?>
                                 </div>
                                 <div style="clear:both"></div>
@@ -465,7 +560,7 @@ function displayRecipeForm(){
                                 
                                 
                                 <div class="form-group" style="margin-top:10px;">
-                                    <button type="button" class="btn btn-info col-md-offset-10">Add Ingredient</button>
+                                    <button type="button" onclick="addIngredient()" class="btn btn-info col-md-offset-10">Add Ingredient</button>
                                     <br>
                                 </div>
                                 <div class="form-group">
@@ -482,32 +577,15 @@ function displayRecipeForm(){
 									</div>
 								</div>
 								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								<input type="hidden" name="cookbook-author" value="
+								<input type="hidden" name="recipe-author" value="
 								<?php
 								print($_SESSION["username"]);
 								?>
 								"></input>
 								<div class="form-actions pull-right">
 									<?php
-									if( isset($_GET['cookbook']) ){
-										print("<input type='hidden' name='cookbook-id' value='$cookbookEditing[ID]'></input>");
+									if( isset($_GET['recipe']) ){
+										print("<input type='hidden' name='recipe-id' value='$recipeEditing[ID]'></input>");
 									}
 									?>
 									<input type="submit" name="submit" value="Submit" class="btn btn-primary"></input>
