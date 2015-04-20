@@ -228,7 +228,7 @@ function displayRecipe(){
 							</ul>
 						</li>
 						<li>
-							<a href="index.html"><span class="glyphicon glyphicon-plus-sign"></span> Add a Cookbook</a>
+							<a href="../cookbook/createEditCookbook.php"><span class="glyphicon glyphicon-plus-sign"></span> Add a Cookbook</a>
 						</li>
 					<?php
 					}
@@ -263,8 +263,10 @@ function displayRecipe(){
                                             
                                         </div>
                                         <div class="col-sm-9 vcenter"  >
-                                            <a href="">edit recipe</a> - 
-                                            <a href="">add to cookbook</a>
+											<?php
+												print("<a href='createEditRecipe.php?recipe=$recipe[ID]'>edit recipe</a>");
+											?>
+											- <a href="">add to cookbook</a>
                                         </div>
                                     </div>
 
