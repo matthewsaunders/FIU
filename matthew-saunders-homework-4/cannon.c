@@ -416,6 +416,29 @@ int main(int argc, char* argv[])
   memset(sc, 0, n*n*sizeof(datatype));
   c = (datatype**)malloc(n*sizeof(datatype*));
   for(i=0; i<n; i++) c[i] = &sc[i*n];
+	
+    /* Rearrange blocks between processes */
+	for(i=0; i<p_sqrt-1; i++){
+		//shift matrix A left by i
+		//use mpi cart shift
+		//mpi_sendrecv_replace
+		//http://siber.cankaya.edu.tr/ozdogan/GraduateParallelComputing.old/ceng505/node133.html
+	}
+	
+	for(j=0; j<p_sqrt; j++){
+		//shift matrix B up by j	
+		//use mpi cart shift
+	}
+
+	//calculate and shift matrices
+	for(i=0; i<p_sqrt-1; i++){
+		for(j=0; j<p_sqrt-1; j++){
+			for(k=0; k<p_sqrt-1; k++){
+				
+			}
+		}
+	}
+	
 
   my_matmul(0, 0, 0, 0, 0, 0, n, n, n, n, a, b, c);
   
