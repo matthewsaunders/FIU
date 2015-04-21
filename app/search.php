@@ -48,7 +48,8 @@
                 </button>
                 <a class="navbar-brand" href="/">Cookbook Application</a>
             </div>
-            <!-- Top Menu Items -->
+                       <!-- Top Menu Items -->
+            <ul class="nav navbar-right top-nav">
 				<?php 
 				if( isset($_SESSION["username"]) ){
 				?>
@@ -143,26 +144,6 @@
                         <a href="recipe/"><span class="glyphicon glyphicon-apple"></span> All Recipes</a>
                     </li>
 					<li class="divider"></li>
-                    <li>
-                        <a href="javascript:;" data-toggle="collapse" data-target="#booklist"><span class="glyphicon glyphicon-book"></span> Cookbooks <i class="fa fa-fw fa-caret-down"></i></a>
-                        <ul id="booklist" class="collapse">
-                            <li>
-                                <a href="#">Breakfast</a>
-                            </li>
-                            <li>
-                                <a href="#">Lunch</a>
-                            </li>
-							<li>
-                                <a href="#">Cena</a>
-                            </li>
-							<li>
-                                <a href="#">Pastellitos</a>
-                            </li>
-                        </ul>
-                    </li>
-					<li>
-                        <a href="index.html"><span class="glyphicon glyphicon-plus-sign"></span> Add a Cookbook</a>
-                    </li>
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
