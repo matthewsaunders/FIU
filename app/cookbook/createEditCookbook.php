@@ -335,13 +335,23 @@ function displayCookbookForm(){
 									?>
 									<input type="submit" name="submit" value="Submit" class="btn btn-primary"></input>
 									<?php
-									print("
-									<script>
-									function cancelRemove(){
-										location.href = '../cookbook?cookbook=".$cookbookEditing['ID']."';
+									if( isset($cookbookEditing) ){
+										print("
+										<script>
+										function cancelRemove(){
+											location.href = '../cookbook?cookbook=".$cookbookEditing['ID']."';
+										}
+										</script>
+										");
+									}else{
+										print("
+											<script>
+											function cancelRemove(){
+												location.href = '../home';
+											}
+											</script>
+											");
 									}
-									</script>
-									");
 									print("<button type='button' onclick='cancelRemove()' class='btn'>Cancel</button>");
 									?>
 								</div>	
