@@ -1,29 +1,93 @@
 <?php
 session_start();
 
-if( !isset($_SESSION["username"]) ){
-	displayLogin();
+if( isset($_GET['remove']) ){
+	removeRecipe();
+}elseif( isset($_POST['submit']) and isset($_POST['remove-recipe']) ){
+	removeFromDB();
 }else{
-	displayHomePage();
+	displayAllRecipes();
 }
 
-function displayLogin(){
-	header( "Location: ../login.php" );
+function displayAllRecipes(){
+	header( "Location: allRecipes.php" );
 }
 
-function displayHomePage(){
+function removeFromDB(){
+	include '../db/connectDatabase.php';
+
+	if( isset($_SESSION["username"]) ){
+		try{
+			//get user profile
+			$sql = "SELECT * FROM users WHERE name = :username";
+			$result = $conn->prepare($sql);
+			$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
+			$result-> execute();
+			$profile = $result->fetch();
+		}catch(PDOException $e){
+			$conn = null;
+			print($e->getMessage()."<br>");
+		}
+	}
+	
 	try{
-		include '../db/connectDatabase.php';
-		
-		//get user profile
-		$sql = "SELECT * FROM users WHERE name = :username";
+		//get recipe information
+		$sql = "SELECT * FROM recipe WHERE ID = :recipeID";
 		$result = $conn->prepare($sql);
-		$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
+		$result->bindValue(":recipeID", $_POST["remove-recipe"], PDO::PARAM_STR);
 		$result-> execute();
-		$profile = $result->fetch();
+		$recipe = $result->fetch();
 	}catch(PDOException $e){
 		$conn = null;
 		print($e->getMessage()."<br>");
+	}
+
+	if($profile['name'] == $recipe['author'] || $profile['adminStatus'] == "Y"){
+		try{
+			$sql = "DELETE FROM recipe WHERE ID = :recipeID";
+			$result = $conn->prepare($sql);
+			$result->bindValue(":recipeID", $_POST["remove-recipe"], PDO::PARAM_STR);
+			$result-> execute();
+		}catch(PDOException $e){
+			$conn = null;
+			print($e->getMessage()."<br>");
+		}
+	}
+	
+	displayAllRecipes();
+}
+
+function removeRecipe(){
+	include '../db/connectDatabase.php';
+
+	if( isset($_SESSION["username"]) ){
+		try{
+			//get user profile
+			$sql = "SELECT * FROM users WHERE name = :username";
+			$result = $conn->prepare($sql);
+			$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
+			$result-> execute();
+			$profile = $result->fetch();
+		}catch(PDOException $e){
+			$conn = null;
+			print($e->getMessage()."<br>");
+		}
+	}
+	
+	try{
+		//get recipe information
+		$sql = "SELECT * FROM recipe WHERE ID = :recipeID";
+		$result = $conn->prepare($sql);
+		$result->bindValue(":recipeID", $_GET["remove"], PDO::PARAM_STR);
+		$result-> execute();
+		$recipe = $result->fetch();
+	}catch(PDOException $e){
+		$conn = null;
+		print($e->getMessage()."<br>");
+	}
+	
+	if($profile['name'] != $recipe['author'] && $profile['adminStatus'] != "Y"){
+		header( "Location: allRecipes.php" );
 	}
 ?>
 <!DOCTYPE html>
@@ -78,6 +142,9 @@ function displayHomePage(){
             </div>
             <!-- Top Menu Items -->
             <ul class="nav navbar-right top-nav">
+				<?php
+				if( isset($_SESSION["username"]) ){
+				?>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-envelope"></i> <b class="caret"></b></a>
                     <ul class="dropdown-menu message-dropdown">
@@ -132,8 +199,24 @@ function displayHomePage(){
                         </li>
                     </ul>
                 </li>
-            </ul>
-            
+			<?php
+			}else{
+			?>
+				<li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i>
+					Guest
+					<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="../login.php"><i class="fa fa-fw fa-user"></i> Login</a>
+                        </li>
+                    </ul>
+                </li>
+			<?php
+			}
+			?>
+			</ul>
+			
             <!-- Search Bar -->
             <div class="col-sm-3 col-md-3 pull-right">
                 <form class="navbar-form" role="search">
@@ -149,7 +232,7 @@ function displayHomePage(){
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav side-nav">
                     <li>
-                        <a href="../recipe"><i class="fa fa-cutlery"></i>  All Recipes</a>
+                        <a href="../recipe"><i class="fa fa-cutlery"></i> All Recipes</a>
                     </li>
 					<?php
 					if( $profile['adminStatus'] == "Y" ){
@@ -161,38 +244,45 @@ function displayHomePage(){
 					}
 					?>
 					<li class="divider"></li>
-					<li class="active">
+					<?php
+					if( isset($_SESSION["username"]) ){
+					?>
+					<li class="divider"></li>
+					<li>
                         <a href="/"><span class="fa fa-bookmark"></span> My Recipes</a>
                     </li>
-                    <li>
-                        <a href="javascript:;" data-toggle="collapse" data-target="#booklist"><span class="glyphicon glyphicon-book"></span> Cookbooks <i class="fa fa-fw fa-caret-down"></i></a>
-                        <ul id="booklist" class="collapse">
-						<?php
-						
-						try{
-							//get user cookbooks
-							$sql = "SELECT * FROM cookbook WHERE author = :username";
-							$result = $conn->prepare($sql);
-							$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
-							$result-> execute();
+						<li>
+							<a href="javascript:;" data-toggle="collapse" data-target="#booklist"><span class="glyphicon glyphicon-book"></span> Cookbooks <i class="fa fa-fw fa-caret-down"></i></a>
+							<ul id="booklist" class="collapse">
+							<?php
 							
-							while( $cookbook = $result->fetch() ){
-								print("
-									<li>
-										<a href='../cookbook?cookbook=$cookbook[ID]'>$cookbook[name]</a>
-									</li>
-								");
+							try{
+								//get user cookbooks
+								$sql = "SELECT name FROM cookbook WHERE author = :username";
+								$result = $conn->prepare($sql);
+								$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
+								$result-> execute();
+								
+								while( $cookbook = $result->fetch() ){
+									print("
+										<li>
+											<a href='../cookbook?cookbook=$cookbook[name]'>$cookbook[name]</a>
+										</li>
+									");
+								}
+							}catch(PDOException $e){
+								//do nothing
 							}
-						}catch(PDOException $e){
-							//do nothing
-						}
-						
-						?>
-                        </ul>
-                    </li>
-					<li>
-                        <a href="../cookbook/createEditCookbook.php"><span class="glyphicon glyphicon-plus-sign"></span> Add a Cookbook</a>
-                    </li>
+							
+							?>
+							</ul>
+						</li>
+						<li>
+							<a href="../cookbook/createEditCookbook.php"><span class="glyphicon glyphicon-plus-sign"></span> Add a Cookbook</a>
+						</li>
+					<?php
+					}
+					?>
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
@@ -201,81 +291,26 @@ function displayHomePage(){
         <div id="page-wrapper">
 
             <div class="container-fluid">
-				<?php
-				if( isset($_POST['message']) ){
-				?>
-				<div class="row">
-					<div class="col-lg-12">
-						<div class='alert alert-info' role='alert'>
-							<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button>
-							<strong>test 123</strong>
-						</div>
-					</div>
-				</div>
-				<?php
-				}
-				?>
-
-                <!-- Page Heading -->
-                <div class="row">
-                    <div class="col-lg-12">
-                        <h1 class="page-header">
-							<?php
-							print($_SESSION['username']);
-							?>
-							's Recipes
-							<div class="dropdown pull-right">
-							<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-							Add recipe
-								<span class="caret"></span>
-							</button>
-							<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-								<li role="presentation"><a role="menuitem" tabindex="-1" href="../recipe/createEditRecipe.php">Create new recipe</a></li>
-								<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Add existing recipe</a></li>								
-							</ul>
-							
-                        </h1>
-                    </div>
-                </div>
-                <!-- /.row -->
-
-                <div class="row">
-				<?php
-				try{
-					//get user recipes
-					$sql = "SELECT * FROM recipe WHERE author = :username";
-					$result = $conn->prepare($sql);
-					$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
-					$result-> execute();
-					
-					$count = 1;
-					
-					while( $recipe = $result->fetch() ){
-						print("
-							<div class='col-lg-3'>
-							<a href='../recipe?recipe=$recipe[ID]'>
-								<div class='panel panel-default'>
-									<div class='panel-heading'>
-										<h3 class='panel-title'><i class=''></i>$recipe[name]</h3>
-									</div>
-									<div class='panel-body'>
-										<img src='../img/default.jpg' class='img-responsive' alt='default' width='100%' height='100%'>
-									</div>
+					<div class="row">
+						<form action="removeRecipe.php" method="post">
+                            <div class="row">
+								<div class="col-lg-12">
+									<h2 class='text-center'>Remove Recipe</h2>
 								</div>
-							</a>
 							</div>
-						");
-					
-						//start a new row every 3rd recipe
-						if($count++ % 3 == 0){
-							print("</div><div class='row'>");
-						}
-					}
-				}catch(PDOException $e){
-					//do nothing
-				}
-				?>
-
+							<div class="col-md-6 col-md-offset-3">
+								<p>Are you sure you want to delete <strong><?php print($recipe['name']) ?></strong>?</p>
+							</div>
+                            <div style="clear:both"></div> 
+							<div class="col-md-6 col-md-offset-3">
+								<div class="form-actions pull-right">
+									<input type="hidden" name="remove-recipe" value=" <?php print($recipe['ID']); ?> "></input>
+									<input type="submit" name="submit" value="Submit" class="btn btn-primary"></input>
+									<button type="button" class="btn">Cancel</button>
+								</div>	
+							</div>
+						</form>
+					</div>
             </div>
             <!-- /.container-fluid -->
 
@@ -284,7 +319,7 @@ function displayHomePage(){
 
     </div>
     <!-- /#wrapper -->
-
+	
     <!-- jQuery -->
     <script src="../js/jquery.js"></script>
 
@@ -299,6 +334,7 @@ function displayHomePage(){
 </body>
 
 </html>
+
 <?php
 }
 ?>

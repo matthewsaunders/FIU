@@ -1,6 +1,22 @@
 <?php
 session_start();
 
+include '../db/connectDatabase.php';
+
+	if( isset($_SESSION["username"]) ){
+		try{
+			//get user profile
+			$sql = "SELECT * FROM users WHERE name = :username";
+			$result = $conn->prepare($sql);
+			$result->bindValue(":username", $_SESSION["username"], PDO::PARAM_STR);
+			$result-> execute();
+			$profile = $result->fetch();
+		}catch(PDOException $e){
+			$conn = null;
+			print($e->getMessage()."<br>");
+		}
+	}
+
 if( isset($_GET['recipe']) ){
 	displayRecipe();
 }else{
@@ -71,7 +87,7 @@ function displayRecipe(){
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
-
+	
 </head>
 
 <body>
@@ -264,9 +280,12 @@ function displayRecipe(){
                                         </div>
                                         <div class="col-sm-9 vcenter"  >
 											<?php
-												print("<a href='createEditRecipe.php?recipe=$recipe[ID]'>edit recipe</a>");
+											if($profile['name'] == $recipe['author'] || $profile['adminStatus'] == "Y"){
+												print("<a href='createEditRecipe.php?recipe=$recipe[ID]'>edit recipe</a> - ");
+												print("<a href='removeRecipe.php?remove=$recipe[ID]'>remove recipe</a> -");
+											}
 											?>
-											- <a href="">add to cookbook</a>
+											<a href="">add to cookbook</a>
                                         </div>
                                     </div>
 

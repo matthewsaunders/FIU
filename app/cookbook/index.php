@@ -254,7 +254,7 @@ function displayHomePage(){
 							print("
 							<small>
 							- <a href='createEditCookbook.php?cookbook=$cookbookDisplay[ID]'>edit cookbook</a>
-							- <a href='createEditCookbook.php?cookbook=$cookbookDisplay[ID]'>remove cookbook</a>
+							- <a href='removeCookbook.php?remove=$cookbookDisplay[ID]'>remove cookbook</a>
 							</small>
 							");
 							?>
@@ -264,7 +264,7 @@ function displayHomePage(){
 								<span class="caret"></span>
 							</button>
 							<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-								<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Create new recipe</a></li>
+								<li role="presentation"><a role="menuitem" tabindex="-1" href="../recipe/createEditRecipe.php">Create new recipe</a></li>
 								<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Add existing recipe</a></li>								
 							</ul>
 							

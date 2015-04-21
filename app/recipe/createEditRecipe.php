@@ -23,7 +23,6 @@ $recipeExists = false;
 
 //user wants to display existing recipe
 if( isset($_GET["recipe"]) ){
-	print("Flag 1");
 	try{
 		//get recipe to edit
 		$sql = "SELECT * FROM recipe WHERE ID = :recipeID";
@@ -32,7 +31,7 @@ if( isset($_GET["recipe"]) ){
 		$result-> execute();
 		
 		if( $recipeEditing = $result->fetch() ){
-			if( $recipeEditing['author'] == $_SESSION["username"] ){
+			if( $recipeEditing['author'] == $_SESSION["username"] || $profile['adminStatus'] == "Y"  ){
 				$recipeExists = true;
 			}
 		}
@@ -43,8 +42,6 @@ if( isset($_GET["recipe"]) ){
 	
 	displayRecipeForm($conn, $profile, $recipeEditing, $recipeExists);
 }elseif( isset($_POST["submit"]) ){
-	print("Flag 2");
-	print_r($_POST);
 	if( isset($_POST['recipe-id']) ){
 		//user has submitted recipe form
 		try{
@@ -55,7 +52,7 @@ if( isset($_GET["recipe"]) ){
 			$result-> execute();
 				
 			if( $recipeEditing = $result->fetch() ){
-				if( $recipeEditing['author'] == $_SESSION["username"] ){
+				if( $recipeEditing['author'] == $_SESSION["username"] || $profile['adminStatus'] == "Y" ){
 					$recipeExists = true;
 				}
 			}
@@ -67,13 +64,12 @@ if( isset($_GET["recipe"]) ){
 		
 	if( $recipeExists ){
 		//updat existing record
-		updateDB($conn, $profile);
+		updateDB($conn, $profile, $recipeEditing);
 	}else{
 		//create new record
 		createInDB($conn, $profile);
 	}
 }else{
-	print("Flag 3");
 	//user is creating new recipe
 	displayRecipeForm($conn, $profile, NULL, $recipeExists);
 }
@@ -84,8 +80,6 @@ function displayLogin(){
 
 function createInDB($conn, $profile){
 	include '../db/connectDatabase.php';
-	
-	$error = false;
 	
 	if( isset($_POST["recipe-hours"]) and $_POST["recipe-hours"] >= 0 ){
 		$hours = $_POST["recipe-hours"];
@@ -112,7 +106,6 @@ function createInDB($conn, $profile){
 		$result->bindValue(":instructions", trim($_POST['recipe-instructions']), PDO::PARAM_STR);
 		$result-> execute();
 		$recipeId = $conn->lastInsertId();
-		print("<br>$recipeId<br>");
 	}catch(PDOException $e){
 		//$conn = null;
 		print($e->getMessage()."<br>");
@@ -154,23 +147,89 @@ function createInDB($conn, $profile){
 	header( "Location: ../recipe?recipe=$recipeId" );
 }
 
-function updateDB($conn, $profile){
+function updateDB($conn, $profile, $recipeEditing){
 	include '../db/connectDatabase.php';
 	
+	if( isset($_POST["recipe-hours"]) and $_POST["recipe-hours"] >= 0 ){
+		$hours = $_POST["recipe-hours"];
+	}else{
+		$hours = 0;
+	}
+		
+	if( isset($_POST["recipe-minutes"]) and $_POST["recipe-minutes"] >= 0 ){
+		$minutes = $_POST["recipe-minutes"];
+	}else{
+		$minutes = 0;
+	}
+
+	$cooktime = $hours*60 + $minutes;
+	
 	try{
-		//get user profile
-		$sql = "UPDATE cookbook SET name = :cookbookName WHERE ID = :cookbookID";
+		//update recipe in DB
+		$sql = "UPDATE recipe SET name = :name, cooktime = :cooktime, difficulty = :difficulty, instructions = :instructions WHERE ID = :recipeId";
 		$result = $conn->prepare($sql);
-		$result->bindValue(":cookbookName", trim($_POST['cookbook-name']), PDO::PARAM_STR);
-		$result->bindValue(":cookbookID", trim($_POST['cookbook-id']), PDO::PARAM_STR);
+		$result->bindValue(":recipeId", $recipeEditing['ID'], PDO::PARAM_INT);
+		$result->bindValue(":name", trim($_POST['recipe-name']), PDO::PARAM_STR);
+		$result->bindValue(":cooktime", $cooktime, PDO::PARAM_INT);
+		$result->bindValue(":difficulty", trim($_POST['recipe-difficulty']), PDO::PARAM_INT);
+		$result->bindValue(":instructions", $_POST['recipe-instructions'], PDO::PARAM_STR);
 		$result-> execute();
-			
-		//$_POST["message"] = "Cookbook ".$_POST['cookbook-name']." updated successfully!";
-		header( "Location: ../cookbook?cookbook=".$_POST['cookbook-id'] );
 	}catch(PDOException $e){
-		$conn = null;
+		//$conn = null;
 		print($e->getMessage()."<br>");
 	}
+	
+	$count = 1;
+	while( isset($_POST["recipe-ingredient-name-".$count]) ){
+		try{
+			//check if ingredient exists
+			$sql = "SELECT * FROM ingredient WHERE name = :name";
+			$result = $conn->prepare($sql);
+			$result->bindValue(":name", $_POST["recipe-ingredient-name-".$count], PDO::PARAM_STR);
+			$result-> execute();
+			
+			if( !($ingredient = $result->fetch()) ){
+				//ingredient does not already exist, add it to db
+				$sql = "INSERT INTO ingredient (name, measurementUnit) VALUES (:name, :measurementUnit)";
+				$result = $conn->prepare($sql);
+				$result->bindValue(":name", $_POST["recipe-ingredient-name-".$count], PDO::PARAM_STR);
+				$result->bindValue(":measurementUnit", $_POST["recipe-ingredient-unit-".$count], PDO::PARAM_STR);
+				$result-> execute();
+			}
+			
+			//check if ingredient exists in containsIngredient
+			$sql = "SELECT * FROM containsIngredient WHERE recipeId=:recipeId AND ingredientName=:ingredientName";
+			$result = $conn->prepare($sql);
+			$result->bindValue(":recipeId", $recipeEditing['ID'], PDO::PARAM_STR);
+			$result->bindValue(":ingredientName", $_POST["recipe-ingredient-name-".$count], PDO::PARAM_STR);
+			$result-> execute();
+			
+			if( !($containsIngredient = $result->fetch()) ){
+				//add ingredient and recipe to containsIngredient
+				$sql = "INSERT INTO containsIngredient (recipeId, ingredientName, amount) VALUES (:recipeId, :ingredientName, :amount)";
+				$result = $conn->prepare($sql);
+				$result->bindValue(":recipeId", $recipeEditing['ID'], PDO::PARAM_INT);
+				$result->bindValue(":ingredientName", $_POST["recipe-ingredient-name-".$count], PDO::PARAM_STR);
+				$result->bindValue(":amount", $_POST["recipe-ingredient-amount-".$count], PDO::PARAM_STR);
+				$result-> execute();
+			}else{
+				//update relationship
+				$sql = "UPDATE containsIngredient SET amount=:amount WHERE recipeId=:recipeId AND ingredientName=:ingredientName";
+				$result = $conn->prepare($sql);
+				$result->bindValue(":recipeId", $recipeEditing['ID'], PDO::PARAM_INT);
+				$result->bindValue(":ingredientName", $_POST["recipe-ingredient-name-".$count], PDO::PARAM_STR);
+				$result->bindValue(":amount", $_POST["recipe-ingredient-amount-".$count], PDO::PARAM_STR);
+				$result-> execute();
+			}
+		}catch(PDOException $e){
+			$conn = null;
+			print($e->getMessage()."<br>");
+		}
+		
+		//move on to the next ingredient
+		$count++;
+	}
+	header( "Location: ../recipe?recipe=".$recipeEditing['ID'] );
 }
 
 function displayRecipeForm($conn, $profile, $recipeEditing, $recipeExists){
@@ -500,7 +559,6 @@ function displayRecipeForm($conn, $profile, $recipeEditing, $recipeExists){
 												$result2-> execute();
 												$unit = $result2->fetch();
 												
-												//print_r($unit);
 												print("
 													<div class='input-group col-md-2 pull-right'>
 														<input name='recipe-ingredient-unit-$count' id='InputMessage' class='form-control' value='$unit[measurementUnit]'></input>
