@@ -208,7 +208,7 @@ function displayAllIngredients(){
 							</ul>
 						</li>
 						<li>
-							<a href="index.html"><span class="glyphicon glyphicon-plus-sign"></span> Add a Cookbook</a>
+							<a href="../cookbook/createEditCookbook.php"><span class="glyphicon glyphicon-plus-sign"></span> Add a Cookbook</a>
 						</li>
 					<?php
 					}
