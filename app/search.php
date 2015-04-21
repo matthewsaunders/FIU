@@ -1,100 +1,3 @@
-    <?php
-
-        include("db/connectDatabase.php");
-        $term = $_POST['srch-term'];
-
-        $search = mysql_real_escape_string(trim($term));
-
-        $keys = explode(" ",$search);
-    
-        $sql="SELECT * FROM `recipe` WHERE `name` LIKE '%$search%'";
-        echo "$sql <br />";
-        $find_recipes = mysql_query($sql) or die(mysql_error());
-
-        while($row = mysql_fetch_assoc($find_recipes))
-        {
-            $name = $row['name'];
-            
-            echo $name.'<br />';
-        }
-        
-
-/*
-        include("db/connectDatabase.php");
-
-        $sql="SELECT * FROM recipes";
-        $query = mysqli_query($conn, $sql);
-        $row = mysqli_fetch_row($query);
-        
-        $rows = $row[0];
-        $page_rows = 10;
-        $last = ceil($rows/$page_rows);
-        if($last < 1)
-        {
-            $last = 1;
-        }
-
-        $pagenum = 1;
-
-        if(isset($_GET['pn'])){
-            $pagenum = preg_replace('#[^0-9]#', '', $_GET['pn']);
-        }
-                                
-        if($pagenum < 1) {
-            $pagenum = 1;
-        }
-        
-        else if ($pagenum > $last) {
-            $pagenum = $last;
-        }
-                    
-        $limit = 'LIMIT ' .($pagenum - 1) * $page_rows .',' .$page_rows;
-        $sql = "SELECT * FROM recipes WHERE name LIKE %$search% ORDER BY name DESC $limit"; 
-        $query = mysqli_query($conn, $sql);
-        $textline1 = "Recipes (<b>$rows</b>)";
-        $textline2 = "Page <b>$pagenum</b> of <b>$last</b>";
-        $paginationCtrls = '';
-        if($last != 1){
-            if($pagenum > 1) {
-                $previous = $pagenum - 1;
-                $paginationCtrls .= '<a href="'.$_SERVER['PHP_SELF'].'?pn='.$previous.'">Previous</a> &nbsp;';
-            
-            for($i = $pagenum-4; $i < $pagenum; $i++){
-                if($i > 0) {
-                    $paginationCtrls .= '<a href="'.$_SERVER['PHP_SELF'].'?pn='.$i.'">'.$i.'</a> &nbsp;';
-                }
-            }
-        }
-        
-                                
-        $paginationCtrls .= ''.$pagenum.' &nbsp; ';
-        for($i = $pagenum+1; $i <= $last; $i++){
-            $paginationCtrls .= '<a href="'.$SERVER['PHP_SELF'].'?pn='.$i.'</a> &nbsp; ';
-            if($i >= $pagenum+4){
-                break;
-            }
-        }
-        
-        if ($pagenum != $last) {
-            $next = $pagenum + 1;
-            $paginationCtrls .= ' &nbsp; &nbsp; <a href="'.$_SERVER['PHP_SELF'].'?pn='.$next.'">Next</a> ';
-        }
-     }
-                                    
-    $list = '';
-    while($row = mysqli_fetch_array($query, MYSQLI_ASSOC)){
-        $name = $row["name"];
-        $author = $row["author"];
-        $cooktime = $row["cooktime"];
-        $difficulty = $row["difficulty"];
-        $instructions = $row["instructions"];
-        $list .= '<p>'.$name.' '.$author.' '.$cooktime.' '.$difficulty.' '.$instructions.'</p>';
-    }
-    mysqli_close($conn);
-*/
-?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -143,10 +46,12 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="index.html">Cookbook Application</a>
+                <a class="navbar-brand" href="/">Cookbook Application</a>
             </div>
             <!-- Top Menu Items -->
-            <ul class="nav navbar-right top-nav">
+				<?php 
+				if( isset($_SESSION["username"]) ){
+				?>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-envelope"></i> <b class="caret"></b></a>
                     <ul class="dropdown-menu message-dropdown">
@@ -157,7 +62,7 @@
                                         <img class="media-object" src="http://placehold.it/50x50" alt="">
                                     </span>
                                     <div class="media-body">
-                                        <h5 class="media-heading"><strong>John Smith</strong>
+                                        <h5 class="media-heading"><strong>Management</strong>
                                         </h5>
                                         <p class="small text-muted"><i class="fa fa-clock-o"></i> Yesterday at 4:32 PM</p>
                                         <p>Coming Soon...</p>
@@ -182,21 +87,41 @@
                         </li>
                     </ul>
                 </li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> John Smith <b class="caret"></b></a>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <a href="#"><i class="fa fa-fw fa-user"></i> Profile</a>
-                        </li>
-                        <li>
-                            <a href="#"><i class="fa fa-fw fa-gear"></i> Settings</a>
-                        </li>
-                        <li class="divider"></li>
-                        <li>
-                            <a href="#"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
-                        </li>
-                    </ul>
-                </li>
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i>
+						<?php 
+							print($profile["name"]);
+						?>
+						<b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li>
+								<a href="#"><i class="fa fa-fw fa-user"></i> Profile</a>
+							</li>
+							<li>
+								<a href="#"><i class="fa fa-fw fa-gear"></i> Settings</a>
+							</li>
+							<li class="divider"></li>
+							<li>
+								<a href="../login.php?action=logout"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
+							</li>
+						</ul>
+					</li>
+				<?php
+				}else{
+				?>
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i>
+						Guest
+						<b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li>
+								<a href="../login.php"><i class="fa fa-fw fa-user"></i> Login</a>
+							</li>
+						</ul>
+					</li>				
+				<?php
+				}
+				?>
             </ul>
             
             <!-- Search Bar -->
@@ -215,7 +140,7 @@
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav side-nav">
                     <li>
-                        <a href="index.html"><span class="glyphicon glyphicon-apple"></span> All Recipes</a>
+                        <a href="recipe/"><span class="glyphicon glyphicon-apple"></span> All Recipes</a>
                     </li>
 					<li class="divider"></li>
                     <li>
@@ -249,49 +174,86 @@
             <div class="container">
 
     <hgroup class="mb20">
+    <?php
+
+        include("db/connectDatabase.php");
+        try
+        {
+	        $term = trim($_POST['srch-term']);
+            $total = 0;
+            if(!empty($term))
+            {
+            $sql="SELECT * FROM `recipe` WHERE `name` LIKE '%$term%'";
+            $search_results = $conn->prepare($sql);
+            $search_results->execute();
+            $total = $search_results->rowCount();
+            }
+            
+        } 
+        catch (PDOException $e)
+        {
+            //Nothing
+        }
+    ?>
 		<h1>Search Results</h1>
-		<h2 class="lead"><strong class="text-danger"><?php echo "2"; ?></strong> results were found for the search for <strong class="text-danger"><?php ?></strong></h2>
-        <h2 class="lead">See search results for <a href="#"><strong class="text-danger">Almuerzo</strong></a>?</h2>								
-	</hgroup>
-
-<!--
+		<h2 class="lead"><strong class="text-danger"><?php echo $total; ?></strong> results were found for the search <strong class="text-danger"><?php if(!empty($term)){echo "for $term";} ?></strong></h2>
+        
+        <?php
+        
+        if($total <= 0)
+        {
+            print("<h2 class=\"lead\">See search results for another recipe?</h2>");		
+        }
+        ?>
+	</hgroup>  
+        
     <section class="col-xs-12 col-sm-6 col-md-12">
-		<article class="search-result row">
-			<div class="col-xs-12 col-sm-12 col-md-3">
-				<a href="#" title="Lorem ipsum" class="thumbnail"><img src="img/omelette.jpg" alt="omlette" /></a>
-			</div>
-			<div class="col-xs-12 col-sm-12 col-md-2">
-				<ul class="meta-search">
-					<li><i class="glyphicon glyphicon-calendar"></i> <span>03/24/2015</span></li>
-					<li><i class="glyphicon glyphicon-time"></i> <span>4:28 pm</span></li>
-				</ul>
-			</div>
-			<div class="col-xs-12 col-sm-12 col-md-7 excerpet">
-				<h3><a href="#" title="">Omelette Du Fromage</a></h3>
-				<p>An omelette with cheese.</p>						
-                <span class="plus"><a href="#" title="Add Omelette Du Fromage"><i class="glyphicon glyphicon-plus"></i></a></span>
-			</div>
-			<span class="clearfix borda"></span>
-		</article>
 
-        <article class="search-result row">
-			<div class="col-xs-12 col-sm-12 col-md-3">
-				<a href="#" title="Lorem ipsum" class="thumbnail"><img src="img/breakfast.jpg" alt="Pancakes" /></a>
-			</div>
-			<div class="col-xs-12 col-sm-12 col-md-2">
-				<ul class="meta-search">
-					<li><i class="glyphicon glyphicon-calendar"></i> <span>03/24/2015</span></li>
-					<li><i class="glyphicon glyphicon-time"></i> <span>8:32 pm</span></li>
-				</ul>
-			</div>
-			<div class="col-xs-12 col-sm-12 col-md-7">
-				<h3><a href="#" title="">Pancakes</a></h3>
-				<p>A timeless classic prepared right.</p>						
-                <span class="plus"><a href="#" title="Add Pancakes"><i class="glyphicon glyphicon-plus"></i></a></span>
-			</div>
-			<span class="clearfix borda"></span>
-		</article>
--->
+        <?php
+
+        include("db/connectDatabase.php");
+        try
+        {
+            $term = trim($_POST['srch-term']);
+            $sql="SELECT * FROM `recipe` WHERE `name` LIKE '%$term%'";
+            $search_results = $conn->prepare($sql);
+            $search_results->execute();
+            
+            if($total != 0 or !empty($term))
+            {
+                while ($r=$search_results->fetch(PDO::FETCH_ASSOC))
+                {
+                    print	("
+                        <article class=\"search-result row\">
+                    <div class=\"col-xs-12 col-sm-12 col-md-3\">
+                        <a href=\"#\" title=\"$r[name]\" class='thumbnail'><img src='/img/default.jpg' alt='omlette' /></a>
+			         </div>
+
+			         <div class='col-xs-12 col-sm-12 col-md-7 excerpet'>
+				        <h3><a href=\"recipe/?recipe=$r[ID]\" title=''>$r[name]</a></h3>
+				        <p>Author: $r[author].</p>						
+                        <div class='dropdown'>
+                            <button class='btn btn-default dropdown-toggle' type='button' id='dropdownMenu1' data-toggle='dropdown' aria-expanded='true'>
+                            <span class='plus'><a href=\"recipe/?=$r[ID]\" title=\"Add $r[name]\"><i class='glyphicon glyphicon-plus'></i></a></span>
+                            <span class='caret'></span>
+                            </button>
+                            <ul class='dropdown-menu' role='menu' aria-labelledby='dropdownMenu1'>
+                                <li role='presentation'><a role='menuitem' tabindex='-1' href='#'>Add to my recipes</a></li>                        
+                            </ul>
+                    </div>
+			     </div>
+			     <span class='clearfix borda'></span>
+		      </article>");
+            }
+            }
+       }    
+       catch (PDOException $e)
+       {
+           //
+       }
+       ?>
+
+                </section>
 	</section>
 </div>
             <!-- /.container-fluid -->
