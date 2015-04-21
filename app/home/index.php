@@ -231,7 +231,7 @@ function displayHomePage(){
 							</button>
 							<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
 								<li role="presentation"><a role="menuitem" tabindex="-1" href="../recipe/createEditRecipe.php">Create new recipe</a></li>
-								<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Add existing recipe</a></li>								
+								<!--<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Add existing recipe</a></li>-->							
 							</ul>
 							
                         </h1>

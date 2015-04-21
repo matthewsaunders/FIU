@@ -201,7 +201,7 @@ function displayRecipe(){
                         <a href="../recipe"><i class="fa fa-cutlery"></i> All Recipes</a>
                     </li>
 					<?php
-					if( $profile['adminStatus'] == "Y" ){
+					if( isset($_SESSION['username']) and $profile['adminStatus'] == "Y" ){
 						print("
 						<li>
 							<a href='../ingredient'><span class='glyphicon glyphicon-apple'></span> All Ingredients</a>
@@ -280,12 +280,13 @@ function displayRecipe(){
                                         </div>
                                         <div class="col-sm-9 vcenter"  >
 											<?php
-											if($profile['name'] == $recipe['author'] || $profile['adminStatus'] == "Y"){
+											if( isset($_SESSION['username']) and $profile['name'] == $recipe['author'] || $profile['adminStatus'] == "Y"){
 												print("<a href='createEditRecipe.php?recipe=$recipe[ID]'>edit recipe</a> - ");
 												print("<a href='removeRecipe.php?remove=$recipe[ID]'>remove recipe</a> -");
 											}
+											
+											print("<a href='../cookbook/addToCookbook.php?recipe=".$recipe['ID']."'>add to cookbook</a>");
 											?>
-											<a href="">add to cookbook</a>
                                         </div>
                                     </div>
 

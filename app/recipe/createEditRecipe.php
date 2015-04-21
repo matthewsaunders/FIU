@@ -647,7 +647,16 @@ function displayRecipeForm($conn, $profile, $recipeEditing, $recipeExists){
 									}
 									?>
 									<input type="submit" name="submit" value="Submit" class="btn btn-primary"></input>
-									<button type="button" class="btn">Cancel</button>
+									<?php
+									print("
+									<script>
+									function cancelRemove(){
+										location.href = '../recipe?recipe=".$recipeEditing['ID']."';
+									}
+									</script>
+									");
+									print("<button type='button' onclick='cancelRemove()' class='btn'>Cancel</button>");
+									?>
 								</div>	
 							</div>
 						</form>

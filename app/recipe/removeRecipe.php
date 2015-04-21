@@ -306,7 +306,16 @@ function removeRecipe(){
 								<div class="form-actions pull-right">
 									<input type="hidden" name="remove-recipe" value=" <?php print($recipe['ID']); ?> "></input>
 									<input type="submit" name="submit" value="Submit" class="btn btn-primary"></input>
-									<button type="button" class="btn">Cancel</button>
+									<?php
+									print("
+									<script>
+									function cancelRemove(){
+										location.href = '../recipe?recipe=".$_GET['remove']."';
+									}
+									</script>
+									");
+									print("<button type='button' onclick='cancelRemove()' class='btn'>Cancel</button>");
+									?>
 								</div>	
 							</div>
 						</form>
