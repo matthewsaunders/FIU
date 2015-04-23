@@ -353,6 +353,7 @@ int main(int argc, char* argv[])
   int i;
   int a_sqrt, b_sqrt;
   FILE *f;
+	MPI_Status status;
 
   /* initialize MPI */
   MPI_Init(&argc, &argv);
@@ -384,7 +385,7 @@ int main(int argc, char* argv[])
 	
   /* read the submatrix of A managed by this process */ 
   read_checkerboard_matrix(argv[1], (void***)&a, (void**)&sa, mpitype, &ma, &na, comm);
-  printf("id=%d, coord[%d,%d]: read submatrix of A of dims %dx%d\n", id, coord[0], coord[1], ma, na);
+  //printf("id=%d, coord[%d,%d]: read submatrix of A of dims %dx%d\n", id, coord[0], coord[1], ma, na);
   	/* Check matrix A for equal dimensions */
 	if(ma != na)
 		my_abort("Error: dimensions [m x n] of matrix A must be the same: [%d x %d]\n", ma, na);
@@ -395,7 +396,7 @@ int main(int argc, char* argv[])
 
   /* read the submatrix of B managed by this process */ 
   read_checkerboard_matrix(argv[2], (void***)&b, (void**)&sb, mpitype, &mb, &nb, comm);
-  printf("id=%d, coord[%d,%d]: read submatrix of B of dims %dx%d\n", id, coord[0], coord[1], mb, nb);
+  //printf("id=%d, coord[%d,%d]: read submatrix of B of dims %dx%d\n", id, coord[0], coord[1], mb, nb);
   	/* Check matrix B for equal dimensions */
 	if(mb != nb)
 		my_abort("Error: dimensions [m x n] of matrix B must be the same: [%d x %d]\n", mb, nb);
@@ -417,30 +418,93 @@ int main(int argc, char* argv[])
   c = (datatype**)malloc(n*sizeof(datatype*));
   for(i=0; i<n; i++) c[i] = &sc[i*n];
 	
-    /* Rearrange blocks between processes */
-	for(i=0; i<p_sqrt-1; i++){
-		//shift matrix A left by i
-		//use mpi cart shift
-		//mpi_sendrecv_replace
-		//http://siber.cankaya.edu.tr/ozdogan/GraduateParallelComputing.old/ceng505/node133.html
-	}
+  datatype **buff, *sbuff;
+  sbuff = (datatype*)malloc(n*n*sizeof(datatype));
+  memset(sbuff, 0, n*n*sizeof(datatype));
+  buff = (datatype**)malloc(n*sizeof(datatype*));
+  for(i=0; i<n; i++) buff[i] = &sbuff[i*n];
+/*	
+  datatype **buff, *sbuff;
+  sbuff = (datatype*)malloc(n*n*sizeof(datatype));
+  memset(sbuff, 0, n*n*sizeof(datatype));
+  buff = (datatype**)malloc(n*sizeof(datatype*));
+  for(i=0; i<n; i++) buff[i] = &sbuff[i*n];
+*/	
+	int j, k;
+	int dest, src;
+	int destcoord[2], srccoord[2];
+	destcoord[0] = coord[0];
+	destcoord[1] = (coord[1]-coord[0]+p_sqrt)%p_sqrt;
+	srccoord[0] = coord[0];
+	srccoord[1] = (coord[0]-coord[1]+p_sqrt)%p_sqrt;
+	MPI_Cart_rank(comm, destcoord, &dest);
+	MPI_Cart_rank(comm, srccoord, &src);
 	
-	for(j=0; j<p_sqrt; j++){
-		//shift matrix B up by j	
-		//use mpi cart shift
+    /* Rearrange blocks between processes */
+	/* Shift matrix A left by coord[0] */
+	/*
+	if(coord[0]== 1 && coord[1] == 0){
+		printf("A before\n");
+		printf("coord:[%d,%d] dest:[%d,%d] src:[%d,%d]\n",coord[0], coord[1], coord[0], (coord[1]-coord[0]+p_sqrt)%p_sqrt, coord[0], (coord[0]-coord[1]+p_sqrt)%p_sqrt);
+		for (k = 0; k < n; k++) {
+			printf("[row=%3d] ", k);
+			for(j=0; j<n; j++) printf("%.2lf ", (double)a[k][j]);
+			printf("\n");
+		}
+		printf("\n");
+	}
+	*/
+	MPI_Sendrecv(sa, n*n, mpitype, dest, 0, sbuff, n*n, mpitype, src, 0, comm, &status);
+	for (k = 0; k < n; k++) {
+		for(j=0; j<n; j++) a[k][j] = buff[k][j];
 	}
 
+	/* Rearrange blocks between processes */
+	/* Shift matrix B up by coord[1] */
+	
+	destcoord[0] = (coord[0]-coord[1]+p_sqrt)%p_sqrt;
+	destcoord[1] = coord[1];
+	srccoord[0] = (coord[1]-coord[0]+p_sqrt)%p_sqrt;
+	srccoord[1] = coord[1];
+	MPI_Cart_rank(comm, destcoord, &dest);
+	MPI_Cart_rank(comm, srccoord, &src);
+
+	MPI_Sendrecv(sb, n*n, mpitype, dest, 0, sbuff, n*n, mpitype, src, 0, comm, &status);
+	for (k = 0; k < n; k++) {
+		for(j=0; j<n; j++) b[k][j] = buff[k][j];
+	}
+	
+	my_matmul(0, 0, 0, 0, 0, 0, n, n, n, n, a, b, c);
+	
 	//calculate and shift matrices
 	for(i=0; i<p_sqrt-1; i++){
-		for(j=0; j<p_sqrt-1; j++){
-			for(k=0; k<p_sqrt-1; k++){
-				
-			}
+		printf("Calculating process %d - %d\n", id, i);
+		destcoord[0] = coord[0];
+		destcoord[1] = (coord[1]-1)%p_sqrt;
+		srccoord[0] = coord[0];
+		srccoord[1] = (coord[1] + 1)%p_sqrt;
+		MPI_Cart_rank(comm, destcoord, &dest);
+		MPI_Cart_rank(comm, srccoord, &src);
+		
+		MPI_Sendrecv(sa, n*n, mpitype, dest, 0, sbuff, n*n, mpitype, src, 0, comm, &status);
+		for (k = 0; k < n; k++) {
+			for(j=0; j<n; j++) a[k][j] = buff[k][j];
 		}
+		
+		destcoord[0] = (coord[0] - 1)%p_sqrt;
+		destcoord[1] = coord[1];
+		srccoord[0] = (coord[0] + 1)%p_sqrt;
+		srccoord[1] = coord[1];
+		MPI_Cart_rank(comm, destcoord, &dest);
+		MPI_Cart_rank(comm, srccoord, &src);
+		
+		MPI_Sendrecv(sb, n*n, mpitype, dest, 0, sbuff, n*n, mpitype, src, 0, comm, &status);
+		for (k = 0; k < n; k++) {
+			for(j=0; j<n; j++) b[k][j] = buff[k][j];
+		}
+		
+		my_matmul(0, 0, 0, 0, 0, 0, n, n, n, n, a, b, c);
 	}
-	
-
-  my_matmul(0, 0, 0, 0, 0, 0, n, n, n, n, a, b, c);
   
   /* write the submatrix of C managed by this process */
   write_checkerboard_matrix(argv[3], (void**)c, mpitype, ma, ma, comm);
