@@ -417,105 +417,47 @@ int main(int argc, char* argv[])
   c = (datatype**)malloc(n*sizeof(datatype*));
   for(i=0; i<n; i++) c[i] = &sc[i*n];
 
-	datatype **buffa, *sbuffa, **buffb, *sbuffb;
-	if(p > 1){
-		sbuffa = (datatype*)malloc(n*n*sizeof(datatype));
-		memset(sbuffa, 0, n*n*sizeof(datatype));
-		buffa = (datatype**)malloc(n*sizeof(datatype*));
-		for(i=0; i<n; i++) buffa[i] = &sbuffa[i*n];
-		
-		sbuffb = (datatype*)malloc(n*n*sizeof(datatype));
-		memset(sbuffb, 0, n*n*sizeof(datatype));
-		buffb = (datatype**)malloc(n*sizeof(datatype*));
-		for(i=0; i<n; i++) buffb[i] = &sbuffb[i*n];
-	}
-/*	
-  datatype **buff, *sbuff;
-  sbuff = (datatype*)malloc(n*n*sizeof(datatype));
-  memset(sbuff, 0, n*n*sizeof(datatype));
-  buff = (datatype**)malloc(n*sizeof(datatype*));
-  for(i=0; i<n; i++) buff[i] = &sbuff[i*n];
-*/	
-	int j, k;
-	int dest, src;
-	int destcoord[2], srccoord[2];
+	datatype *buffa, *buffb;
 	MPI_Request request[4];
+	MPI_Status status;
+	int west, east, north, south;
 	
-    /* Rearrange blocks between processes */
-	/* Shift matrix A left by coord[0] */
-	destcoord[0] = coord[0];
-	destcoord[1] = (coord[1]-coord[0]+p_sqrt)%p_sqrt;
-	srccoord[0] = coord[0];
-	srccoord[1] = (coord[0]-coord[1]+p_sqrt)%p_sqrt;
-	MPI_Cart_rank(comm, destcoord, &dest);
-	MPI_Cart_rank(comm, srccoord, &src);
-	
-	//MPI_Sendrecv(sa, n*n, mpitype, dest, 0, sbuffa, n*n, mpitype, src, 0, comm, &statusa);
-	MPI_Isend(sa, n*n, mpitype, dest, 0, comm, &request[0]);
-	MPI_Irecv(sbuffa, n*n, mpitype, src, 0, comm, &request[1]);
-	for (k = 0; k < n; k++) {
-		for(j=0; j<n; j++) a[k][j] = buffa[k][j];
-	}
+	/* Allocate buffers */
+	buffa = (datatype*)malloc(n*n*sizeof(datatype));
+	buffb = (datatype*)malloc(n*n*sizeof(datatype));
 
-	/* Rearrange blocks between processes */
-	/* Shift matrix B up by coord[1] */
-	destcoord[0] = (coord[0]-coord[1]+p_sqrt)%p_sqrt;
-	destcoord[1] = coord[1];
-	srccoord[0] = (coord[1]-coord[0]+p_sqrt)%p_sqrt;
-	srccoord[1] = coord[1];
-	MPI_Cart_rank(comm, destcoord, &dest);
-	MPI_Cart_rank(comm, srccoord, &src);
+	/* Find process of neighbors in cartesian mapping */
+    MPI_Cart_shift(comm, 1, coord[0], &west, &east);
+    MPI_Cart_shift(comm, 0, coord[1], &north, &south);
 
-	//MPI_Sendrecv(sb, n*n, mpitype, dest, 0, sbuffb, n*n, mpitype, src, 0, comm, &statusb);
-	MPI_Isend(sb, n*n, mpitype, dest, 0, comm, &request[2]);
-	MPI_Irecv(sbuffb, n*n, mpitype, src, 0, comm, &request[3]);
-	for (k = 0; k < n; k++) {
-		for(j=0; j<n; j++) b[k][j] = buffb[k][j];
-	}
+	/* Initial submatrix shift to setup cannon's algorithm */
+	MPI_Sendrecv_replace(*a, n*n, mpitype, west, 0, east, 0, comm, &status);
+	MPI_Sendrecv_replace(*b, n*n, mpitype, north, 0, south, 0, comm, &status);
 	
-	MPI_Waitall(4, request, MPI_STATUS_IGNORE);
-	
-	my_matmul(0, 0, 0, 0, 0, 0, n, n, n, n, a, b, c);
-	
-	//calculate and shift matrices
-	for(i=0; i<p_sqrt-1; i++){
-		printf("Calculating process %d - %d\n", id, i);
-		destcoord[0] = coord[0];
-		destcoord[1] = (coord[1]-1)%p_sqrt;
-		srccoord[0] = coord[0];
-		srccoord[1] = (coord[1] + 1)%p_sqrt;
-		MPI_Cart_rank(comm, destcoord, &dest);
-		MPI_Cart_rank(comm, srccoord, &src);
-		
-		MPI_Isend(sa, n*n, mpitype, dest, 0, comm, &request[0]);
-		MPI_Irecv(sbuffa, n*n, mpitype, src, 0, comm, &request[1]);
-		for (k = 0; k < n; k++) {
-			for(j=0; j<n; j++) a[k][j] = buffa[k][j];
-		}
-		
-		destcoord[0] = (coord[0] - 1)%p_sqrt;
-		destcoord[1] = coord[1];
-		srccoord[0] = (coord[0] + 1)%p_sqrt;
-		srccoord[1] = coord[1];
-		MPI_Cart_rank(comm, destcoord, &dest);
-		MPI_Cart_rank(comm, srccoord, &src);
-		
-		MPI_Isend(sb, n*n, mpitype, dest, 0, comm, &request[2]);
-		MPI_Irecv(sbuffb, n*n, mpitype, src, 0, comm, &request[3]);
-		for (k = 0; k < n; k++) {
-			for(j=0; j<n; j++) b[k][j] = buffb[k][j];
-		}
-		
-		MPI_Waitall(4, request, MPI_STATUS_IGNORE);
+	/* Interate over the sqrt of the number of processes p */
+	for(i=0;i<p_sqrt;i++) {
+
+		/* Shift submatrix by one left (A) and right (B) */
+        MPI_Cart_shift(comm, 1, 1, &west, &east);
+        MPI_Cart_shift(comm, 0, 1, &north, &south);
+
+		/* Calculate submatrix C from current submatrix A and B */
 		my_matmul(0, 0, 0, 0, 0, 0, n, n, n, n, a, b, c);
-	}
-	
-	if(p > 1){
-		free(buffa);	
-		free(sbuffa);	
-		free(buffb);	
-		free(sbuffb);
-	}
+
+		/* Send and recieve submatrix A and B asynchronously */
+		MPI_Isend(sa, n*n, mpitype, west, 0, comm, &request[0]);
+		MPI_Irecv(buffa, n*n, mpitype, east, 0, comm, &request[2]);        
+		
+		MPI_Isend(sb, n*n, mpitype, north, 0, comm, &request[1]);
+		MPI_Irecv(buffb, n*n, mpitype, south, 0, comm, &request[3]);
+
+		/* Must have new submatrix A and B before continueing */
+		MPI_Waitall(4, request, MPI_STATUS_IGNORE);
+
+		/* Copy new submatrix from buffer into actual submatrix */
+        memcpy(sa, buffa, n*n*sizeof(datatype));
+        memcpy(sb, buffb, n*n*sizeof(datatype));
+	}  	
   
   /* write the submatrix of C managed by this process */
   write_checkerboard_matrix(argv[3], (void**)c, mpitype, ma, ma, comm);

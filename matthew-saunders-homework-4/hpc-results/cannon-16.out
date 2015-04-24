@@ -1,0 +1,72 @@
+elapsed time: 66.976304
+Job  /home/share/platform/lsf/8.3/linux2.6-glibc2.3-x86_64/bin/openmpi_wrapper ./cannon A B C
+
+TID   HOST_NAME   COMMAND_LINE            STATUS            TERMINATION_TIME
+===== ========== ================  =======================  ===================
+00000 n035       ./cannon A B C    Done                     04/23/2015 23:13:22
+00001 n035       ./cannon A B C    Done                     04/23/2015 23:13:22
+00002 n035       ./cannon A B C    Done                     04/23/2015 23:13:22
+00003 n035       ./cannon A B C    Done                     04/23/2015 23:13:22
+00004 n035       ./cannon A B C    Done                     04/23/2015 23:13:22
+00005 n035       ./cannon A B C    Done                     04/23/2015 23:13:22
+00006 n040       ./cannon A B C    Done                     04/23/2015 23:13:22
+00007 n040       ./cannon A B C    Done                     04/23/2015 23:13:22
+00008 n040       ./cannon A B C    Done                     04/23/2015 23:13:22
+00009 n040       ./cannon A B C    Done                     04/23/2015 23:13:22
+00010 n040       ./cannon A B C    Done                     04/23/2015 23:13:22
+00011 n040       ./cannon A B C    Done                     04/23/2015 23:13:22
+00012 n040       ./cannon A B C    Done                     04/23/2015 23:13:22
+00013 n040       ./cannon A B C    Done                     04/23/2015 23:13:22
+00014 n040       ./cannon A B C    Done                     04/23/2015 23:13:22
+00015 n040       ./cannon A B C    Done                     04/23/2015 23:13:22
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@n040>
+Subject: Job 324380: <saunders_hw4_cannon> Done
+
+Job <saunders_hw4_cannon> was submitted from host <u01> by user <msaun008> in cluster <panther>.
+Job was executed on host(s) <10*n040>, in queue <classroom>, as user <msaun008> in cluster <panther>.
+                            <6*n035>
+</home/msaun008> was used as the home directory.
+</home/msaun008/matthew-saunders-homework-4> was used as the working directory.
+Started at Thu Apr 23 23:12:10 2015
+Results reported at Thu Apr 23 23:13:29 2015
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/sh
+#BSUB -q classroom
+#BSUB -J saunders_hw4_cannon
+#BSUB -oo cannon.out
+#BSUB -eo cannon.err
+
+#BSUB -a openmpi
+#BSUB -n 16
+
+. $MODULESHOME/../global/profile.modules
+
+mpirun.lsf ./cannon A B C
+
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time   :    980.04 sec.
+    Max Memory :      3209 MB
+    Max Swap   :      8387 MB
+
+    Max Processes  :        42
+    Max Threads    :        44
+
+The output (if any) is above this job summary.
+
+
+
+PS:
+
+Read file <cannon.err> for stderr output of this job.
+
