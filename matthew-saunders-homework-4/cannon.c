@@ -353,7 +353,6 @@ int main(int argc, char* argv[])
   int i;
   int a_sqrt, b_sqrt;
   FILE *f;
-	MPI_Status status;
 
   /* initialize MPI */
   MPI_Init(&argc, &argv);
@@ -417,12 +416,19 @@ int main(int argc, char* argv[])
   memset(sc, 0, n*n*sizeof(datatype));
   c = (datatype**)malloc(n*sizeof(datatype*));
   for(i=0; i<n; i++) c[i] = &sc[i*n];
-	
-  datatype **buff, *sbuff;
-  sbuff = (datatype*)malloc(n*n*sizeof(datatype));
-  memset(sbuff, 0, n*n*sizeof(datatype));
-  buff = (datatype**)malloc(n*sizeof(datatype*));
-  for(i=0; i<n; i++) buff[i] = &sbuff[i*n];
+
+	datatype **buffa, *sbuffa, **buffb, *sbuffb;
+	if(p > 1){
+		sbuffa = (datatype*)malloc(n*n*sizeof(datatype));
+		memset(sbuffa, 0, n*n*sizeof(datatype));
+		buffa = (datatype**)malloc(n*sizeof(datatype*));
+		for(i=0; i<n; i++) buffa[i] = &sbuffa[i*n];
+		
+		sbuffb = (datatype*)malloc(n*n*sizeof(datatype));
+		memset(sbuffb, 0, n*n*sizeof(datatype));
+		buffb = (datatype**)malloc(n*sizeof(datatype*));
+		for(i=0; i<n; i++) buffb[i] = &sbuffb[i*n];
+	}
 /*	
   datatype **buff, *sbuff;
   sbuff = (datatype*)malloc(n*n*sizeof(datatype));
@@ -433,6 +439,10 @@ int main(int argc, char* argv[])
 	int j, k;
 	int dest, src;
 	int destcoord[2], srccoord[2];
+	MPI_Request request[4];
+	
+    /* Rearrange blocks between processes */
+	/* Shift matrix A left by coord[0] */
 	destcoord[0] = coord[0];
 	destcoord[1] = (coord[1]-coord[0]+p_sqrt)%p_sqrt;
 	srccoord[0] = coord[0];
@@ -440,28 +450,15 @@ int main(int argc, char* argv[])
 	MPI_Cart_rank(comm, destcoord, &dest);
 	MPI_Cart_rank(comm, srccoord, &src);
 	
-    /* Rearrange blocks between processes */
-	/* Shift matrix A left by coord[0] */
-	/*
-	if(coord[0]== 1 && coord[1] == 0){
-		printf("A before\n");
-		printf("coord:[%d,%d] dest:[%d,%d] src:[%d,%d]\n",coord[0], coord[1], coord[0], (coord[1]-coord[0]+p_sqrt)%p_sqrt, coord[0], (coord[0]-coord[1]+p_sqrt)%p_sqrt);
-		for (k = 0; k < n; k++) {
-			printf("[row=%3d] ", k);
-			for(j=0; j<n; j++) printf("%.2lf ", (double)a[k][j]);
-			printf("\n");
-		}
-		printf("\n");
-	}
-	*/
-	MPI_Sendrecv(sa, n*n, mpitype, dest, 0, sbuff, n*n, mpitype, src, 0, comm, &status);
+	//MPI_Sendrecv(sa, n*n, mpitype, dest, 0, sbuffa, n*n, mpitype, src, 0, comm, &statusa);
+	MPI_Isend(sa, n*n, mpitype, dest, 0, comm, &request[0]);
+	MPI_Irecv(sbuffa, n*n, mpitype, src, 0, comm, &request[1]);
 	for (k = 0; k < n; k++) {
-		for(j=0; j<n; j++) a[k][j] = buff[k][j];
+		for(j=0; j<n; j++) a[k][j] = buffa[k][j];
 	}
 
 	/* Rearrange blocks between processes */
 	/* Shift matrix B up by coord[1] */
-	
 	destcoord[0] = (coord[0]-coord[1]+p_sqrt)%p_sqrt;
 	destcoord[1] = coord[1];
 	srccoord[0] = (coord[1]-coord[0]+p_sqrt)%p_sqrt;
@@ -469,10 +466,14 @@ int main(int argc, char* argv[])
 	MPI_Cart_rank(comm, destcoord, &dest);
 	MPI_Cart_rank(comm, srccoord, &src);
 
-	MPI_Sendrecv(sb, n*n, mpitype, dest, 0, sbuff, n*n, mpitype, src, 0, comm, &status);
+	//MPI_Sendrecv(sb, n*n, mpitype, dest, 0, sbuffb, n*n, mpitype, src, 0, comm, &statusb);
+	MPI_Isend(sb, n*n, mpitype, dest, 0, comm, &request[2]);
+	MPI_Irecv(sbuffb, n*n, mpitype, src, 0, comm, &request[3]);
 	for (k = 0; k < n; k++) {
-		for(j=0; j<n; j++) b[k][j] = buff[k][j];
+		for(j=0; j<n; j++) b[k][j] = buffb[k][j];
 	}
+	
+	MPI_Waitall(4, request, MPI_STATUS_IGNORE);
 	
 	my_matmul(0, 0, 0, 0, 0, 0, n, n, n, n, a, b, c);
 	
@@ -486,9 +487,10 @@ int main(int argc, char* argv[])
 		MPI_Cart_rank(comm, destcoord, &dest);
 		MPI_Cart_rank(comm, srccoord, &src);
 		
-		MPI_Sendrecv(sa, n*n, mpitype, dest, 0, sbuff, n*n, mpitype, src, 0, comm, &status);
+		MPI_Isend(sa, n*n, mpitype, dest, 0, comm, &request[0]);
+		MPI_Irecv(sbuffa, n*n, mpitype, src, 0, comm, &request[1]);
 		for (k = 0; k < n; k++) {
-			for(j=0; j<n; j++) a[k][j] = buff[k][j];
+			for(j=0; j<n; j++) a[k][j] = buffa[k][j];
 		}
 		
 		destcoord[0] = (coord[0] - 1)%p_sqrt;
@@ -498,12 +500,21 @@ int main(int argc, char* argv[])
 		MPI_Cart_rank(comm, destcoord, &dest);
 		MPI_Cart_rank(comm, srccoord, &src);
 		
-		MPI_Sendrecv(sb, n*n, mpitype, dest, 0, sbuff, n*n, mpitype, src, 0, comm, &status);
+		MPI_Isend(sb, n*n, mpitype, dest, 0, comm, &request[2]);
+		MPI_Irecv(sbuffb, n*n, mpitype, src, 0, comm, &request[3]);
 		for (k = 0; k < n; k++) {
-			for(j=0; j<n; j++) b[k][j] = buff[k][j];
+			for(j=0; j<n; j++) b[k][j] = buffb[k][j];
 		}
 		
+		MPI_Waitall(4, request, MPI_STATUS_IGNORE);
 		my_matmul(0, 0, 0, 0, 0, 0, n, n, n, n, a, b, c);
+	}
+	
+	if(p > 1){
+		free(buffa);	
+		free(sbuffa);	
+		free(buffb);	
+		free(sbuffb);
 	}
   
   /* write the submatrix of C managed by this process */
