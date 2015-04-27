@@ -1,15 +1,28 @@
-all:	generateParticles p-p
+all:	generateParticles printSnapshot p-p_sequential #p-p_parallel
 
 CFLAGS = -Wall
 MPI = mpicc
 
-p-p:	p-p.o commonUtilities.o
-	$(CC) utilities.h p-p.o commonUtilities.o -o $@ -lm
+#-------------------------------------------------------------------
+
+p-p_parallel:	p-p_parallel.c commonUtilities.o
+	mpicc p-p_parallel.c utilities.h commonUtilities.o -o p-p_parallel -lm
+
+#-------------------------------------------------------------------
+
+p-p_sequential:	p-p_sequential.o commonUtilities.o
+	$(CC) utilities.h p-p_sequential.o commonUtilities.o -o $@ -lm
 	
-p-p.o: p-p.c
+p-p_sequential.o: p-p_sequential.c
 	$(CC) -Wall -c $< -o $@ -lm
 	
 commonUtilities.o:	commonUtilities.c
+	$(CC) -Wall -c $< -o $@ -lm
+
+printSnapshot:	printSnapshot.o
+	$(CC) printSnapshot.o -o $@ -lm
+
+printSnapshot.o:	printSnapshot.c
 	$(CC) -Wall -c $< -o $@ -lm
 
 generateParticles:	generateParticles.o
@@ -19,4 +32,4 @@ generateParticles.o:	generateParticles.c
 	$(CC) -Wall -c $< -o $@ -lm
 
 clean:
-	rm -f generateParticles p-p *.o core *~
+	rm -f generateParticles p-p_sequential p-p_parallel printSnapshot *.o core *~

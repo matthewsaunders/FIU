@@ -41,63 +41,62 @@ const int NDIM = 3;	//Number of dimensions
 const double PI = 2.0*asin(1);
 
 //function prototypes
-int read_options(int, char*[], int*, int*);
+
 double randunit(double);
 double rand_number(double, double);
-void populate_data(double[], double[][NDIM], double[][NDIM], int);
-void output_snapshot(double[], double[][NDIM], double[][NDIM], int);
+void populate_data(double*, double*, double*, int);
+void output_snapshot(FILE *, double*, double*, double*, int, double);
+
 
 /*----------------------------------------------------------------------
  * main -- read in option, generate sphere of particles for model
  *----------------------------------------------------------------------
  */
 int main(int argc, char* argv[]){
-	int n = 0;
-	int seed = 0;
+	int n;
+	double t = 0.0;
+	int seed;
+	FILE *fptr;
+	double *mass, *poss, *vel;
 	
-	if(!read_options(argc, argv, &n, &seed))
-		return 1;
-	
-	double mass[n];
-	double poss[n][NDIM];
-	double vel[n][NDIM];
-
-	populate_data(mass, poss, vel, n);
-	output_snapshot(mass, poss, vel, n);
-	
-	return 0;
-}
-
-/*----------------------------------------------------------------------
- * read_options -- read command line arguments and set them.
- *
- * To initialize the random number generator, invoke this script with
- * a nonzero seed. To run with actual random numbers, invoke with seed
- * value of 0.
- *----------------------------------------------------------------------
- */
-int read_options(int argc, char* argv[], int* n, int* seed){
-	
-	if(argc < 2){
+	if(argc != 3 && argc != 4){
 		printf("usage: \n\t%s ", argv[0]);
-		printf("[number of particles] ");
+		printf("[number of particles] [output file] ");
 		printf("[seed for random number generator]\n");
 		return 1;
 	}
 	
-	*n = atoi(argv[1]);
-	if(*n < 1){
-		printf("ERROR: A value of N = %d is not allowed.\n", *n);	
+	n = atoi(argv[1]);
+	if(n < 1){
+		printf("ERROR: A value of N = %d is not allowed.\n", n);	
 		return 1;
 	}
 	
-	if(argc == 3)
-		*seed = atoi(argv[2]);		
-	else
-		*seed = time(0);	
+ 	if( !(fptr = fopen (argv[2], "w")) ) {
+    	perror("ERROR: can't open output file\n");
+    	return 2;
+  	}
 	
-	return 1;
+	if(argc == 4)
+		seed = atoi(argv[2]);		
+	else
+		seed = time(0);
+	
+	mass = (double*)malloc(n*sizeof(double));
+	poss = (double*)malloc(n*NDIM*sizeof(double));
+	vel = (double*)malloc(n*NDIM*sizeof(double));
+
+	populate_data(mass, poss, vel, n);
+	output_snapshot(fptr, mass, poss, vel, n, t);
+	
+	free(mass);
+	free(poss);
+	free(vel);
+	fclose(fptr);
+	return 0;
 }
+
+
 
 /*----------------------------------------------------------------------
  * randunit -- returns a random double number within the unit interval.
@@ -139,40 +138,27 @@ double rand_number(double a, double b){
  * 
  *----------------------------------------------------------------------
  */
-void populate_data(double mass[], double pos[][NDIM], double vel[][NDIM], int n){
+void populate_data(double *mass, double *pos, double *vel, int n){
 	
-	int i,j;
+	int i;
 	double r;
 	double theta;
 	double phi;
 	
-	
 	for(i=0; i<n; i++)
-		mass[i] = 1.0 / (double)n;
+		*(mass++) = 1.0 / (double)n;
 
 	for(i=0; i<n; i++){		
 		r = pow(rand_number(0.0, 1.0), 1.0/3.0);
 		theta = rand_number(0.0, PI);
 		phi = rand_number(0.0, 2*PI);
 		
-		pos[i][0] = r*sin(theta)*cos(phi);
-		pos[i][1] = r*sin(theta)*sin(phi);
-		pos[i][2] = r*cos(theta);
-		
-		/*
-		printf("\n\nr = %f\n", r);
-		printf("theta = %f\n", theta);
-		printf("phi = %f\n", phi);
-		printf("poss[%d][0] = %f\n",i, pos[i][0]);
-		printf("poss[%d][1] = %f\n",i, pos[i][1]);
-		printf("poss[%d][2] = %f\n",i, pos[i][2]);
-		*/
-		
-		for(j=0; j<NDIM; j++)
-			vel[i][j] = 0;
-		
+		*(pos++) = r*sin(theta)*cos(phi);
+		*(pos++) = r*sin(theta)*sin(phi);
+		*(pos++) = r*cos(theta);	
 	}	
-				
+	
+	memset(vel, 0.0, n*sizeof(double));
 }
 
 /*----------------------------------------------------------------------
@@ -180,25 +166,31 @@ void populate_data(double mass[], double pos[][NDIM], double vel[][NDIM], int n)
  * the snapshot is the inital snapshot (when t=0).
  *----------------------------------------------------------------------
  */
-void output_snapshot(double mass[], double pos[][NDIM], double vel[][NDIM], int n){
+
+void output_snapshot(FILE *fptr, double *mass, double *pos, double *vel, int n, double t){
 
 	int i,j;
 	
-	printf("%d\n", n);
-	printf("%d\n", 0);
+	fwrite (&n, sizeof(int), 1, fptr);
+	fwrite (&t, sizeof(double), 1, fptr);
 	
 	for(i=0; i<n; i++){
-		printf("%.16f ", mass[i]);
+		printf("%10.8f\t", *mass);
+		fwrite ((mass++), sizeof(double), 1, fptr);
 		
-		for(j=0; j<NDIM; j++)
-			printf("%.16f ", pos[i][j]);
+		for(j=0; j<NDIM; j++){
+			printf("%10.8f\t", *pos);
+			fwrite ((pos++), sizeof(double), 1, fptr);
+		}
 		
-		for(j=0; j<NDIM; j++)
-			printf("%.16f ", vel[i][j]);
-
+		for(j=0; j<NDIM; j++){
+			printf("%10.8f\t", *vel);
+			fwrite ((vel++), sizeof(double), 1, fptr);
+		}
 		printf("\n");
 	}
 }
+
 
 /*----------------------------------------------------------------------
  *

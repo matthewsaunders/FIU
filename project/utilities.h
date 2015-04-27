@@ -4,6 +4,7 @@
 #ifndef COMMON_UTILITIES_H
 #define COMMON_UTILITIES_H
 
+#include <stdio.h>
 typedef struct{
 	double mass;
 	double pos_x;
@@ -15,7 +16,7 @@ typedef struct{
 } particle;
 
 int read_options(int, char* [], int*, char*);
-int parse_input(int*, double*, double[], double[][NDIM], double[][NDIM], double[][NDIM]);
-void output_snapshot(double[], double[][NDIM], double[][NDIM], int, double);
-
+int parse_input(FILE* fptr, int* n, double* t, double *mass, double **pos, double **vel, double **acc, double *storage_pos, double *storage_vel, double *storage_acc);
+void output_snapshot(double*, double**, double**, int, double);
+void output_snapshot_to_file(FILE* fptr, double *mass, double **pos, double **vel, int n, double t);
 #endif
