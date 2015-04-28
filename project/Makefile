@@ -1,4 +1,4 @@
-all:	generateParticles printSnapshot p-p_sequential #p-p_parallel
+all:	generateParticles printSnapshot p-p_sequential p-p_parallel
 
 CFLAGS = -Wall
 MPI = mpicc

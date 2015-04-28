@@ -75,20 +75,16 @@ int main(int argc, char* argv[]){
 		acc[i] = &storage_acc[i*NDIM];
 	
 	for(i=0; i<n; i++){
-		
-			printf("%d: ",i);
 			if(fread(&mass[i], sizeof(double), 1, fptr) != 1) {
 				perror("Error reading data file");
 				return 3;
 			}
-			printf("%10.8f\t", mass[i]);
 		
 			for(j=0; j<NDIM; j++){
 				if(fread(&pos[i][j], sizeof(double), 1, fptr) != 1) {
 					perror("Error reading data file");
 					return 3;
 				}
-				printf("%10.8f\t", pos[i][j]);
 			}
 		
 			for(j=0; j<NDIM; j++){
@@ -96,10 +92,7 @@ int main(int argc, char* argv[]){
 					perror("Error reading data file");
 					return 3;
 				}
-				printf("%10.8f\t", vel[i][j]);
 			}
-		
-			printf("\n");
 		}
 
 	
@@ -160,7 +153,7 @@ void evolve(double *mass, double **pos, double **vel, double **acc,
 		
 		//print snapshot of simulation if appropriate time
 		if(t>t_out){
-			output_snapshot(mass, pos, vel, n, t);
+			//output_snapshot(mass, pos, vel, n, t);
 			t_out += dt_out;	
 		}
 	}
