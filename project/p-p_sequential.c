@@ -21,7 +21,7 @@ int main(int argc, char* argv[]){
 	double elapsed_time;
 	int n = 0;				// get n count from command line
 	double t = 0.0;			// assume time is zero
-	double dt = 0.001;		//time step
+	double dt = 0.0005;		//time step
 	double t_end = 1.0;		//final time
 	double t_out = 0.0;
 	double dt_out = 0.1;	
@@ -143,7 +143,7 @@ void evolve(double *mass, double **pos, double **vel, double **acc,
 			
 				for(k=0; k<NDIM; k++){
 					acc[i][k] += mass[i]*pos_ij[k] / r3;
-					acc[j][k] -= mass[j]*pos_ij[k] / r3;
+					//acc[j][k] -= mass[j]*pos_ij[k] / r3;
 					
 					vel[i][k] += acc[i][k]*dt/2;
 				}

@@ -33,9 +33,9 @@ struct mythread {
 double *mass;
 double **pos, **vel, **acc;
 double *storage_pos, *storage_vel, *storage_acc;
-	double t = 0.0;			// assume time is zero
-	double dt = 0.001;		//time step
-	double t_end = 1.0;		//final time
+double t = 0.0;			// assume time is zero
+double dt = 0.0005;		//time step
+double t_end = 1.0;		//final time
 int n = 0;
 
 int main(int argc, char* argv[]){
@@ -155,7 +155,6 @@ void* work(void* arg)
 	double r3;
 	
 	//initialize submatrix
-	double *my_mass;
 	double *my_storage_pos, *my_storage_vel, *my_storage_acc;
 	double **my_pos, **my_vel, **my_acc;
 	
@@ -181,6 +180,7 @@ void* work(void* arg)
 	
 	for(t=0.0; t<t_end; t += dt){
 		//update velocity and position, reset acceleration to 0;
+		//printf("%f\n",t);
 		for(i=myt->low; i<myt->size; i++){	
 			for(j=0; j<NDIM; j++){
 				my_vel[i][0] += acc[i][0]*dt/2;
@@ -218,59 +218,13 @@ void* work(void* arg)
 		memcpy(storage_acc + (myt->low*NDIM), my_storage_acc, myt->size*NDIM*sizeof(double));
 	}
 	
+	free(my_storage_pos);
+	free(my_storage_vel);
+	free(my_storage_acc);
+	free(my_pos);
+	free(my_vel);
+	free(my_acc);
+	
   	return 0;
 }
-
-/*
- *
- */
-void evolve_step(double *mass, double **pos, double **vel, double **acc, 
-			int n, double t, double dt, double t_out, double dt_out, double t_end, FILE* fout){
-	
-	int i,j,k;
-	double pos_ij[NDIM];
-	double r2;
-	double r3;
-	
-	for(t=0.0; t<t_end; t += dt){
-		
-		//update velocity and position, reset acceleration to 0;
-		for(i=0; i<n; i++){	
-			for(j=0; j<NDIM; j++){
-				vel[i][0] += acc[i][0]*dt/2;
-				pos[i][j] += vel[i][j]*dt;
-				acc[i][j] = 0.0;
-			}
-		}
-		
-		//calculate acceleration and velocity for next iteration
-		for(i=0; i<n; i++){
-			for(j=i+1; j<n; j++){
-				r2 = 0.0;
-				for(k=0; k<NDIM; k++){
-					pos_ij[k] = pos[j][k] - pos[i][k];	
-					r2 += pos_ij[k] * pos_ij[k];
-				}
-				r3 = r2 * sqrt(r2);
-			
-				for(k=0; k<NDIM; k++){
-					acc[i][k] += mass[i]*pos_ij[k] / r3;
-					acc[j][k] -= mass[j]*pos_ij[k] / r3;
-					
-					vel[i][k] += acc[i][k]*dt/2;
-				}
-
-			}
-		}
-		
-		//print snapshot of simulation if appropriate time
-		if(t>t_out){
-			output_snapshot(mass, pos, vel, n, t);
-			t_out += dt_out;	
-		}
-	}
-	
-	output_snapshot_to_file(fout, mass, pos, vel, n, t);
-}
-
 
