@@ -1,0 +1,13 @@
+package account.models;
+
+import java.util.regex.Pattern;
+
+public class Registration {
+	
+	public boolean doRegistration(String fName, String lName, String email, String pass){
+		
+		//try to register in DB, si no se puede return false
+		return true;
+	}	
+	
+}
