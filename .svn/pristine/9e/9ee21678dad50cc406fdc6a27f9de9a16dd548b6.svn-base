@@ -1,0 +1,161 @@
+<%@ page language="java" contentType="text/html; charset=US-ASCII"
+	pageEncoding="US-ASCII"%>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>My Family Tree</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<link
+	href="http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700|Archivo+Narrow:400,700"
+	rel="stylesheet" type="text/css">
+<link href="home.css" rel="stylesheet" type="text/css" media="all" />
+<link rel="shortcut icon" href="images/favicon.ico">
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		$("#comment").focusout(function() {
+			if (!$("#comment").val()) {
+				$("#comment").val("Write here what are you thinking...");
+				$("#comment").css("color", "gray");
+			}
+		});
+		
+		$("#notificationDiv").hide();
+	});
+
+	function removeText() {
+		if ($("#comment").val() == "Write here what are you thinking...") {
+			$("#comment").val("");
+			$("#comment").removeAttr("style");
+		}
+	}
+
+	function makePost() {
+		$(".content")
+				.fadeOut(
+						1000,
+						function() {
+							if (!$("#comment").val()
+									|| $("#comment").val() == "Write here what are you thinking...") {
+								$("#comment").val(
+										"Write here what are you thinking...");
+								$("#comment").css("color", "gray");
+							} else {
+								// do the ajax call to insert the comment and refresh the content area
+								// return the id from the ajax call
+
+								var text = $("#comment").val();
+								$("#thought")
+										.after(
+												'<div class="originalpost-2141"><br/><hr><fieldset><legend><h2>Ernesto Perez</h2></legend><p>'
+														+ text
+														+ '</p><div class="replays-2140" style="margin-left: 20px;"><input type="text" id="replaycomment-2141" name="replaycomment" value=""><button type="button" class="button" onclick="makeReplay(this);">Post</button></div></fieldset></div>');
+								$(".content").fadeIn(1000);
+								$("#comment").val(
+										"Write here what are you thinking...");
+								$("#comment").css("color", "gray");
+							}
+						});
+	}
+
+	function makeReplay(elem) {
+		var father = $(elem).parent().attr("class");
+		var id = father.split("-")[1];
+		var text = $('#replaycomment-' + id).val();
+		if (text) {
+			$('#replaycomment-' + id).before(
+					'<h3>Ernesto Perez</h3><p>' + text + '</p>');
+			$('#replaycomment-' + id).val("");
+
+			//do ajax call to insert the coment without notifiying the user
+		}
+	}
+	
+	function showNotifications() {
+		$(".content").fadeOut(1000,function(){
+			$("#notificationDiv").show();
+			$("#notificationDiv").attr("class","notificationDIV");
+		});
+	}
+</script>
+</head>
+
+<body>
+	<div class="header">
+		<div class="logo">
+			<a href="/FamilyTree/welcome.jsp"> <img id="logoPic"
+				src="images/logo.png">
+			</a>
+		</div>
+		<ul>
+			<li style="margin-right: 40px;"><a href="home.jsp"> Home </a></li>
+			<li><a href="#"> Request </a>
+				<ul <%
+						String privileges = session.getAttribute("privileges").toString();
+						if(!privileges.equals('u')){
+					%>
+					style="margin-left: -75px !important;"
+					<%
+						}
+					%>>
+					<li><a href="#"> Family Link </a></li>
+					<%
+						if(privileges.equals('u')){
+					%>
+						<li><a href="#">Administration Privileges </a></li>
+					<%
+						}
+					%>
+					<li><a href="passwordReset.jsp"> Reset Password </a></li>
+				</ul></li>
+			<li style="margin-left: 40px;"><a href="welcome.jsp"> Logout </a></li>
+		</ul>
+	</div>
+
+	<div class="left-sidebar">
+		<div class="username">
+			<h2 style="font-style: oblique;">Welcome:</h2>
+			<h1 style="font-style: oblique;"><%=session.getAttribute("fname") %> <%=session.getAttribute("lname") %></h1>
+			<%if(privileges.equalsIgnoreCase("s")){%>
+				<ul class="notifications" onclick="showNotifications()"><li><a href="#">Notifications</a></li></ul>
+			<%}%>
+		</div>
+	</div>
+
+	<div class="content">
+		<div id="thought" style="padding-bottom: 20px;">
+			<textarea name="comment" id="comment" class="comment"
+				onfocus="removeText();" style="color: gray;">Write here what are you thinking...</textarea>
+			<button type="button" class="button" onclick="makePost();">Post</button>
+		</div>
+			
+		<div class="originalpost-2140">
+			<br />
+			<hr>
+			<fieldset style="width: auto; padding-left: 20px; padding-right: 30px;">
+				<legend>
+					<h2>Ernesto Perez</h2>
+				</legend>
+				<p>Bueno nada hoy la estoy pasando super bien!!!!</p>
+				<div class="replays-2140" style="margin-left: 20px;">
+					<h3>Jorge Lopez</h3>
+					<p>No jodas loco si te has metido todo el dia estudiando</p>
+					<h3>Linnet Fernandez</h3>
+					<p>Jorgito no tepongas asi con Ernestico, ;p</p>
+					<input type="text" id="replaycomment-2140" name="replaycomment" value="">
+					<button type="button" class="button" onclick="makeReplay(this);">Post</button>
+				</div>
+			</fieldset>
+		</div>
+		
+		
+	</div>
+	
+	<div id="notificationDiv">
+		<p>Estas son las notificationes so far...</p>
+	</div>
+</body>
+</html>

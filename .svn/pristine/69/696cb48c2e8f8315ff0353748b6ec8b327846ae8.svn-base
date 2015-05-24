@@ -1,0 +1,232 @@
+package account.testing;
+
+import java.util.ArrayList;
+
+import account.models.Administration;
+import account.models.Comments;
+import account.models.LogInAndOut;
+import account.models.MakeReplay;
+import account.models.PasswordReset;
+import account.models.Registration;
+import account.models.User;
+import account.models.getCommentsInfo;
+import account.models.getUserRow;
+
+public class Testing {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+	
+		//Test 1
+		//Testing.testLogin1();
+		//Test 2
+		//Testing.testLogin2();
+		//Test 3
+		//Testing.testLogin3();	
+		//Test 4 Reset Password	
+		//Testing.resetPassword();
+     	//Test 5 Logout Integral Test  	
+		//Test 6	
+		//Testing.testRegister1();
+		//Test 7
+		//Testing.testRegister2();
+		//Test 8
+		//Testing.testAdmin1();
+		//Test 9
+		//Testing.testAdmin2();
+		//Test 10
+		//Testing.testAdmin3();
+		//Test 11
+		//Testing.testAdmin4();
+		//Test 12
+		//Testing.testAdmin5();
+		//Test 13
+		//Testing.testGetInfo();
+		//Test 14
+		Testing.testComment();
+		
+		
+		
+	}//End main test class	
+	
+	// Test 1
+	public static void testLogin1(){
+		
+		String userTest ="omart022@fiu.edu"  ;
+		String passTest = "marlins";
+		
+		if(LogInAndOut.doLogin(userTest, passTest)){
+			System.out.println("The User is loggin ");
+		}
+		else{
+			System.out.println("The login fail");
+		}			
+}// End of testLogin1
+	
+public static void testLogin2(){
+
+		String userTest ="omart022@fiu.edu"  ;
+		String passTest = "";
+		
+		if(LogInAndOut.doLogin(userTest, passTest)){	
+			System.out.println("The User is loggin ");
+		}
+		else{	
+			System.out.println("Incorrect username & password");
+		}		
+}// End of testLogin2
+
+public static void testLogin3(){
+	
+	String userTest ="omart022@fiu.edu"  ;
+	String passTest = "wrongpassword";
+	
+	if(LogInAndOut.doLogin(userTest, passTest)){
+		System.out.println("The User is loggin ");
+	}
+	else{
+		System.out.println("Incorrect username & password");
+	}		
+}// End of testLogin3
+
+
+public static void resetPassword(){
+	
+	String userTest ="omart022@fiu.edu"  ; //User is register already
+	PasswordReset testRest = new PasswordReset();
+	if(testRest.checkEmail(userTest)){
+		System.out.println("Email was sent ");
+	}
+	else{
+		System.out.println("User not found");
+	}		
+}// End of Password Reset 
+
+public static void testRegister1(){
+	
+	String nameTest = "Test";
+	String lastTest = "Lasttest";
+	String userTest ="test@gmail.com" ;
+	String passTest = "password";
+
+	Registration testRegistration = new Registration();
+	
+	 if (testRegistration.doRegistration(nameTest, lastTest, userTest,
+			passTest)){
+		 System.out.println("User is Registered");
+	 }
+	 else{
+		 System.out.println("User could not be Register");
+	 }
+}// End of testRegister1
+
+public static void testRegister2(){
+	
+	String nameTest = "Test";
+	String lastTest = "Lasttest";
+	String userTest ="omart022@gmail.com" ; // Email already registered
+	String passTest = "password";
+
+	Registration testRegistration = new Registration();
+	
+	 if (testRegistration.doRegistration(nameTest, lastTest, userTest,
+			passTest)){
+		 System.out.println("User is Registered");
+	 }
+	 else{
+		 System.out.println("Duplicate Email");
+	 }
+}// End of testRegister1
+
+public static void testAdmin1(){
+	
+	 ArrayList<User> nonAdmin = Administration.findNoAdmin();
+	 while (!nonAdmin.isEmpty()) { 
+		 System.out.println(nonAdmin.remove(0).getFname());	 
+	 }	// End of Test Admin
+}
+
+public static void testAdmin2(){
+	
+	String nameTest = "Test";
+	String lastTest = "Lasttest";
+	String userTest ="omart022@gmail.com"; // Email already registered
+	
+	
+	System.out.println(Administration.sendRequest(nameTest, userTest, lastTest));	 
+	 }	// End of Test Admin2
+
+
+public static void testAdmin3(){
+	
+	ArrayList<User> nonAdmin = Administration.showAdminRequest();
+	 while (!nonAdmin.isEmpty()) { 
+		 System.out.println(nonAdmin.remove(0).getFname());	 
+	 	}	 
+}	// End of Test Admin3
+
+public static void testAdmin4(){
+	
+	ArrayList<User> nonAdmin = Administration.showAdminRequest();
+	
+	if(Administration.makeAdmin(nonAdmin)){
+		System.out.println("The user is granted Admin Rights");
+	}
+	else{	
+		System.out.println("It fail user not granted admin rights");
+	}
+	  
+}	// End of Test Admin4
+
+
+public static void testAdmin5(){
+	
+	String nameTest = "Osman";
+	String lastTest = "Martinez";
+	String userTest ="omart022@fiu.edu" ; // Email already registered
+	
+	Administration.sendRequest(nameTest, userTest, lastTest);
+	ArrayList<User> nonAdmin = Administration.showAdminRequest();
+	Administration.dropFromTable(nonAdmin);
+
+	if(nonAdmin.isEmpty()){
+     	System.out.println("User is deny admin rights and remove from table all request");	
+	}
+	else {
+		System.out.println("User was not remove from table");
+	}
+	}	// End of Test Admin5
+
+public static void testGetInfo(){
+	
+	String userTest ="omart022@fiu.edu";
+	String[] test1 =  getUserRow.getUserInfo(userTest);
+	
+	for(int i = 0 ; i < test1.length; i++ ){
+		System.out.println(test1[i]);	
+	}	
+}
+
+public static void testComment(){
+	
+	String test = "This is a test";
+	String userTest ="omart022@fiu.edu";
+	
+	
+	MakeReplay.postComment(test, userTest);
+	
+	ArrayList<Comments> comment =  getCommentsInfo.getComments();
+	
+	while (!comment.isEmpty()) { 
+		 System.out.println(comment.remove(0).text);	 
+	 	}	 
+	
+}
+
+
+}// End of Testing class 
+
+
