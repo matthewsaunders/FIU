@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=US-ASCII"
 	pageEncoding="US-ASCII"%>
 <%@page import="java.util.*"%>
-<%@page import="account.models.User"%>
+<%@page import="account.modelstest.User"%>
 <!DOCTYPE html>
 <html>
 <head>
