@@ -12,15 +12,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import account.models.Administration;
-import account.models.Comments;
-import account.models.Link;
-import account.models.LogInAndOut;
-import account.models.PasswordReset;
-import account.models.Registration;
-import account.models.User;
-import account.models.getCommentsInfo;
-import account.models.getUserRow;
+import account.modelstest.Administration;
+import account.modelstest.Comments;
+import account.modelstest.Link;
+import account.modelstest.LogInAndOut;
+import account.modelstest.PasswordReset;
+import account.modelstest.Registration;
+import account.modelstest.User;
+import account.modelstest.getCommentsInfo;
+import account.modelstest.getUserRow;
 
 /**
  * Servlet implementation class AccountController

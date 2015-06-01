@@ -1,8 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=US-ASCII"
 	pageEncoding="US-ASCII"%>
 <%@page import="java.util.*"%>
-<%@page import="account.models.Comments"%>
-<%@page import="account.models.User"%>
+<%@page import="account.modelstest.Comments"%>
+<%@page import="account.modelstest.User"%>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
