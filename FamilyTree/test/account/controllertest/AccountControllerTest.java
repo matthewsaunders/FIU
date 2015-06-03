@@ -46,7 +46,7 @@ public class AccountControllerTest {
 	public void doGet_UserRegisters_GivenCorrectRegistrationInformation() throws ServletException, IOException {
 		//Setup
 		http_request.setState("John", "Doe", "John@gmail.com", "JohnyBoy");
-		ac_instance.setRegistration(new StubRegistration());
+		ac_instance.setRegistration(new Registration(true));
 		
 		//Execute
 		try{
@@ -63,7 +63,7 @@ public class AccountControllerTest {
 	public void doGet_UserRegisters_GivenCorrectRegistrationInformation2() throws ServletException, IOException {
 		//Setup
 		http_request.setState("Jane", "Doe", "Jane@gmail.com", "jarule123");
-		ac_instance.setRegistration(new StubRegistration());
+		ac_instance.setRegistration(new Registration(true));
 		
 		//Execute
 		try{
@@ -73,7 +73,7 @@ public class AccountControllerTest {
 		}
 		
 		//Evaluate
-		assertEquals("Happy Path 1", "welcome.jsp", http_response.getRedirect());
+		assertEquals("Happy Path 2", "welcome.jsp", http_response.getRedirect());
 	}
 	
 }

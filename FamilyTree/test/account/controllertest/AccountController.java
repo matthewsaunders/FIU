@@ -42,31 +42,31 @@ public class AccountController extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
-	protected void doGet(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest http_request,
+			HttpServletResponse http_response) throws ServletException, IOException {
 		// String forward = "/FamilyTree/"; // Used to redirect browser
 
 		// Get a map of the request parameters
 		@SuppressWarnings("unchecked")
-		Map parameters = request.getParameterMap();
+		Map parameters = http_request.getParameterMap();
 
 		// request from registration page
 		if (parameters.containsKey("register")) {
 
 			//Registration reg = new Registration();
 
-			String fName = request.getParameter("first_name");
-			String lName = request.getParameter("last_name");
-			String email = request.getParameter("email");
-			String pass = request.getParameter("password");
+			String fName = http_request.getParameter("first_name");
+			String lName = http_request.getParameter("last_name");
+			String email = http_request.getParameter("email");
+			String pass = http_request.getParameter("password");
 
 			if (reg.doRegistration(fName, lName, email, pass))
-				response.sendRedirect("welcome.jsp");
+				http_response.sendRedirect("welcome.jsp");
 			else {
-				request.setAttribute("message",
+				http_request.setAttribute("message",
 						"Email already taken   \n Please use another email");
-				request.getRequestDispatcher("registration.jsp").forward(
-						request, response);
+				http_request.getRequestDispatcher("registration.jsp").forward(
+						http_request, http_response);
 			}
 		}
 
@@ -74,14 +74,14 @@ public class AccountController extends HttpServlet {
 		if (parameters.containsKey("login")) {
 
 			// Setup response
-			response.setContentType("text/html;charset=UTF-8");
+			http_response.setContentType("text/html;charset=UTF-8");
 
 			// Get values from JSP
-			String username = request.getParameter("username");
-			String password = request.getParameter("password");
+			String username = http_request.getParameter("username");
+			String password = http_request.getParameter("password");
 
 			// doLogin
-			HttpSession session = request.getSession(true);
+			HttpSession session = http_request.getSession(true);
 
 			if (!username.equals("") && !password.equals("")
 					&& LogInAndOut.doLogin(username, password)) {
@@ -102,82 +102,82 @@ public class AccountController extends HttpServlet {
 				session.setAttribute("lname", row[2]);
 				session.setAttribute("privileges", row[3]);
 
-				request.setAttribute("comments", mylist);
-				request.setAttribute("total_comments", total_comments);
+				http_request.setAttribute("comments", mylist);
+				http_request.setAttribute("total_comments", total_comments);
 
 				// Redirect to landing page
 				if (row[3].equals("s")) {
 					ArrayList<User> nonAdmin = Administration.findNoAdmin();
 					ArrayList<User> requests = Administration
 							.showAdminRequest();
-					request.setAttribute("nonAdmin", nonAdmin);
-					request.setAttribute("requests", requests);
+					http_request.setAttribute("nonAdmin", nonAdmin);
+					http_request.setAttribute("requests", requests);
 				} else {
 					ArrayList<User> nonAdmin = new ArrayList<User>();
 					ArrayList<User> requests = new ArrayList<User>();
-					request.setAttribute("nonAdmin", nonAdmin);
-					request.setAttribute("requests", requests);
+					http_request.setAttribute("nonAdmin", nonAdmin);
+					http_request.setAttribute("requests", requests);
 				}
-				request.getRequestDispatcher("home.jsp").forward(request,
-						response);
+				http_request.getRequestDispatcher("home.jsp").forward(http_request,
+						http_response);
 			}
 			// If either field was left empty
 			else if (username.equals("") || password.equals("")) {
-				request.setAttribute("message",
+				http_request.setAttribute("message",
 						"Please enter Email and Password");
-				request.getRequestDispatcher("welcome.jsp").forward(request,
-						response);
+				http_request.getRequestDispatcher("welcome.jsp").forward(http_request,
+						http_response);
 			}
 			// Otherwise, username/password combination is incorrect
 			else {
-				request.setAttribute("message",
+				http_request.setAttribute("message",
 						"Invalid email/password combination"); // Will be
 																// available as
 																// ${message}
-				request.getRequestDispatcher("welcome.jsp").forward(request,
-						response);
+				http_request.getRequestDispatcher("welcome.jsp").forward(http_request,
+						http_response);
 			}
 		}
 
 		// Perform logout
 		if (parameters.containsKey("logout")) {
-			HttpSession session = request.getSession();
+			HttpSession session = http_request.getSession();
 			session.invalidate();
 
-			response.sendRedirect("welcome.jsp");
+			http_response.sendRedirect("welcome.jsp");
 		}
 
 		if (parameters.containsKey("reset")) {
-			response.setContentType("text/html;charset=UTF-8");
+			http_response.setContentType("text/html;charset=UTF-8");
 
 			// Get values from JSP
-			String email = request.getParameter("email");
+			String email = http_request.getParameter("email");
 
 			PasswordReset reset = new PasswordReset();
 
 			if (reset.checkEmail(email)) {
-				response.sendRedirect("welcome.jsp");
+				http_response.sendRedirect("welcome.jsp");
 			} else {
-				request.setAttribute("message",
+				http_request.setAttribute("message",
 						"Email entered is not registered \n Please try again");
-				request.getRequestDispatcher("passwordReset.jsp").forward(
-						request, response);
+				http_request.getRequestDispatcher("passwordReset.jsp").forward(
+						http_request, http_response);
 			}
 		}
 
 		if (parameters.containsKey("makeAdmin")) {
 			ArrayList<User> nonAdmin = Administration.findNoAdmin();
 
-			request.setAttribute("nonAdmin", nonAdmin);
-			request.getRequestDispatcher("showNonAdmin.jsp").forward(request,
-					response);
+			http_request.setAttribute("nonAdmin", nonAdmin);
+			http_request.getRequestDispatcher("showNonAdmin.jsp").forward(http_request,
+					http_response);
 
 		}
 
 		if (parameters.containsKey("submitAdmin")) {
 
 			try {
-				String[] selection = request.getParameterValues("selection");
+				String[] selection = http_request.getParameterValues("selection");
 				ArrayList<User> users = new ArrayList<User>();
 
 				for (int i = 0; i < selection.length; i++) {
@@ -188,57 +188,57 @@ public class AccountController extends HttpServlet {
 
 				Administration.makeAdmin(users);
 
-				HttpSession session = request.getSession();
+				HttpSession session = http_request.getSession();
 
 				// get the whole list of comments
 				ArrayList<Comments> mylist = getCommentsInfo.getComments();
 				int total_comments = mylist.size();
 
-				request.setAttribute("comments", mylist);
-				request.setAttribute("total_comments", total_comments);
+				http_request.setAttribute("comments", mylist);
+				http_request.setAttribute("total_comments", total_comments);
 
 				// Redirect to landing page
 				if (session.getAttribute("privileges").toString().equals("s")) {
 					ArrayList<User> nonAdmin = Administration.findNoAdmin();
 					ArrayList<User> requests = Administration
 							.showAdminRequest();
-					request.setAttribute("nonAdmin", nonAdmin);
-					request.setAttribute("requests", requests);
+					http_request.setAttribute("nonAdmin", nonAdmin);
+					http_request.setAttribute("requests", requests);
 				} else {
 					ArrayList<User> nonAdmin = new ArrayList<User>();
 					ArrayList<User> requests = new ArrayList<User>();
-					request.setAttribute("nonAdmin", nonAdmin);
-					request.setAttribute("requests", requests);
+					http_request.setAttribute("nonAdmin", nonAdmin);
+					http_request.setAttribute("requests", requests);
 				}
-				request.getRequestDispatcher("home.jsp").forward(request,
-						response);
+				http_request.getRequestDispatcher("home.jsp").forward(http_request,
+						http_response);
 			} catch (Exception e) {
 				System.out.println("Nothing was selected");
 
-				HttpSession session = request.getSession();
+				HttpSession session = http_request.getSession();
 
 				// get the whole list of comments
 				ArrayList<Comments> mylist = getCommentsInfo.getComments();
 				int total_comments = mylist.size();
 
-				request.setAttribute("comments", mylist);
-				request.setAttribute("total_comments", total_comments);
+				http_request.setAttribute("comments", mylist);
+				http_request.setAttribute("total_comments", total_comments);
 
 				// Redirect to landing page
 				if (session.getAttribute("privileges").toString().equals("s")) {
 					ArrayList<User> nonAdmin = Administration.findNoAdmin();
 					ArrayList<User> requests = Administration
 							.showAdminRequest();
-					request.setAttribute("nonAdmin", nonAdmin);
-					request.setAttribute("requests", requests);
+					http_request.setAttribute("nonAdmin", nonAdmin);
+					http_request.setAttribute("requests", requests);
 				} else {
 					ArrayList<User> nonAdmin = new ArrayList<User>();
 					ArrayList<User> requests = new ArrayList<User>();
-					request.setAttribute("nonAdmin", nonAdmin);
-					request.setAttribute("requests", requests);
+					http_request.setAttribute("nonAdmin", nonAdmin);
+					http_request.setAttribute("requests", requests);
 				}
-				request.getRequestDispatcher("home.jsp").forward(request,
-						response);
+				http_request.getRequestDispatcher("home.jsp").forward(http_request,
+						http_response);
 			}
 		}
 

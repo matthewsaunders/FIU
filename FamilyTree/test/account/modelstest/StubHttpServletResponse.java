@@ -10,8 +10,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 
-
-public class StubHttpServletResponse implements HttpServletResponse {
+public class StubHttpServletResponse implements HttpServletResponse{
 	
 	private String redirect;
 	
@@ -109,12 +108,6 @@ public class StubHttpServletResponse implements HttpServletResponse {
 
 	@Override
 	public void setLocale(Locale arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void addCookie(Cookie arg0) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -229,6 +222,12 @@ public class StubHttpServletResponse implements HttpServletResponse {
 
 	@Override
 	public void setStatus(int arg0, String arg1) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addCookie(Cookie arg0) {
 		// TODO Auto-generated method stub
 		
 	}

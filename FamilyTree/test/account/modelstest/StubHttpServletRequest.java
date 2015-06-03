@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -52,6 +53,50 @@ public class StubHttpServletRequest implements HttpServletRequest {
 	public String getParameter(String key){
 		return (String)parameters.get(key);
 	}
+
+	public void setAttribute(String string, String string2) {
+		return;
+	}
+
+	public RequestDispatcher getRequestDispatcher(String string) {
+		// TODO Auto-generated method stub
+		return new StubRequestDispatcher();
+	}
+
+	public HttpSession getSession(boolean b) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setAttribute(String string, Object o) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public HttpSession getSession() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public class StubRequestDispatcher implements RequestDispatcher{
+
+		@Override
+		public void forward(ServletRequest arg0, ServletResponse arg1)
+				throws ServletException, IOException {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void include(ServletRequest arg0, ServletResponse arg1)
+				throws ServletException, IOException {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
+
 
 	@Override
 	public AsyncContext getAsyncContext() {
@@ -180,12 +225,6 @@ public class StubHttpServletRequest implements HttpServletRequest {
 	}
 
 	@Override
-	public RequestDispatcher getRequestDispatcher(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public String getScheme() {
 		// TODO Auto-generated method stub
 		return null;
@@ -229,12 +268,6 @@ public class StubHttpServletRequest implements HttpServletRequest {
 
 	@Override
 	public void removeAttribute(String arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setAttribute(String arg0, Object arg1) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -382,18 +415,6 @@ public class StubHttpServletRequest implements HttpServletRequest {
 	}
 
 	@Override
-	public HttpSession getSession() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public HttpSession getSession(boolean arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public Principal getUserPrincipal() {
 		// TODO Auto-generated method stub
 		return null;
@@ -441,3 +462,4 @@ public class StubHttpServletRequest implements HttpServletRequest {
 		
 	}
 }
+
