@@ -33,6 +33,8 @@ public class StubHttpServletRequest implements HttpServletRequest {
 	private boolean hasKey;
 	private RequestDispatcher dispatcher; 
 	private String destination;
+	private StubHttpSession session;
+	private String[] parameterValues;
 	
 	public void setParameterMap(Map params){
 		this.parameters = params;
@@ -48,6 +50,7 @@ public class StubHttpServletRequest implements HttpServletRequest {
 		attributes = new HashMap<String,String>();
 		dispatcher = new StubRequestDispatcher();
 		hasKey = true;
+		session = new StubHttpSession();
 	}
 	
 	public void setParameter(String key, Object value){
@@ -85,7 +88,7 @@ public class StubHttpServletRequest implements HttpServletRequest {
 	}
 	
 	public HttpSession getSession(boolean b) {
-		return new StubHttpSession();
+		return session;
 	}
 
 	public void setAttribute(String key, Object value) {
@@ -95,8 +98,11 @@ public class StubHttpServletRequest implements HttpServletRequest {
 	}
 
 	public HttpSession getSession() {
-		// TODO Auto-generated method stub
-		return null;
+		return session;
+	}
+	
+	public void putHttpSessionAttribute(String key, Object value){
+		session.putValue(key, value);
 	}
 	
 	public RequestDispatcher getDispatcher(){
@@ -208,11 +214,14 @@ public class StubHttpServletRequest implements HttpServletRequest {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	public void setParameterValues(String[] values){
+		parameterValues = values;
+	}
 
 	@Override
 	public String[] getParameterValues(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		return parameterValues;
 	}
 
 	@Override

@@ -19,9 +19,8 @@ public class StubHttpSession implements HttpSession {
 	}
 	
 	@Override
-	public Object getAttribute(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public Object getAttribute(String key) {
+		return attributes.get(key);
 	}
 
 	@Override
@@ -79,8 +78,7 @@ public class StubHttpSession implements HttpSession {
 
 	@Override
 	public void invalidate() {
-		// TODO Auto-generated method stub
-		
+		return;
 	}
 
 	@Override
@@ -90,9 +88,8 @@ public class StubHttpSession implements HttpSession {
 	}
 
 	@Override
-	public void putValue(String arg0, Object arg1) {
-		// TODO Auto-generated method stub
-		
+	public void putValue(String key, Object value) {
+		attributes.put(key,value);
 	}
 
 	@Override

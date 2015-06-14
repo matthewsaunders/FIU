@@ -26,6 +26,8 @@ public class AccountController extends HttpServlet {
 	private LogInAndOut logInOut;
 	private Comments comments;
 	private getCommentsInfo commentsInfo;
+	private PasswordReset reset;
+	private StubAdministration administration;
 	
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -72,6 +74,22 @@ public class AccountController extends HttpServlet {
 	
 	public getCommentsInfo getCommentsInfo(){
 		return commentsInfo;
+	}
+	
+	public void setPasswordReset(PasswordReset reset){
+		this.reset = reset;
+	}
+	
+	public PasswordReset getPasswordReset(){
+		return reset;
+	}
+	
+	public void setAdministration(StubAdministration admin){
+		administration = admin;
+	}
+	
+	public StubAdministration getAdministration(){
+		return administration;
 	}
 
 	/**
@@ -146,8 +164,8 @@ public class AccountController extends HttpServlet {
 
 				// Redirect to landing page
 				if (row[3].equals("s")) {
-					ArrayList<User> nonAdmin = Administration.findNoAdmin();
-					ArrayList<User> requests = Administration
+					ArrayList<User> nonAdmin = administration.findNoAdmin();
+					ArrayList<User> requests = administration
 							.showAdminRequest();
 					http_request.setAttribute("nonAdmin", nonAdmin);
 					http_request.setAttribute("requests", requests);
@@ -192,7 +210,7 @@ public class AccountController extends HttpServlet {
 			// Get values from JSP
 			String email = http_request.getParameter("email");
 
-			PasswordReset reset = new PasswordReset();
+			//PasswordReset reset = new PasswordReset();
 
 			if (reset.checkEmail(email)) {
 				http_response.sendRedirect("welcome.jsp");
@@ -205,7 +223,7 @@ public class AccountController extends HttpServlet {
 		}
 
 		if (parameters.containsKey("makeAdmin")) {
-			ArrayList<User> nonAdmin = Administration.findNoAdmin();
+			ArrayList<User> nonAdmin = administration.findNoAdmin();
 
 			http_request.setAttribute("nonAdmin", nonAdmin);
 			http_request.getRequestDispatcher("showNonAdmin.jsp").forward(http_request,
@@ -225,7 +243,7 @@ public class AccountController extends HttpServlet {
 					users.add(newUser);
 				}
 
-				Administration.makeAdmin(users);
+				administration.makeAdmin(users);
 
 				HttpSession session = http_request.getSession();
 
@@ -238,8 +256,8 @@ public class AccountController extends HttpServlet {
 
 				// Redirect to landing page
 				if (session.getAttribute("privileges").toString().equals("s")) {
-					ArrayList<User> nonAdmin = Administration.findNoAdmin();
-					ArrayList<User> requests = Administration
+					ArrayList<User> nonAdmin = administration.findNoAdmin();
+					ArrayList<User> requests = administration
 							.showAdminRequest();
 					http_request.setAttribute("nonAdmin", nonAdmin);
 					http_request.setAttribute("requests", requests);
@@ -265,8 +283,8 @@ public class AccountController extends HttpServlet {
 
 				// Redirect to landing page
 				if (session.getAttribute("privileges").toString().equals("s")) {
-					ArrayList<User> nonAdmin = Administration.findNoAdmin();
-					ArrayList<User> requests = Administration
+					ArrayList<User> nonAdmin = administration.findNoAdmin();
+					ArrayList<User> requests = administration
 							.showAdminRequest();
 					http_request.setAttribute("nonAdmin", nonAdmin);
 					http_request.setAttribute("requests", requests);
@@ -319,9 +337,9 @@ public class AccountController extends HttpServlet {
 				i--;
 			}
 
-			Administration.makeAdmin(approved);
-			Administration.dropFromTable(approved);
-			Administration.dropFromTable(denied);
+			administration.makeAdmin(approved);
+			administration.dropFromTable(approved);
+			administration.dropFromTable(denied);
 			
 			// get the whole list of comments
 			ArrayList<Comments> mylist = commentsInfo.getComments();
@@ -332,8 +350,8 @@ public class AccountController extends HttpServlet {
 
 			// Redirect to landing page
 			if (session.getAttribute("privileges").toString().equals("s")) {
-				ArrayList<User> nonAdmin = Administration.findNoAdmin();
-				ArrayList<User> requests = Administration.showAdminRequest();
+				ArrayList<User> nonAdmin = administration.findNoAdmin();
+				ArrayList<User> requests = administration.showAdminRequest();
 				request.setAttribute("nonAdmin", nonAdmin);
 				request.setAttribute("requests", requests);
 			} else {
@@ -352,7 +370,7 @@ public class AccountController extends HttpServlet {
 				String fname = session.getAttribute("fname").toString();
 				String lname = session.getAttribute("lname").toString();
 
-				String result = Administration.sendRequest(username, fname,
+				String result = administration.sendRequest(username, fname,
 						lname);
 				response.getWriter().write(result);
 			}

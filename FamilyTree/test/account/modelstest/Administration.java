@@ -229,7 +229,7 @@ public class Administration {
 		return list;
 	}
 
-	public static void dropFromTable(ArrayList<account.modelstest.User> denied) {
+	public static void dropFromTable(ArrayList<User> list) {
 
 		try {
 			connection = (Connection) DriverManager.getConnection(
@@ -239,8 +239,8 @@ public class Administration {
 			e.printStackTrace();
 		}
 
-		while (!denied.isEmpty()) {
-			String username = denied.remove(0).getUserName(); // saves the
+		while (!list.isEmpty()) {
+			String username = list.remove(0).getUserName(); // saves the
 															// username
 			System.out.println("User: " + username);
 			try {
