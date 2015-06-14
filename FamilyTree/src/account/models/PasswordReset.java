@@ -3,7 +3,7 @@ package account.models;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 
-import account.modelstest.SendEmail;
+import account.models.SendEmail;
 
 import com.mysql.jdbc.Connection;
 import com.mysql.jdbc.PreparedStatement;

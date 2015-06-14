@@ -28,6 +28,11 @@ import javax.servlet.http.Part;
 public class StubHttpServletRequest implements HttpServletRequest {
 
 	private Map parameters;
+	private Map attributes;
+	private String attribute;
+	private boolean hasKey;
+	private RequestDispatcher dispatcher; 
+	private String destination;
 	
 	public void setParameterMap(Map params){
 		this.parameters = params;
@@ -35,11 +40,22 @@ public class StubHttpServletRequest implements HttpServletRequest {
 	
 	public void setState(String fname, String lname, String email, String pass){
 		parameters = new HashMap<String,String>();
-		parameters.put("register", "value");
 		parameters.put("fname", fname);
 		parameters.put("lname", lname);
 		parameters.put("email", email);
-		parameters.put("pass", pass);
+		parameters.put("password", pass);
+		
+		attributes = new HashMap<String,String>();
+		dispatcher = new StubRequestDispatcher();
+		hasKey = true;
+	}
+	
+	public void setParameter(String key, Object value){
+		parameters.put(key, value);
+	}
+	
+	public void setAction(String action){
+		parameters.put(action, "value");
 	}
 	
 	public Map getParameterMap(){
@@ -47,45 +63,57 @@ public class StubHttpServletRequest implements HttpServletRequest {
 	}
 	
 	public boolean containsKey(String key){
-		return true;
+		return hasKey;
 	}
 	
 	public String getParameter(String key){
 		return (String)parameters.get(key);
 	}
 
-	public void setAttribute(String string, String string2) {
+	public void setAttribute(String key, String value) {
+		attributes.put(key, value);	
 		return;
 	}
 
 	public RequestDispatcher getRequestDispatcher(String string) {
-		// TODO Auto-generated method stub
-		return new StubRequestDispatcher();
+		destination = string;
+		return dispatcher;
 	}
 
+	public String getDestination(){
+		return destination;
+	}
+	
 	public HttpSession getSession(boolean b) {
-		// TODO Auto-generated method stub
-		return null;
+		return new StubHttpSession();
 	}
 
-	public void setAttribute(String string, Object o) {
+	public void setAttribute(String key, Object value) {
 		// TODO Auto-generated method stub
-		
+		attributes.put(key, value);	
+		return;
 	}
 
 	public HttpSession getSession() {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+	
+	public RequestDispatcher getDispatcher(){
+		return dispatcher;
+	}
 
 	public class StubRequestDispatcher implements RequestDispatcher{
 
+		private ServletRequest forwardRequest;
+		private ServletResponse forwardResponse;
+		
 		@Override
-		public void forward(ServletRequest arg0, ServletResponse arg1)
+		public void forward(ServletRequest req, ServletResponse res)
 				throws ServletException, IOException {
 			// TODO Auto-generated method stub
-			
+			forwardRequest = req;
+			forwardResponse = res;
 		}
 
 		@Override
@@ -105,9 +133,8 @@ public class StubHttpServletRequest implements HttpServletRequest {
 	}
 
 	@Override
-	public Object getAttribute(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public Object getAttribute(String key) {
+		return attributes.get(key);
 	}
 
 	@Override

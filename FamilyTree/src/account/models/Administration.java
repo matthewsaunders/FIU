@@ -8,8 +8,8 @@ import java.util.ArrayList;
 //import org.apache.catalina.ant.FindLeaksTask;
 
 
-import account.modelstest.Administration;
-import account.modelstest.User;
+import account.models.Administration;
+import account.models.User;
 
 import com.mysql.jdbc.Connection;
 import com.mysql.jdbc.PreparedStatement;

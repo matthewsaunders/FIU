@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
@@ -13,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 public class StubHttpServletResponse implements HttpServletResponse{
 	
 	private String redirect;
+	private Map attributes;
 	
 	public void sendRedirect(String location){
 		this.redirect = location;

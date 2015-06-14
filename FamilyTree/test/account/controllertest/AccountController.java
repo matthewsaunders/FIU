@@ -22,6 +22,10 @@ import account.modelstest.*;
 public class AccountController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private Registration reg;
+	private getUserRow userRow;
+	private LogInAndOut logInOut;
+	private Comments comments;
+	private getCommentsInfo commentsInfo;
 	
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -36,6 +40,38 @@ public class AccountController extends HttpServlet {
 	
 	public Registration getRegistration(){
 		return this.reg;
+	}
+	
+	public void setUserRow(getUserRow o){
+		this.userRow = o;
+	}
+	
+	public getUserRow getUserRow(){
+		return userRow;
+	}
+	
+	public void setLogInOut(LogInAndOut o){
+		this.logInOut = o;
+	}
+	
+	public LogInAndOut getLogInOut(){
+		return logInOut;
+	}
+	
+	public void setComments(Comments o){
+		this.comments = o;
+	}
+	
+	public Comments getComments(){
+		return comments;
+	}
+	
+	public void setCommentsInfo(getCommentsInfo o){
+		this.commentsInfo = o;
+	}
+	
+	public getCommentsInfo getCommentsInfo(){
+		return commentsInfo;
 	}
 
 	/**
@@ -84,13 +120,16 @@ public class AccountController extends HttpServlet {
 			HttpSession session = http_request.getSession(true);
 
 			if (!username.equals("") && !password.equals("")
-					&& LogInAndOut.doLogin(username, password)) {
+					&& logInOut.doLogin(username, password)) {
+					//&& LogInAndOut.doLogin(username, password)) {
 
 				// get complete name of user that log in
-				String[] row = getUserRow.getUserInfo(username);
+				//String[] row = getUserRow.getUserInfo(username);
+				String[] row = userRow.getUserInfo(username);
 
 				// get the whole list of comments
-				ArrayList<Comments> mylist = getCommentsInfo.getComments();
+				//ArrayList<Comments> mylist = getCommentsInfo.getComments();
+				ArrayList<Comments> mylist = commentsInfo.getComments();
 
 				int total_comments = mylist.size();
 
@@ -191,7 +230,7 @@ public class AccountController extends HttpServlet {
 				HttpSession session = http_request.getSession();
 
 				// get the whole list of comments
-				ArrayList<Comments> mylist = getCommentsInfo.getComments();
+				ArrayList<Comments> mylist = commentsInfo.getComments();
 				int total_comments = mylist.size();
 
 				http_request.setAttribute("comments", mylist);
@@ -218,7 +257,7 @@ public class AccountController extends HttpServlet {
 				HttpSession session = http_request.getSession();
 
 				// get the whole list of comments
-				ArrayList<Comments> mylist = getCommentsInfo.getComments();
+				ArrayList<Comments> mylist = commentsInfo.getComments();
 				int total_comments = mylist.size();
 
 				http_request.setAttribute("comments", mylist);
@@ -285,7 +324,7 @@ public class AccountController extends HttpServlet {
 			Administration.dropFromTable(denied);
 			
 			// get the whole list of comments
-			ArrayList<Comments> mylist = getCommentsInfo.getComments();
+			ArrayList<Comments> mylist = commentsInfo.getComments();
 			int total_comments = mylist.size();
 
 			request.setAttribute("comments", mylist);
