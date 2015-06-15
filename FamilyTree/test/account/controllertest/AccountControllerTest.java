@@ -66,7 +66,7 @@ public class AccountControllerTest {
 	@Test
 	public void TC_AC_02_doGet_FailedUserRegisteration_GivenEmailAccountAlreadyInUse() throws ServletException, IOException {
 		//Setup
-		http_request.setState("Jane", "Doe", "John@gmail.com", "jarule123");
+		http_request.setState("Jane", "Doe", "John@gmail.com", "JohnyBoy");
 		http_request.setAction("register");
 		ac_instance.setRegistration(new Registration(false));
 		
@@ -82,11 +82,10 @@ public class AccountControllerTest {
 		assertEquals("FailedUserRegisteration - destination", "registration.jsp", http_request.getDestination());
 	}
 
-	
 	@Test
 	public void TC_AC_03_doGet_SuccessfulUserLogin_GivenProperCredentials() throws ServletException, IOException {
 		//Setup
-		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		http_request.setState("John", "Doe", "John@gmail.com", "JohnyBoy");
 		http_request.setParameter("username", "ironman");
 		http_request.setAction("login");
 		ac_instance.setRegistration(new Registration(false));
@@ -106,9 +105,9 @@ public class AccountControllerTest {
 	}
 	
 	@Test
-	public void doGet_SuccessfulAdminUserLogin_GivenProperCredentials() throws ServletException, IOException {
+	public void TC_AC_04_doGet_SuccessfulAdminUserLogin_GivenProperCredentials() throws ServletException, IOException {
 		//Setup
-		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		http_request.setState("John", "Doe", "John@gmail.com", "JohnyBoy");
 		http_request.setParameter("username", "ironman");
 		http_request.setAction("login");
 		ac_instance.setRegistration(new Registration(false));
@@ -129,9 +128,9 @@ public class AccountControllerTest {
 	}
 		
 	@Test
-	public void doGet_FailedUserLogin_GivenMissingUsername() throws ServletException, IOException {
+	public void TC_AC_05_doGet_FailedUserLogin_GivenMissingUsername() throws ServletException, IOException {
 		//Setup
-		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		http_request.setState("John", "Doe", "John@gmail.com", "JohnyBoy");
 		http_request.setParameter("username", "");
 		http_request.setAction("login");
 		ac_instance.setRegistration(new Registration(false));
@@ -152,7 +151,7 @@ public class AccountControllerTest {
 	}
 	
 	@Test
-	public void doGet_FailedUserLogin_IncorrectUsernamePassword() throws ServletException, IOException {
+	public void TC_AC_06_doGet_FailedUserLogin_IncorrectUsernamePassword() throws ServletException, IOException {
 		//Setup
 		http_request.setState("John", "Doe", "John@gmail.com", "wrongpass");
 		http_request.setParameter("username", "ironman");
@@ -175,9 +174,9 @@ public class AccountControllerTest {
 	}
 	
 	@Test
-	public void doGet_SuccessfulUserLogout_GivenLogoutAction() throws ServletException, IOException {
+	public void TC_AC_07_doGet_SuccessfulUserLogout_GivenLogoutAction() throws ServletException, IOException {
 		//Setup
-		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		http_request.setState("John", "Doe", "John@gmail.com", "JohnyBoy");
 		http_request.setParameter("username", "ironman");
 		http_request.setAction("logout");
 		
@@ -193,9 +192,9 @@ public class AccountControllerTest {
 	}
 		
 	@Test
-	public void doGet_SuccessfulResetPassword_GiveResetAction() throws ServletException, IOException {
+	public void TC_AC_08_doGet_SuccessfulResetPassword_GiveResetAction() throws ServletException, IOException {
 		//Setup
-		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		http_request.setState("John", "Doe", "John@gmail.com", "JohnyBoy");
 		http_request.setParameter("username", "ironman");
 		http_request.setAction("reset");
 		ac_instance.setPasswordReset(new PasswordReset(true));
@@ -212,9 +211,9 @@ public class AccountControllerTest {
 	}
 		
 	@Test
-	public void doGet_FailedResetPassword_GiveResetAction() throws ServletException, IOException {
+	public void TC_AC_09_doGet_FailedResetPassword_GiveResetAction() throws ServletException, IOException {
 		//Setup
-		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		http_request.setState("John", "Doe", "John@gmail.com", "JohnyBoy");
 		http_request.setParameter("username", "ironman");
 		http_request.setAction("reset");
 		ac_instance.setPasswordReset(new PasswordReset(false));
@@ -232,9 +231,9 @@ public class AccountControllerTest {
 	}
 	
 	@Test
-	public void doGet_SuccessfulMakeUserAdmin_GivenMakeAdminAction() throws ServletException, IOException {
+	public void TC_AC_10_doGet_SuccessfulMakeUserAdmin_GivenMakeAdminAction() throws ServletException, IOException {
 		//Setup
-		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		http_request.setState("John", "Doe", "John@gmail.com", "JohnyBoy");
 		http_request.setParameter("username", "ironman");
 		http_request.setAction("makeAdmin");
 		ac_instance.setRegistration(new Registration(false));
@@ -255,9 +254,9 @@ public class AccountControllerTest {
 	}
 	
 	@Test
-	public void doGet_SuccessfulSubmitAdmin_GivenSubmitAdminActionAndSuperAdminUser() throws ServletException, IOException {
+	public void TC_AC_11_doGet_SuccessfulSubmitAdmin_GivenSubmitAdminActionAndSuperAdminUser() throws ServletException, IOException {
 		//Setup
-		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		http_request.setState("John", "Doe", "John@gmail.com", "JohnyBoy");
 		String[] selections = new String[1];
 		selections[0] = "ironman";
 		http_request.setParameterValues(selections);
@@ -281,9 +280,9 @@ public class AccountControllerTest {
 	}
 	
 	@Test
-	public void doGet_SuccessfulSubmitAdmin_GivenSubmitAdminActionAndNormalAdminUser() throws ServletException, IOException {
+	public void TC_AC_12_doGet_SuccessfulSubmitAdmin_GivenSubmitAdminActionAndNormalAdminUser() throws ServletException, IOException {
 		//Setup
-		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		http_request.setState("John", "Doe", "John@gmail.com", "JohnyBoy");
 		String[] selections = new String[1];
 		selections[0] = "ironman";
 		http_request.setParameterValues(selections);
@@ -307,9 +306,9 @@ public class AccountControllerTest {
 	}
 		
 	@Test
-	public void doGet_FailedSubmitAdmin_GivenSubmitAdminActionAndSuperAdminUserAndNoUserSelected() throws ServletException, IOException {
+	public void TC_AC_13_doGet_FailedSubmitAdmin_GivenSubmitAdminActionAndSuperAdminUserAndNoUserSelected() throws ServletException, IOException {
 		//Setup
-		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		http_request.setState("John", "Doe", "John@gmail.com", "JohnyBoy");
 		http_request.setAction("submitAdmin");
 		http_request.putHttpSessionAttribute("privileges", "s");
 		ac_instance.setRegistration(new Registration(false));
@@ -330,9 +329,9 @@ public class AccountControllerTest {
 	}
 	
 	@Test
-	public void doGet_FailedSubmitAdmin_GivenSubmitAdminActionAndNormalAdminUserAndNoUserSelected() throws ServletException, IOException {
+	public void TC_AC_14_doGet_FailedSubmitAdmin_GivenSubmitAdminActionAndNormalAdminUserAndNoUserSelected() throws ServletException, IOException {
 		//Setup
-		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		http_request.setState("John", "Doe", "John@gmail.com", "JohnyBoy");
 		http_request.setAction("submitAdmin");
 		http_request.putHttpSessionAttribute("privileges", "a");
 		ac_instance.setRegistration(new Registration(false));
@@ -353,9 +352,9 @@ public class AccountControllerTest {
 	}
 	
 	@Test
-	public void doPost_SuccessfulAdminRequestSubmit_GivenRequestSubmitActionAndNormalAdminUsers() throws ServletException, IOException {
+	public void TC_AC_15_doPost_SuccessfulAdminRequestSubmit_GivenRequestSubmitActionAndNormalAdminUsers() throws ServletException, IOException {
 		//Setup
-		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		http_request.setState("John", "Doe", "John@gmail.com", "JohnyBoy");
 		http_request.setAction("requestSubmit");
 		
 		http_request.setParameter("totalRequest", "2");
@@ -383,16 +382,14 @@ public class AccountControllerTest {
 	}
 	
 	@Test
-	public void doPost_SuccessfulAdminRequestSubmit_GivenRequestSubmitActionAndSuperAdminUsers() throws ServletException, IOException {
+	public void TC_AC_16_doPost_SuccessfulAdminRequestSubmit_GivenRequestSubmitActionAndSuperAdminUsers() throws ServletException, IOException {
 		//Setup
-		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		http_request.setState("John", "Doe", "John@gmail.com", "JohnyBoy");
 		http_request.setAction("requestSubmit");
 		
-		http_request.setParameter("totalRequest", "2");
+		http_request.setParameter("totalRequest", "1");
 		http_request.setParameter("decision1", "approve");
 		http_request.setParameter("username1", "ironman");
-		http_request.setParameter("decision2", "deny");
-		http_request.setParameter("username2", "batman");
 		
 		http_request.putHttpSessionAttribute("privileges", "s");
 		ac_instance.setRegistration(new Registration(false));
@@ -413,9 +410,9 @@ public class AccountControllerTest {
 	}
 	
 	@Test
-	public void doPost_SuccessfulAdminRequest_GivenAttributeTypeAsAdminRequest() throws ServletException, IOException {
+	public void TC_AC_17_doPost_SuccessfulAdminRequest_GivenAttributeTypeAsAdminRequest() throws ServletException, IOException {
 		//Setup
-		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		http_request.setState("John", "Doe", "John@gmail.com", "JohnyBoy");
 		
 		http_request.setParameter("type", "adminRequest");
 		http_request.putHttpSessionAttribute("username", "ironman");
@@ -441,9 +438,9 @@ public class AccountControllerTest {
 	}
 	
 	@Test
-	public void doPost_SuccessfulAdminRequest_GivenAttributeTypeAsLink() throws ServletException, IOException {
+	public void TC_AC_18_doPost_SuccessfulAdminRequest_GivenAttributeTypeAsLink() throws ServletException, IOException {
 		//Setup
-		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		http_request.setState("John", "Doe", "John@gmail.com", "JohnyBoy");
 		
 		http_request.setParameter("type", "link");
 		http_request.putHttpSessionAttribute("username", "ironman");
