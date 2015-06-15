@@ -34,7 +34,7 @@ public class AccountControllerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		System.out.println("..Starting test");
+
 		ac_instance = new AccountController();
 		http_request = new StubHttpServletRequest();
 		http_response = new StubHttpServletResponse();
@@ -42,12 +42,11 @@ public class AccountControllerTest {
 	
 	@After
 	public void tearDown() throws Exception {
-		System.out.println("..Stoping test");
 		//Nothing to do
 	}
 	
 	@Test
-	public void doGet_SuccessfulUserRegisteration_GivenCorrectRegistrationInformation() throws ServletException, IOException {
+	public void TC_AC_01_doGet_SuccessfulUserRegisteration_GivenCorrectRegistrationInformation() throws ServletException, IOException {
 		//Setup
 		http_request.setState("John", "Doe", "John@gmail.com", "JohnyBoy");
 		http_request.setAction("register");
@@ -65,7 +64,7 @@ public class AccountControllerTest {
 	}
 	
 	@Test
-	public void doGet_FailedUserRegisteration_GivenEmailAccountAlreadyInUse() throws ServletException, IOException {
+	public void TC_AC_02_doGet_FailedUserRegisteration_GivenEmailAccountAlreadyInUse() throws ServletException, IOException {
 		//Setup
 		http_request.setState("Jane", "Doe", "John@gmail.com", "jarule123");
 		http_request.setAction("register");
@@ -82,9 +81,10 @@ public class AccountControllerTest {
 		assertEquals("FailedUserRegisteration - message", "Email already taken   \n Please use another email", http_request.getAttribute("message").toString());
 		assertEquals("FailedUserRegisteration - destination", "registration.jsp", http_request.getDestination());
 	}
+
 	
 	@Test
-	public void doGet_SuccessfulUserLogin_GivenProperCredentials() throws ServletException, IOException {
+	public void TC_AC_03_doGet_SuccessfulUserLogin_GivenProperCredentials() throws ServletException, IOException {
 		//Setup
 		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
 		http_request.setParameter("username", "ironman");
@@ -104,7 +104,6 @@ public class AccountControllerTest {
 		//Evaluate
 		assertEquals("SuccessfulUserLogin", "home.jsp", http_request.getDestination());
 	}
-	
 	
 	@Test
 	public void doGet_SuccessfulAdminUserLogin_GivenProperCredentials() throws ServletException, IOException {
@@ -128,8 +127,7 @@ public class AccountControllerTest {
 		//Evaluate
 		assertEquals("SuccessfulUserLogin", "home.jsp", http_request.getDestination());
 	}
-	
-	
+		
 	@Test
 	public void doGet_FailedUserLogin_GivenMissingUsername() throws ServletException, IOException {
 		//Setup
@@ -152,7 +150,6 @@ public class AccountControllerTest {
 		assertEquals("FailedUserLogin - message", "Please enter Email and Password", http_request.getAttribute("message").toString());
 		assertEquals("FailedUserLogin - destination", "welcome.jsp", http_request.getDestination());
 	}
-	
 	
 	@Test
 	public void doGet_FailedUserLogin_IncorrectUsernamePassword() throws ServletException, IOException {
@@ -177,7 +174,6 @@ public class AccountControllerTest {
 		assertEquals("FailedUserLogin - destination", "welcome.jsp", http_request.getDestination());
 	}
 	
-	
 	@Test
 	public void doGet_SuccessfulUserLogout_GivenLogoutAction() throws ServletException, IOException {
 		//Setup
@@ -195,8 +191,7 @@ public class AccountControllerTest {
 		//Evaluate
 		assertEquals("SuccessfulUserLogout - destination", "welcome.jsp", http_response.getRedirect());
 	}
-	
-	
+		
 	@Test
 	public void doGet_SuccessfulResetPassword_GiveResetAction() throws ServletException, IOException {
 		//Setup
@@ -215,8 +210,7 @@ public class AccountControllerTest {
 		//Evaluate
 		assertEquals("SuccessfulResetPassword - destination", "welcome.jsp", http_response.getRedirect());
 	}
-	
-	
+		
 	@Test
 	public void doGet_FailedResetPassword_GiveResetAction() throws ServletException, IOException {
 		//Setup
@@ -236,7 +230,6 @@ public class AccountControllerTest {
 		assertEquals("FailedResetPassword - message", "Email entered is not registered \n Please try again", http_request.getAttribute("message").toString());
 		assertEquals("FailedResetPassword - destination", "passwordReset.jsp", http_request.getDestination());
 	}
-	
 	
 	@Test
 	public void doGet_SuccessfulMakeUserAdmin_GivenMakeAdminAction() throws ServletException, IOException {
@@ -260,7 +253,6 @@ public class AccountControllerTest {
 		//Evaluate
 		assertEquals("SuccessfulUserLogin", "showNonAdmin.jsp", http_request.getDestination());
 	}
-	
 	
 	@Test
 	public void doGet_SuccessfulSubmitAdmin_GivenSubmitAdminActionAndSuperAdminUser() throws ServletException, IOException {
@@ -288,7 +280,6 @@ public class AccountControllerTest {
 		assertEquals("SuccessfulUserLogin", "home.jsp", http_request.getDestination());
 	}
 	
-	
 	@Test
 	public void doGet_SuccessfulSubmitAdmin_GivenSubmitAdminActionAndNormalAdminUser() throws ServletException, IOException {
 		//Setup
@@ -314,7 +305,29 @@ public class AccountControllerTest {
 		//Evaluate
 		assertEquals("SuccessfulUserLogin", "home.jsp", http_request.getDestination());
 	}
-	
+		
+	@Test
+	public void doGet_FailedSubmitAdmin_GivenSubmitAdminActionAndSuperAdminUserAndNoUserSelected() throws ServletException, IOException {
+		//Setup
+		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		http_request.setAction("submitAdmin");
+		http_request.putHttpSessionAttribute("privileges", "s");
+		ac_instance.setRegistration(new Registration(false));
+		ac_instance.setUserRow(new getUserRow("John", "Doe", "John@gmail.com", "s"));
+		ac_instance.setCommentsInfo(new getCommentsInfo());
+		ac_instance.setLogInOut(new LogInAndOut(true));
+		ac_instance.setAdministration(new StubAdministration(true));
+		
+		//Execute
+		try{
+			ac_instance.doGet(http_request, http_response);
+		}catch(Exception e){
+			System.out.println(e);
+		}
+		
+		//Evaluate
+		assertEquals("SuccessfulUserLogin", "home.jsp", http_request.getDestination());
+	}
 	
 	@Test
 	public void doGet_FailedSubmitAdmin_GivenSubmitAdminActionAndNormalAdminUserAndNoUserSelected() throws ServletException, IOException {
@@ -339,5 +352,120 @@ public class AccountControllerTest {
 		assertEquals("SuccessfulUserLogin", "home.jsp", http_request.getDestination());
 	}
 	
+	@Test
+	public void doPost_SuccessfulAdminRequestSubmit_GivenRequestSubmitActionAndNormalAdminUsers() throws ServletException, IOException {
+		//Setup
+		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		http_request.setAction("requestSubmit");
+		
+		http_request.setParameter("totalRequest", "2");
+		http_request.setParameter("decision1", "approve");
+		http_request.setParameter("username1", "ironman");
+		http_request.setParameter("decision2", "deny");
+		http_request.setParameter("username2", "batman");
+		
+		http_request.putHttpSessionAttribute("privileges", "a");
+		ac_instance.setRegistration(new Registration(false));
+		ac_instance.setUserRow(new getUserRow("John", "Doe", "John@gmail.com", "s"));
+		ac_instance.setCommentsInfo(new getCommentsInfo());
+		ac_instance.setLogInOut(new LogInAndOut(true));
+		ac_instance.setAdministration(new StubAdministration(true));
+		
+		//Execute
+		try{
+			ac_instance.doPost(http_request, http_response);
+		}catch(Exception e){
+			System.out.println(e);
+		}
+		
+		//Evaluate
+		assertEquals("SuccessfulUserLogin", "home.jsp", http_request.getDestination());
+	}
+	
+	@Test
+	public void doPost_SuccessfulAdminRequestSubmit_GivenRequestSubmitActionAndSuperAdminUsers() throws ServletException, IOException {
+		//Setup
+		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		http_request.setAction("requestSubmit");
+		
+		http_request.setParameter("totalRequest", "2");
+		http_request.setParameter("decision1", "approve");
+		http_request.setParameter("username1", "ironman");
+		http_request.setParameter("decision2", "deny");
+		http_request.setParameter("username2", "batman");
+		
+		http_request.putHttpSessionAttribute("privileges", "s");
+		ac_instance.setRegistration(new Registration(false));
+		ac_instance.setUserRow(new getUserRow("John", "Doe", "John@gmail.com", "s"));
+		ac_instance.setCommentsInfo(new getCommentsInfo());
+		ac_instance.setLogInOut(new LogInAndOut(true));
+		ac_instance.setAdministration(new StubAdministration(true));
+		
+		//Execute
+		try{
+			ac_instance.doPost(http_request, http_response);
+		}catch(Exception e){
+			System.out.println(e);
+		}
+		
+		//Evaluate
+		assertEquals("SuccessfulUserLogin", "home.jsp", http_request.getDestination());
+	}
+	
+	@Test
+	public void doPost_SuccessfulAdminRequest_GivenAttributeTypeAsAdminRequest() throws ServletException, IOException {
+		//Setup
+		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		
+		http_request.setParameter("type", "adminRequest");
+		http_request.putHttpSessionAttribute("username", "ironman");
+		http_request.putHttpSessionAttribute("fname", "John");
+		http_request.putHttpSessionAttribute("lname", "Doe");
+		
+		http_request.putHttpSessionAttribute("privileges", "s");
+		ac_instance.setRegistration(new Registration(false));
+		ac_instance.setUserRow(new getUserRow("John", "Doe", "John@gmail.com", "s"));
+		ac_instance.setCommentsInfo(new getCommentsInfo());
+		ac_instance.setLogInOut(new LogInAndOut(true));
+		ac_instance.setAdministration(new StubAdministration(true));
+		
+		//Execute
+		try{
+			ac_instance.doPost(http_request, http_response);
+		}catch(Exception e){
+			System.out.println(e);
+		}
+		
+		//Evaluate
+		assertEquals("SuccessfulUserLogin", "Your request has been sent!", ac_instance.getAdministration().getRequest());
+	}
+	
+	@Test
+	public void doPost_SuccessfulAdminRequest_GivenAttributeTypeAsLink() throws ServletException, IOException {
+		//Setup
+		http_request.setState("John", "Doe", "John@gmail.com", "jarule123");
+		
+		http_request.setParameter("type", "link");
+		http_request.putHttpSessionAttribute("username", "ironman");
+		http_request.putHttpSessionAttribute("fname", "John");
+		http_request.putHttpSessionAttribute("lname", "Doe");
+		
+		http_request.putHttpSessionAttribute("privileges", "s");
+		ac_instance.setRegistration(new Registration(false));
+		ac_instance.setUserRow(new getUserRow("John", "Doe", "John@gmail.com", "s"));
+		ac_instance.setCommentsInfo(new getCommentsInfo());
+		ac_instance.setLogInOut(new LogInAndOut(true));
+		ac_instance.setAdministration(new StubAdministration(true));
+		
+		//Execute
+		try{
+			ac_instance.doPost(http_request, http_response);
+		}catch(Exception e){
+			System.out.println(e);
+		}
+		
+		//Evaluate
+		//assertEquals("SuccessfulUserLogin", "Your request has been sent!", ac_instance.getAdministration().getRequest());
+	}
 	
 }

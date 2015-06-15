@@ -21,6 +21,8 @@ public class StubAdministration {
 	private ArrayList<User> nonAdmin;
 	private boolean makeAdmin;
 	private int messageIndex;
+	private static String[] messages = {"Your request has been sent!", "An error occurred while processing your request", "Your request is already waiting for approval"};
+	
 	
 	public StubAdministration(boolean makeAdmin){
 		list = new ArrayList<User>();
@@ -52,8 +54,10 @@ public class StubAdministration {
 	}
 	
 	public String sendRequest(String username, String fname, String lname) {
-		String[] messages = {"Your request has been sent!", "An error occurred while processing your request", "Your request is already waiting for approval"};
-		
+		return messages[messageIndex];
+	}
+	
+	public String getRequest(){
 		return messages[messageIndex];
 	}
 

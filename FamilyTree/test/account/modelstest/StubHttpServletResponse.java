@@ -2,6 +2,7 @@ package account.modelstest;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
@@ -15,6 +16,7 @@ public class StubHttpServletResponse implements HttpServletResponse{
 	
 	private String redirect;
 	private Map attributes;
+	//private Writer response;
 	
 	public void sendRedirect(String location){
 		this.redirect = location;
@@ -62,8 +64,7 @@ public class StubHttpServletResponse implements HttpServletResponse{
 
 	@Override
 	public PrintWriter getWriter() throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		return new PrintWriter(System.out);
 	}
 
 	@Override
