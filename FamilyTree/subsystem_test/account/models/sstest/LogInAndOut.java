@@ -1,30 +1,29 @@
-package account.models.test;
+package account.models.sstest;
 
 import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.Statement;
+//import java.sql.ResultSet;
 
+import test.ConnectionStub;
 import test.DriverManagerStub;
 import test.PreparedStatementStub;
 import test.ResultSetStub;
 
-public class getUserRow {
+import com.mysql.jdbc.*;
 
-	public static Connection connection = null;
+/*import com.mysql.jdbc.Connection;
+ import com.mysql.jdbc.PreparedStatement;
+ import com.mysql.jdbc.Statement;*/
 
-	public static String[] getUserInfo(String username) {
+public class LogInAndOut {
+	private static ConnectionStub connection;
 
-		String[] row = new String[4];
-
+	public static boolean doLogin(String username, String password) {
 		// To connect to the database
 		String connectionURL = "jdbc:mysql://localhost:3306/test";
 
-		// Statement statement = null;
 		ResultSetStub rs = null;
 		String dbUsername = "root"; // Database username
-		String dbPassword = "root1234!"; // Database password
+		String dbPassword = "1234"; // Database password
 
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
@@ -32,33 +31,33 @@ public class getUserRow {
 			System.out.println(" Unable to load driver. ");
 		}
 		try {
-			connection = (Connection) DriverManagerStub.getConnection(
+			connection = (ConnectionStub) DriverManagerStub.getConnection(
 					connectionURL, dbUsername, dbPassword);
 			// System.out.println(" Connection Established. ");
 
 			// After this, create your own logic
 			PreparedStatementStub st = (PreparedStatementStub) connection
-					.prepareStatement("SELECT * FROM Users WHERE username = ?");
+					.prepareStatement("SELECT username, password FROM Users WHERE username = ?");
 			st.setString(1, username);
 			rs = (ResultSetStub) st.executeQuery();
 
 			if (rs != null) {
+				String user = "";
+				String pass = "";
 
 				while (rs.next()) {
-					row[0] = rs.getString("username");
-					row[1] = rs.getString("fname");
-					row[2] = rs.getString("lname");
-					row[3] = rs.getString("privileges");
+					user = rs.getString("username");
+					pass = rs.getString("password");
 				}
+
+				connection.close();
+				if (username.compareTo(user) == 0
+						&& password.compareTo(pass) == 0)
+					return true;
 			}
-			connection.close();
 		} catch (Exception e) {
 			System.out.println(" Error connecting to database:  " + e);
 		}
-
-		return row;
-
-		// username: accountsystem passoword: accounts
+		return false;
 	}
-
 }

@@ -1,4 +1,4 @@
-package account.controller.test;
+package account.controller.sstest;
 
 import java.io.IOException;
 import java.util.ArrayList;

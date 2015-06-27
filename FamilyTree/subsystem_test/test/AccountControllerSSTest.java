@@ -14,10 +14,10 @@ import java.util.ArrayList;
 import org.junit.Test;
 
 import account.models.Administration;
-import account.models.test.User;
-import account.models.test.getUserRow;
+import account.models.sstest.User;
+import account.models.sstest.getUserRow;
 
-public class AccountControllerTest {
+public class AccountControllerSSTest {
 	private Facade myFacade = new Facade();
 
 	@Test

@@ -1,4 +1,4 @@
-package account.models.test;
+package account.models.sstest;
 
 import java.util.Properties;
 

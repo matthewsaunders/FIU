@@ -6,13 +6,13 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 
-import account.models.test.Comments;
-import account.models.test.LogInAndOut;
-import account.models.test.User;
-import account.models.test.Registration;
-import account.models.test.Administration;
-import account.models.test.getCommentsInfo;
-import account.models.test.getUserRow;
+import account.models.sstest.Administration;
+import account.models.sstest.Comments;
+import account.models.sstest.LogInAndOut;
+import account.models.sstest.Registration;
+import account.models.sstest.User;
+import account.models.sstest.getCommentsInfo;
+import account.models.sstest.getUserRow;
 
 public class Facade {
 	private static Connection cStub;
