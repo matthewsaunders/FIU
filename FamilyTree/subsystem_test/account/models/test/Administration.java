@@ -4,29 +4,20 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 //import org.apache.catalina.ant.FindLeaksTask;
 
+import test.DriverManagerStub;
 
-
-
-import test.ConnectionStub;
-import test.PreparedStatementStub;
-import test.ResultSetStub;
-
-import com.mysql.jdbc.Connection;
-import com.mysql.jdbc.PreparedStatement;
-import com.mysql.jdbc.Statement;
-
-public class Administration 
-{
-	public Administration(ConnectionStub cStub, PreparedStatementStub psStub,ResultSetStub rsStub)
-	{
+public class Administration {
+	public Administration(Connection cStub, Statement psStub, ResultSet rsStub) {
 		connection = (Connection) cStub;
 		statement = (Statement) psStub;
 		rs = rsStub;
 	}
-	
+
 	static String connectionURL = "jdbc:mysql://localhost:3306/test";;
 	static Connection connection = null;
 	static Statement statement = null;
@@ -52,7 +43,7 @@ public class Administration
 			System.out.println(" Unable to load driver. ");
 		}
 		try {
-			connection = (Connection) DriverManager.getConnection(
+			connection = (Connection) DriverManagerStub.getConnection(
 					connectionURL, dbUsername, dbPassword);
 			System.out.println(" Connection Established. ");
 
@@ -115,10 +106,10 @@ public class Administration
 		}
 
 		int noChange = 0; // Count the amount of users no changed
-		for(int i = 0; i < newAdmins.size(); i++) {
+		for (int i = 0; i < newAdmins.size(); i++) {
 
 			String username = newAdmins.get(i).getUserName(); // saves the
-																	// username
+																// username
 
 			try {
 				String query = "UPDATE Users SET privileges = 'a' WHERE username = '"
@@ -178,7 +169,7 @@ public class Administration
 
 					st.executeUpdate();
 					connection.close();
-					
+
 					return "Your request has been sent!";
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -204,7 +195,7 @@ public class Administration
 			System.out.println(" Unable to load driver. ");
 		}
 		try {
-			connection = (Connection) DriverManager.getConnection(
+			connection = (Connection) DriverManagerStub.getConnection(
 					connectionURL, dbUsername, dbPassword);
 			System.out.println(" Connection Established. ");
 
@@ -220,9 +211,9 @@ public class Administration
 
 				User u = new User(null, null, null, null);
 
-				username = rs.getString("requested_by").toString();
-				fname = rs.getString("fname").toString();
-				lname = rs.getString("lname").toString();
+				username = rs.getString("requested_by");
+				fname = rs.getString("fname");
+				lname = rs.getString("lname");
 
 				u.setUserName(username);
 				u.setFname(fname);

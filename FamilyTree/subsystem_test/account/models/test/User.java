@@ -47,4 +47,16 @@ public class User {
 
 	}
 
+	// A better definition, but still not perfect
+	@Override
+	public boolean equals(Object other) {
+		boolean result = false;
+		if (other instanceof User) {
+			User that = (User) other;
+			result = (this.getUserName() == that.getUserName() && this
+					.getLname() == that.getLname());
+		}
+		return result;
+	}
+
 }

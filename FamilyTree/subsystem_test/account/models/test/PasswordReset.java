@@ -3,13 +3,13 @@ package account.models.test;
 import java.sql.DriverManager;
 
 import test.ConnectionStub;
-//import java.sql.ResultSet;
-import test.PreparedStatementStub;
+import java.sql.ResultSet;
+import test.StatementStub;
 import test.ResultSetStub;
-
-/*import com.mysql.jdbc.Connection;
-import com.mysql.jdbc.PreparedStatement;
-import com.mysql.jdbc.Statement;*/
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.PreparedStatement;
 
 public class PasswordReset {
 
@@ -18,11 +18,11 @@ public class PasswordReset {
 		// To connect to the database
 		String connectionURL = "jdbc:mysql://localhost:3306/test";
 		ConnectionStub connection = null;
-		PreparedStatementStub statement = null;
+		StatementStub statement = null;
 		ResultSetStub rs = null;
 		String dbUsername = "root"; // Database username
 		String dbPassword = "1234"; // Database password
-	
+
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 		} catch (Exception e) {
@@ -34,7 +34,7 @@ public class PasswordReset {
 			System.out.println(" Connection Established. ");
 
 			// After this, create your own logic
-			PreparedStatementStub st = (PreparedStatementStub) connection
+			StatementStub st = (StatementStub) connection
 					.prepareStatement("SELECT username, fname, password FROM Users WHERE username = ?");
 			st.setString(1, username);
 			rs = (ResultSetStub) st.executeQuery();
@@ -53,9 +53,11 @@ public class PasswordReset {
 				connection.close();
 				if (username.compareTo(email) == 0) {
 
-					//send(username, name, pass);
-					SendEmail.send(username, name, "Forgot Password",  "You have requested your password for your Family Tree Account. " +
-							"The password for your account is " + pass);
+					// send(username, name, pass);
+					SendEmail.send(username, name, "Forgot Password",
+							"You have requested your password for your Family Tree Account. "
+									+ "The password for your account is "
+									+ pass);
 
 					return true;
 				}
@@ -67,5 +69,5 @@ public class PasswordReset {
 
 		// username: accountsystem passoword: accounts
 	}
-	
+
 }

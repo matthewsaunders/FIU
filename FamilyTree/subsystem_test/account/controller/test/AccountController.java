@@ -171,9 +171,8 @@ public class AccountController extends HttpServlet {
 					response);
 
 		}
-		
-		if(parameters.containsKey("post"))
-		{
+
+		if (parameters.containsKey("post")) {
 			System.out.println("make post request is not immplemented.");
 		}
 
@@ -267,13 +266,13 @@ public class AccountController extends HttpServlet {
 			String username = "";
 			ArrayList<User> approved = new ArrayList<User>();
 			ArrayList<User> denied = new ArrayList<User>();
-			
-			while(i>0) {
+
+			while (i > 0) {
 				User newUser = new User(null, null, null, null);
 				option = request.getParameter("decision" + i);
 				username = request.getParameter("username" + i);
-				
-				if(option.equals("approve")) {
+
+				if (option.equals("approve")) {
 					newUser.setUserName(username);
 					approved.add(newUser);
 				} else {
@@ -286,7 +285,7 @@ public class AccountController extends HttpServlet {
 			Administration.makeAdmin(approved);
 			Administration.dropFromTable(approved);
 			Administration.dropFromTable(denied);
-			
+
 			// get the whole list of comments
 			ArrayList<Comments> mylist = getCommentsInfo.getComments();
 			int total_comments = mylist.size();
@@ -307,8 +306,8 @@ public class AccountController extends HttpServlet {
 				request.setAttribute("requests", requests);
 			}
 			request.getRequestDispatcher("home.jsp").forward(request, response);
-		} 
-		//request is coming from non-admin page
+		}
+		// request is coming from non-admin page
 		else {
 			if (request.getParameter("type").equalsIgnoreCase("adminRequest")) {
 
@@ -321,12 +320,14 @@ public class AccountController extends HttpServlet {
 				response.getWriter().write(result);
 			}
 			if (request.getParameter("type").equalsIgnoreCase("link")) {
-			
+
 				String date = request.getParameter("dob");
-				int result = Link.getMemberID(session.getAttribute("fname").toString(),
-						session.getAttribute("lname").toString(), date);
-				
-				response.getWriter().write("Features/" + String.valueOf(result));
+				int result = Link.getMemberID(session.getAttribute("fname")
+						.toString(), session.getAttribute("lname").toString(),
+						date);
+
+				response.getWriter()
+						.write("Features/" + String.valueOf(result));
 			}
 		}
 

@@ -2,125 +2,318 @@ package test;
 
 import static org.junit.Assert.*;
 
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.ResultSet;
+import java.sql.Connection;
+import java.sql.SQLWarning;
+import java.sql.Statement;
+import java.util.ArrayList;
 
 import org.junit.Test;
 
-import com.mysql.jdbc.Connection;
-import com.mysql.jdbc.MySQLConnection;
-import com.mysql.jdbc.PreparedStatement;
+import account.models.Administration;
+import account.models.test.User;
+import account.models.test.getUserRow;
 
-public class AccountControllerTest 
-{
-
-
+public class AccountControllerTest {
 	private Facade myFacade = new Facade();
-	
+
 	@Test
-	public void unregisterUserRegistration_SuccessfulRegistration_SunnyCase() throws SQLException
-	{
-		//Preconditions
-		ResultSetStub rs = new ResultSetStub();
-		PreparedStatementStub ps = new PreparedStatementStub();				
-		
-		myFacade.SetConnectionStub(new ConnectionStub());//Establish connection with DB
-		myFacade.SetResultSetStub(rs);	
-		ps.SetResultSet(rs);
-		myFacade.SetPreparedStatementStub(ps);
-		
-		
-		//A&S-001R-Subsystem Test-01
-		assertTrue("true", myFacade.doRegistration("Jane", "Doe", "jdoe@gmail.com", "money"));
-		assertTrue("true", myFacade.doRegistration("Mary", "Doe", "mdoe@gmail.com", "cat"));
-		assertTrue("true", myFacade.doRegistration("Danna", "Doe", "ddoe@gmail.com", "chair"));
+	public void doRegistration_Registration_SunnyCase() throws SQLException {
+		ConnectionStub cStub = new ConnectionStub();
+		PreparedStatementStub.setNull = false;// static variable
+
+		myFacade.SetConnectionStub(cStub);
+
+		// A&S-001R-Subsystem Test-01
+		assertTrue(myFacade.doRegistration("Jane", "Doe", "jdoe@gmail.com",
+				"money"));
+		assertTrue(myFacade.doRegistration("Mary", "Doe", "mdoe@gmail.com",
+				"cat"));
+		assertTrue(myFacade.doRegistration("Danna", "Doe", "ddoe@gmail.com",
+				"chair"));
 	}
-	
-	
-	/*@Test
-	public void unregisterUserRegistration_SuccessfulRegistration_RainyCase()
-	{
-		//Preconditions
-		
-				
-		//A&S-001R-Subsystem Test-01		
-		assertFalse("false", myFacade.doRegistration("Jaimy", "Doe", "jaimydoe@gmail.com", "miami"));
-		assertFalse("false", myFacade.doRegistration("Melissa", "Doe", "melissadoe@gmail.com", "laptop"));
-		assertFalse("false", myFacade.doRegistration("Dora", "Doe", "doradoe@gmail.com", "pass123"));
-	}
-	
+
 	@Test
-	public void unregisterUserRegistration_IncorrectInput_SunnyCase()
-	{
-		//A&S-002R-Subsystem Test-02
-		assertFalse("false", myFacade.doRegistration("Alexa", "Eggert", "alexaegmail.com", "pink"));
-		assertFalse("false", myFacade.doRegistration("Aurora", "Cotter", "aurora", ""));
-		assertFalse("false", myFacade.doRegistration("Dora", "Eggert", "@gmail.com", ""));
-	}*/
-	
-	/*@Test
-	public void unregisterUserRegistration_IncorrectInput_RainyCase()
-	{
-		//A&S-002R-Subsystem Test-02
-		assertTrue("true", myFacade.doRegistration("Sindy", "Doe", "sindydoe@gmail.com", "money"));
-		assertTrue("true", myFacade.doRegistration("Maria", "Doe", "mariadoe@gmail.com", "cat"));
-		assertTrue("true", myFacade.doRegistration("Luisa", "Doe", "luisadoe@gmail.com", "chair"));
+	public void doRegistration_Registration_RainyCase() {
+		// Preconditions
+		ConnectionStub cStub = new ConnectionStub();
+		PreparedStatementStub.setNull = true;// static variable
+
+		myFacade.SetConnectionStub(cStub);
+
+		// A&S-001R-Subsystem Test-01
+		assertFalse(myFacade.doRegistration("Jaimy", "Doe", "jdoe@gmail.com",
+				"miami"));
+		assertFalse(myFacade.doRegistration("Melissa", "Doe", "mdoe@gmail.com",
+				"laptop"));
+		assertFalse(myFacade.doRegistration("Dora", "Doe", "ddoe@gmail.com",
+				"pass123"));
 	}
-	
+
 	@Test
-	public void unregisterUserRegistration_DuplicateEmail_SunnyCase()
-	{
-		//A&S-003R-Subsystem Test-03
-		assertFalse("false", myFacade.doRegistration("Jaimy", "Doe", "jdoe@gmail.com", "miami"));
-		assertFalse("false", myFacade.doRegistration("Melissa", "Doe", "mdoe@gmail.com", "laptop"));
-		assertFalse("false", myFacade.doRegistration("Dora", "Doe", "ddoe@gmail.com", "pass123"));
+	public void doLogingAndOut_LogingAndOut_SunnyCase() throws SQLException {
+		// Preconditions
+		ConnectionStub cStub = new ConnectionStub();
+		PreparedStatementStub.setNull = false;
+
+		ResultSetStub.username = "jdoe@gmail.com";
+		ResultSetStub.password = "cat";
+		ResultSetStub.counter = 2;
+
+		myFacade.SetConnectionStub(cStub);
+
+		// A&S-002L-Subsystem Test-05
+		assertTrue(myFacade.doLogin("jdoe@gmail.com", "cat"));
+
+		// preconditions
+		ResultSetStub.username = "mdoe@gmail.com";
+		ResultSetStub.password = "dog";
+		ResultSetStub.counter = 2;
+
+		assertTrue(myFacade.doLogin("mdoe@gmail.com", "dog"));
+
+		// preconditions
+		ResultSetStub.username = "ddoe@gmail.com";
+		ResultSetStub.password = "horse";
+		ResultSetStub.counter = 2;
+		assertTrue(myFacade.doLogin("ddoe@gmail.com", "horse"));
 	}
-	
+
 	@Test
-	public void unregisterUserRegistration_DuplicateEmail_RainyCase()
-	{
-		
-		//A&S-003R-Subsystem Test-03
-		assertTrue("true", myFacade.doRegistration("Jane", "Doe", "jdoe@gmail.com", "money"));
-		assertTrue("true", myFacade.doRegistration("Mary", "Doe", "mdoe@gmail.com", "cat"));
-		assertTrue("true", myFacade.doRegistration("Melissa", "Doe", "mdoe@gmail.com", "chair"));
+	public void doLogingAndOut_LogingAndOut_RainyCase() {
+		// Preconditions
+		ConnectionStub cStub = new ConnectionStub();
+		cStub.UpdatePreparedSatementStub(new PreparedStatementStub());
+		PreparedStatementStub.setNull = true;// static variable
+
+		myFacade.SetConnectionStub(cStub);
+
+		// A&S-002L-Subsystem Test-05
+		assertFalse(myFacade.doLogin("jdoe@gmail.com", ""));
+		assertFalse(myFacade.doLogin("mdoe@gmail.com", ""));
+		assertFalse(myFacade.doLogin("ddoe@gmail.com", ""));
 	}
-	
+
+	@SuppressWarnings("deprecation")
 	@Test
-	public void registeredUserLogin_LoginSuccess_SunnyCase()
-	{
-		//A&S-001L-Subsystem Test-04
-		assertTrue("true", myFacade.doLogin("jdoe@gmail.com", "money"));
-		assertTrue("true", myFacade.doLogin("mdoe@gmail.com", "cat"));
-		assertTrue("true", myFacade.doLogin("ddoe@gmail.com", "chair"));
+	public void getUserInfo_GetUserRow_SunnyCase() {
+		// Preconditions
+		ConnectionStub cStub = new ConnectionStub();
+		cStub.UpdatePreparedSatementStub(new PreparedStatementStub());
+		PreparedStatementStub.setNull = false;// static variable
+
+		myFacade.SetConnectionStub(cStub);
+
+		getUserRow.connection = new ConnectionStub();
+
+		// preconditions
+		ResultSetStub.username = "jdoe@gmail.com";
+		ResultSetStub.fname = "john";
+		ResultSetStub.lname = "doe";
+		ResultSetStub.privileges = "u";
+		ResultSetStub.counter = 4;
+
+		// A&S-002L-Subsystem Test-05
+		String[] content1 = { "jdoe@gmail.com", "john", "doe", "u" };
+		assertEquals(content1, myFacade.getUserInfo("jdoe@gmail.com"));
+
+		ResultSetStub.username = "mdoe@gmail.com";
+		ResultSetStub.fname = "martin";
+		ResultSetStub.lname = "doe";
+		ResultSetStub.privileges = "u";
+		ResultSetStub.counter = 4;
+
+		String[] content2 = { "mdoe@gmail.com", "martin", "doe", "u" };
+		assertEquals(content2, myFacade.getUserInfo("mdoe@gmail.com"));
+
+		ResultSetStub.username = "ddoe@gmail.com";
+		ResultSetStub.fname = "danny";
+		ResultSetStub.lname = "doe";
+		ResultSetStub.privileges = "u";
+		ResultSetStub.counter = 4;
+
+		String[] content3 = { "ddoe@gmail.com", "danny", "doe", "u" };
+		assertEquals(content3, myFacade.getUserInfo("ddoe@gmail.com"));
 	}
-	
+
 	@Test
-	public void registeredUserLogin_LogingSuccess_RainyCase()
-	{
-		
-		//A&S-001L-Subsystem Test-04
-		assertFalse("false", myFacade.doLogin("jdoe@gmail.com", "dinero"));
-		assertFalse("false", myFacade.doLogin("mdoe@gmail.com", "gato"));
-		assertFalse("false", myFacade.doLogin("ddoe@gmail.com", "silla"));
+	public void getUserInfo_GetUserRow_RainyCase() {
+		// Preconditions
+		ConnectionStub cStub = new ConnectionStub();
+		cStub.UpdatePreparedSatementStub(new PreparedStatementStub());
+		PreparedStatementStub.setNull = true;// information not found in
+												// database
+
+		myFacade.SetConnectionStub(cStub);
+
+		String[] row = new String[4];
+		assertEquals(row, myFacade.getUserInfo("jdoe@gmail.com"));
+		assertEquals(row, myFacade.getUserInfo("mdoe@gmail.com"));
+		assertEquals(row, myFacade.getUserInfo("ddoe@gmail.com"));
 	}
-	
+
+	@SuppressWarnings("deprecation")
 	@Test
-	public void registeredUserLogin_LogingUnsuccessful_SunnyCase()
-	{
-		
-		//A&S-002L-Subsystem Test-05
-		assertFalse("false", myFacade.doLogin("jdoe@gmail.com", ""));
-		assertFalse("false", myFacade.doLogin("mdoe@gmail.com", ""));
-		assertFalse("false", myFacade.doLogin("ddoe@gmail.com", ""));
+	public void findNoAdmin_Administration_SunnyCase() {
+		// Preconditions
+		ConnectionStub cStub = new ConnectionStub();
+		cStub.UpdatePreparedSatementStub(new PreparedStatementStub());
+		PreparedStatementStub psStub = new PreparedStatementStub();
+		ResultSetStub rsStub = new ResultSetStub();
+
+		myFacade.SetConnectionStub(cStub);
+		myFacade.SetPreparedStatementStub(psStub);
+		myFacade.SetResultSetStub(rsStub);
+		PreparedStatementStub.setNull = false;// information not found in
+												// database
+
+		// preconditions
+		ResultSetStub.username = "jdoe@gmail.com";
+		ResultSetStub.fname = "john";
+		ResultSetStub.lname = "doe";
+		ResultSetStub.privileges = "u";
+		ResultSetStub.counter = 4;
+
+		ArrayList<User> nonAdmin = new ArrayList<User>();
+		nonAdmin.add(new User("jdoe@gmail.com", "john", "doe", "u"));
+		assertEquals(nonAdmin, myFacade.findNoAdmin());
+
+		/*
+		 * ResultSetStub.username = "mdoe@gmail.com"; ResultSetStub.fname =
+		 * "martin"; ResultSetStub.lname = "doe"; ResultSetStub.privileges =
+		 * "u"; ResultSetStub.counter = 4;
+		 * 
+		 * ArrayList<User> nonAdmin2 = new ArrayList<User>(); nonAdmin2.add(new
+		 * User("mdoe@gmail.com","martin","doe","u"));
+		 * assertEquals(nonAdmin2.get(0), myFacade.findNoAdmin().get(0));
+		 * 
+		 * ResultSetStub.username = "ddoe@gmail.com"; ResultSetStub.fname =
+		 * "danny"; ResultSetStub.lname = "doe"; ResultSetStub.privileges = "u";
+		 * ResultSetStub.counter = 4;
+		 * 
+		 * ArrayList<User> nonAdmin3 = new ArrayList<User>(); nonAdmin3.add(new
+		 * User("ddoe@gmail.com","danny","doe","u"));
+		 * assertEquals(nonAdmin3.get(0), myFacade.findNoAdmin().get(0));
+		 */
 	}
-	
+
 	@Test
-	public void registeredUserLogin_LoginUnsuccessful_RainyCase()
-	{
-		//A&S-002L-Subsystem Test-05
-		assertTrue("true", myFacade.doLogin("jdoe@gmail.com", "money"));
-		assertTrue("true", myFacade.doLogin("mdoe@gmail.com", "cat"));
-		assertTrue("true", myFacade.doLogin("ddoe@gmail.com", "chair"));
+	public void findNoAdmin_Administration_RainyCase() {
+		// Preconditions
+		ConnectionStub cStub = new ConnectionStub();
+		cStub.UpdatePreparedSatementStub(new PreparedStatementStub());
+		PreparedStatementStub psStub = new PreparedStatementStub();
+		ResultSetStub rsStub = new ResultSetStub();
+
+		myFacade.SetConnectionStub(cStub);
+		myFacade.SetPreparedStatementStub(psStub);
+		myFacade.SetResultSetStub(rsStub);
+		PreparedStatementStub.setNull = true;// information not found in
+												// database
+
+		myFacade.SetConnectionStub(cStub);
+
+		ArrayList<User> nonAdmin = new ArrayList<User>();
+		assertEquals(nonAdmin, myFacade.findNoAdmin());
 	}
-	*/
+
+	@SuppressWarnings("deprecation")
+	@Test
+	public void showAdminRequest_Administration_SunnyCase() {
+		// Preconditions
+		ConnectionStub cStub = new ConnectionStub();
+		cStub.UpdatePreparedSatementStub(new PreparedStatementStub());
+		PreparedStatementStub psStub = new PreparedStatementStub();
+		ResultSetStub rsStub = new ResultSetStub();
+
+		myFacade.SetConnectionStub(cStub);
+		myFacade.SetPreparedStatementStub(psStub);
+		myFacade.SetResultSetStub(rsStub);
+		PreparedStatementStub.setNull = false;// information not found in
+												// database
+
+		// preconditions
+		ResultSetStub.requestedby = "jdoe@gmail.com";
+		ResultSetStub.username = "jdoe@gmail.com";
+		ResultSetStub.fname = "john";
+		ResultSetStub.lname = "doe";
+		ResultSetStub.counter = 3;
+
+		ArrayList<User> nonAdmin = new ArrayList<User>();
+		nonAdmin.add(new User("jdoe@gmail.com", "john", "doe", ""));
+		assertEquals(nonAdmin, myFacade.showAdminRequest());
+	}
+
+	@Test
+	public void showAdminRequest_Administration_RainyCase() {
+		// Preconditions
+		ConnectionStub cStub = new ConnectionStub();
+		cStub.UpdatePreparedSatementStub(new PreparedStatementStub());
+		PreparedStatementStub psStub = new PreparedStatementStub();
+		ResultSetStub rsStub = new ResultSetStub();
+
+		myFacade.SetConnectionStub(cStub);
+		myFacade.SetPreparedStatementStub(psStub);
+		myFacade.SetResultSetStub(rsStub);
+		PreparedStatementStub.setNull = true;// information not found in
+												// database
+
+		ResultSetStub.counter = 0;
+
+		myFacade.SetConnectionStub(cStub);
+
+		ArrayList<User> nonAdmin = new ArrayList<User>();
+		assertEquals(nonAdmin, myFacade.showAdminRequest());
+	}
+
+	@Test
+	public void makeAdmin_Administration_SunnyCase() {
+		// Preconditions
+		ConnectionStub cStub = new ConnectionStub();
+		cStub.UpdatePreparedSatementStub(new PreparedStatementStub());
+		PreparedStatementStub psStub = new PreparedStatementStub();
+		ResultSetStub rsStub = new ResultSetStub();
+
+		myFacade.SetConnectionStub(cStub);
+		myFacade.SetPreparedStatementStub(psStub);
+		myFacade.SetResultSetStub(rsStub);
+		PreparedStatementStub.setNull = false;// information not found in
+												// database
+
+		// preconditions
+		ResultSetStub.username = "jdoe@gmail.com";
+		ResultSetStub.fname = "john";
+		ResultSetStub.lname = "doe";
+		ResultSetStub.privileges = "u";
+		ResultSetStub.counter = 4;
+
+		ArrayList<User> askAdmin = new ArrayList<User>();
+		askAdmin.add(new User("jdoe@gmail.com", "john", "doe", "u"));
+
+		assertTrue(myFacade.makeAdmin(askAdmin));
+	}
+
+	@Test
+	public void makeAdmin_Administration_RainyCase() {
+		// Preconditions
+		ConnectionStub cStub = new ConnectionStub();
+		cStub.UpdatePreparedSatementStub(new PreparedStatementStub());
+		PreparedStatementStub psStub = new PreparedStatementStub();
+		ResultSetStub rsStub = new ResultSetStub();
+
+		myFacade.SetConnectionStub(cStub);
+		myFacade.SetPreparedStatementStub(psStub);
+		myFacade.SetResultSetStub(rsStub);
+		PreparedStatementStub.setNull = true;// information not found in
+												// database
+
+		myFacade.SetConnectionStub(cStub);
+
+		ArrayList<User> nonAdmin = new ArrayList<User>();
+		assertFalse(myFacade.makeAdmin(nonAdmin));
+	}
+
 }

@@ -18,70 +18,65 @@ import javax.mail.internet.MimeMultipart;
 //import account.models.PasswordReset.MyAuthenticator;
 
 public class SendEmail {
-	
-	public static void send(String email, String name, String subject, String text)
-		throws MessagingException, AddressException {
-			/*
-			 * It is a good practice to put this in a java.util.Properties file and
-			 * encrypt password. Scroll down to comments below to see how to use
-			 * java.util.Properties in JSF context.
-			 */
-			String senderEmail = "famtreeservices@gmail.com";
-			String senderMailPassword = "1234test";
-			String gmail = "smtp.gmail.com";
 
-			Properties props = System.getProperties();
+	public static void send(String email, String name, String subject,
+			String text) throws MessagingException, AddressException {
+		/*
+		 * It is a good practice to put this in a java.util.Properties file and
+		 * encrypt password. Scroll down to comments below to see how to use
+		 * java.util.Properties in JSF context.
+		 */
+		String senderEmail = "famtreeservices@gmail.com";
+		String senderMailPassword = "1234test";
+		String gmail = "smtp.gmail.com";
 
-			props.put("mail.smtp.user", senderEmail);
-			props.put("mail.smtp.host", "smtp.gmail.com");
-			props.put("mail.smtp.port", "465");
-			props.put("mail.smtp.starttls.enable", "true");
-			props.put("mail.smtp.debug", "true");
-			props.put("mail.smtp.auth", "true");
-			props.put("mail.smtp.socketFactory.port", "465");
-			props.put("mail.smtp.socketFactory.class",
-					"javax.net.ssl.SSLSocketFactory");
-			props.put("mail.smtp.socketFactory.fallback", "false");
+		Properties props = System.getProperties();
 
-			// Required to avoid security exception.
-			MyAuthenticator authentication = new MyAuthenticator(senderEmail,
-					senderMailPassword);
-			Session session = Session.getDefaultInstance(props, authentication);
-			session.setDebug(true);
+		props.put("mail.smtp.user", senderEmail);
+		props.put("mail.smtp.host", "smtp.gmail.com");
+		props.put("mail.smtp.port", "465");
+		props.put("mail.smtp.starttls.enable", "true");
+		props.put("mail.smtp.debug", "true");
+		props.put("mail.smtp.auth", "true");
+		props.put("mail.smtp.socketFactory.port", "465");
+		props.put("mail.smtp.socketFactory.class",
+				"javax.net.ssl.SSLSocketFactory");
+		props.put("mail.smtp.socketFactory.fallback", "false");
 
-			MimeMessage message = new MimeMessage(session);
+		// Required to avoid security exception.
+		MyAuthenticator authentication = new MyAuthenticator(senderEmail,
+				senderMailPassword);
+		Session session = Session.getDefaultInstance(props, authentication);
+		session.setDebug(true);
 
-			BodyPart messageBodyPart = new MimeBodyPart();
+		MimeMessage message = new MimeMessage(session);
 
-			String output = "Hello "
-					+ name
-					+ ",\n\n"
-					+ text
-					+ "\n\n"
-					+ "Thank you for using our services."
-					+ "\n \n \n\nFamily Tree Account Services";
+		BodyPart messageBodyPart = new MimeBodyPart();
 
-			messageBodyPart.setText(output);
+		String output = "Hello " + name + ",\n\n" + text + "\n\n"
+				+ "Thank you for using our services."
+				+ "\n \n \n\nFamily Tree Account Services";
 
-			// Add message text
-			Multipart multipart = new MimeMultipart();
-			multipart.addBodyPart(messageBodyPart);
+		messageBodyPart.setText(output);
 
-			message.setContent(multipart);
-			message.setSubject(subject);
-			message.setFrom(new InternetAddress(senderEmail));
-			message.addRecipient(Message.RecipientType.TO, new InternetAddress(
-					email));
+		// Add message text
+		Multipart multipart = new MimeMultipart();
+		multipart.addBodyPart(messageBodyPart);
 
-			Transport transport = session.getTransport("smtps");
-			transport.connect(gmail, 465, senderEmail, senderMailPassword);
-			transport.sendMessage(message, message.getAllRecipients());
+		message.setContent(multipart);
+		message.setSubject(subject);
+		message.setFrom(new InternetAddress(senderEmail));
+		message.addRecipient(Message.RecipientType.TO, new InternetAddress(
+				email));
 
-			transport.close();
+		Transport transport = session.getTransport("smtps");
+		transport.connect(gmail, 465, senderEmail, senderMailPassword);
+		transport.sendMessage(message, message.getAllRecipients());
 
-		
+		transport.close();
+
 	}
-	
+
 	private static class MyAuthenticator extends javax.mail.Authenticator {
 		String User;
 		String Password;
@@ -96,5 +91,5 @@ public class SendEmail {
 			return new javax.mail.PasswordAuthentication(User, Password);
 		}
 	}
-	
+
 }

@@ -32,36 +32,32 @@ public class CommentServlet extends HttpServlet {
 		// TODO Auto-generated method stub
 		// doLogin
 		HttpSession session = request.getSession(true);
-		
+
 		if (request.getParameter("type").equalsIgnoreCase("reply")) {
 
 			int parent = Integer.parseInt(request.getParameter("id"));
 			String text = request.getParameter("text");
 
-
 			MakeReplay.postReplay(parent, text, session
 					.getAttribute("username").toString());
-		}
-		else if(request.getParameter("type").equalsIgnoreCase("comment"))
-		{
-			String text = request.getParameter("text");			
+		} else if (request.getParameter("type").equalsIgnoreCase("comment")) {
+			String text = request.getParameter("text");
 
-			int result = MakeReplay.postComment(text, session
-					.getAttribute("username").toString());
+			int result = MakeReplay.postComment(text,
+					session.getAttribute("username").toString());
 
 			response.getWriter().write(String.valueOf(result));
-			
-		}
-		else if(request.getParameter("type").equalsIgnoreCase("getnewcomment"))
-		{
-			int total_comments = Integer.parseInt(request.getParameter("total_comments"));
-			
+
+		} else if (request.getParameter("type").equalsIgnoreCase(
+				"getnewcomment")) {
+			int total_comments = Integer.parseInt(request
+					.getParameter("total_comments"));
+
 			String json = MakeReplay.getLast(total_comments);
 			response.getWriter().write(json);
-		}
-		else
+		} else
 			System.out.println("Post not adding.");
-		
+
 	}
 
 	/**

@@ -2,25 +2,21 @@ package account.models.test;
 
 import java.sql.Date;
 import java.sql.DriverManager;
-//import java.sql.ResultSet;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import test.ConnectionStub;
-import test.PreparedStatementStub;
+import test.StatementStub;
 import test.ResultSetStub;
-
-/*import com.mysql.jdbc.Connection;
-import com.mysql.jdbc.PreparedStatement;
-import com.mysql.jdbc.Statement;*/
 
 public class Link {
 
-	public static int getMemberID(String fName, String lName, String bday){
-				
+	public static int getMemberID(String fName, String lName, String bday) {
+
 		// To connect to the database
 		String connectionURL = "jdbc:mysql://localhost:3306/test";
 		ConnectionStub connection = null;
-		PreparedStatementStub statement = null;
+		StatementStub statement = null;
 		ResultSetStub rs = null;
 		String dbUsername = "root"; // Database username
 		String dbPassword = "1234"; // Database password
@@ -34,21 +30,21 @@ public class Link {
 			connection = (ConnectionStub) DriverManager.getConnection(
 					connectionURL, dbUsername, dbPassword);
 			System.out.println(" Connection Established. ");
-			
-		PreparedStatementStub st = (PreparedStatementStub) connection
-				.prepareStatement("SELECT member_id FROM Members WHERE first_name = ? AND last_name = ? AND birthdate = ?");
-		st.setString(1, fName);
-		st.setString(2, lName);
-		st.setString(3, bday);		
-				
-		rs = (ResultSetStub) st.executeQuery();
-									
-		if(!rs.next()){
-			return -1;		
-		}
-		return rs.getInt(1);
-		
-		}catch (Exception e) {
+
+			StatementStub st = (StatementStub) connection
+					.prepareStatement("SELECT member_id FROM Members WHERE first_name = ? AND last_name = ? AND birthdate = ?");
+			st.setString(1, fName);
+			st.setString(2, lName);
+			st.setString(3, bday);
+
+			rs = (ResultSetStub) st.executeQuery();
+
+			if (!rs.next()) {
+				return -1;
+			}
+			return rs.getInt(1);
+
+		} catch (Exception e) {
 			System.out.println(" Error connecting to database:  " + e);
 		}
 		try {
@@ -58,6 +54,6 @@ public class Link {
 			e.printStackTrace();
 		}
 		return 0;
-		
-	}	
+
+	}
 }

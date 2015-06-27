@@ -1,34 +1,30 @@
 package account.models.test;
 
-import java.sql.DriverManager;
+//import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.PreparedStatement;
 
-//import test.ConnectionStub;
-//import test.PreparedStatementStub;
-//import test.ResultSetStub;
+import test.DriverManagerStub;
 
-import com.mysql.jdbc.Connection;
-import com.mysql.jdbc.PreparedStatement;
-
-public class Registration 
-{
-	private Connection connection = null;
-	private ResultSet rs = null;
+public class Registration {
+	private Connection connection;
 	private PreparedStatement st;
-	
-	public Registration(Connection cStub, PreparedStatement psStub, ResultSet rsStub)
-	{
+	private ResultSet rs;
+
+	public Registration(Connection cStub) {
 		connection = cStub;
-		st = psStub;
-		rs = rsStub;
+		// TODO Auto-generated constructor stub
 	}
-	
+
 	public boolean doRegistration(String fName, String lName, String email,
 			String pass) {
 
 		// To connect to the database
 		String connectionURL = "jdbc:mysql://localhost:3306/test";
-		
+
 		String dbUsername = "root"; // Database username
 		String dbPassword = "1234"; // Database password
 
@@ -38,27 +34,26 @@ public class Registration
 			System.out.println(" Unable to load driver. ");
 		}
 		try {
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, dbUsername, dbPassword);
+			connection = DriverManagerStub.getConnection(connectionURL,
+					dbUsername, dbPassword);
 			System.out.println(" Connection Established. ");
 
 			// After this, create your own logic
 
-			st = (PreparedStatement) connection
+			st = connection
 					.prepareStatement("SELECT * FROM Users WHERE username = ?");
 			st.setString(1, email);
-			rs = st.executeQuery();
-		
-			//return false if email already taken
-			if (rs == null) 
-			{
+			rs = (ResultSet) st.executeQuery();
+
+			// return false if email already taken
+			if (rs == null) {
 				connection.close();
+				System.out.println(" Reached null. ");
 				return false;
-			} 
-			else 
-			{
+			} else {
 				String query = "INSERT INTO Users (" + " username," + " fname,"
-						+ " lname," + " password," + " privileges ) VALUES (" + "?, ?, ?, ?, ?)";
+						+ " lname," + " password," + " privileges ) VALUES ("
+						+ "?, ?, ?, ?, ?)";
 
 				st = (PreparedStatement) connection.prepareStatement(query);
 				st.setString(1, email);
@@ -71,15 +66,15 @@ public class Registration
 				connection.close();
 			}
 		}
-		//return false if there was any problem with the connection 
+		// return false if there was any problem with the connection
 		catch (Exception e) {
-			System.out.println(" Error inserting into the database:  " + e);
+			System.out.println(" Error inserting into the database: " + e);
 			return false;
 		}
 
-		//registration successful
+		// registration successful
 		return true;
-		
+
 	}
 
 }

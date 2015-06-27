@@ -3,24 +3,24 @@ package account.models.test;
 import java.sql.DriverManager;
 //import java.sql.ResultSet;
 
-
-
 import test.ConnectionStub;
+import test.DriverManagerStub;
+import test.PreparedStatementStub;
 import test.ResultSetStub;
 
 import com.mysql.jdbc.*;
 
 /*import com.mysql.jdbc.Connection;
-import com.mysql.jdbc.PreparedStatement;
-import com.mysql.jdbc.Statement;*/
+ import com.mysql.jdbc.PreparedStatement;
+ import com.mysql.jdbc.Statement;*/
 
 public class LogInAndOut {
+	private static ConnectionStub connection;
 
 	public static boolean doLogin(String username, String password) {
-
 		// To connect to the database
 		String connectionURL = "jdbc:mysql://localhost:3306/test";
-		ConnectionStub connection = null;
+
 		ResultSetStub rs = null;
 		String dbUsername = "root"; // Database username
 		String dbPassword = "1234"; // Database password
@@ -31,12 +31,12 @@ public class LogInAndOut {
 			System.out.println(" Unable to load driver. ");
 		}
 		try {
-			connection = (ConnectionStub) DriverManager.getConnection(
+			connection = (ConnectionStub) DriverManagerStub.getConnection(
 					connectionURL, dbUsername, dbPassword);
-			//System.out.println(" Connection Established. ");
+			// System.out.println(" Connection Established. ");
 
 			// After this, create your own logic
-			PreparedStatement st = (PreparedStatement) connection
+			PreparedStatementStub st = (PreparedStatementStub) connection
 					.prepareStatement("SELECT username, password FROM Users WHERE username = ?");
 			st.setString(1, username);
 			rs = (ResultSetStub) st.executeQuery();
