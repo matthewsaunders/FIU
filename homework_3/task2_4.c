@@ -1,3 +1,17 @@
+##########################################################
+## COP4610 – Principles of Operating Systems – Summer C 2015
+## Prof. Jose F. Osorio
+## Group: group name
+## Group Members:       Robert Hertzbach – 2676397
+##                      Matthew Saunders – 2403246
+## Project: Multithreaded Programming
+## Specs:
+## Due Date: 07/08/2015 by 11:55pm
+## Module Name: task2_4.c
+##
+## We Certify that this program code has been written by us
+## and no part of it has been taken from any sources.
+##########################################################
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>                
