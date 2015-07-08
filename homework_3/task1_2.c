@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
+pthread_mutex_t mutex;
 pthread_barrier_t   barrier;
 int SharedVariable = 0;
 
@@ -19,11 +20,24 @@ void SimpleThread(int which) {
       if (random() > RAND_MAX / 2)
         usleep(10);
 
+#ifdef PTHREAD_SYNC
+      pthread_mutex_lock(&mutex);
+#endif
         val = SharedVariable;
         printf("*** thread %d sees value %d\n", which, val); SharedVariable = val + 1;
+#ifdef PTHREAD_SYNC
+      pthread_mutex_unlock(&mutex);
+#endif
     }
 
+  pthread_barrier_wait(&barrier);
+#ifdef PTHREAD_SYNC
+  pthread_mutex_lock(&mutex);
+#endif
     val = SharedVariable;
+#ifdef PTHREAD_SYNC
+  pthread_mutex_unlock(&mutex);
+#endif
 
   printf("Thread %d sees final value %d\n", which, val);
 }
@@ -39,6 +53,7 @@ int main (int argc, char *argv[]) {
     int i = 0;
     int numThreads;
     struct mythread* t;
+    pthread_mutex_init(&mutex, NULL);
 
     if(argc < 2){
       printf("USAGE:\n\t./task1_1.c <#-threads>\n");
@@ -62,6 +77,7 @@ int main (int argc, char *argv[]) {
     }
 
     pthread_exit(NULL);
+    pthread_mutex_destroy(&mutex);
     free(t);
     return 0;
 }
