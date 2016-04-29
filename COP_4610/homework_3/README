@@ -1,0 +1,27 @@
+##########################################################
+## COP4610 – Principles of Operating Systems – Summer C 2015
+## Prof. Jose F. Osorio
+## Group: group name
+## Group Members:       Robert Hertzbach – 2676397
+##                      Matthew Saunders – 2403246 
+## Project: Multithreaded Programming
+## Specs:  
+## Due Date: 07/08/2015 by 11:55pm
+## Module Name: README
+##
+## We Certify that this program code has been written by us
+## and no part of it has been taken from any sources.
+##########################################################
+
+1. To compile, type 'make'.
+$ make
+
+2. To clean the directory, type 'make clean'.
+$ make clean
+
+3. To run a file called '<filename>'.
+$ ./<filename>
+
+Notes:
+- Built for compilation on CentOS.
+- Building files may produce warning messages, but the files compile and run.
