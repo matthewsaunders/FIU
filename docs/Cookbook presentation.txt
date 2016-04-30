@@ -1,0 +1,37 @@
+-seed database
+-open with cookbook.localhost/ (for guest login)
+12.The system will allow users to login to registered user accounts.
+	-click guest; click login
+	-login as "Jane Doe", "passwordABC"; displays reg. user home
+	-click all recipes to display all recipes
+	-showcase cookbooks already created
+
+2.2.1	Creation & Modification
+1.The system will allow registered users to create cookbooks.
+	-click add a cookbook
+	-create a "breakfast" cookbook
+	-show it has been created and click it
+2.The system will allow registered users to create recipes.
+8.The system will allow registered users to add recipes to cookbooks.
+3.The system will allow registered users to create ingredients.
+4.The system will allow registered users to add ingredients to recipes.
+5.The system will allow registered user to edit recipes they have previously added.
+
+-log out of "Jane Doe"
+-log in as "Leo Martin", "password"
+-admins are basically the same as registered users but they can see all ingredients ever created and they can edit those ingredients, along with any recipe ever created (even those that are not their own).
+6.The system will allow administrators to modify ingredients.
+	-click "all ingredients"
+	-choose first ingredient, "edit"
+	-
+7.The system will allow administrators to modify recipes.
+	-back to "all recipes"
+	
+
+2.2.2	Search
+9.The system will allow all users to browse all recipes by category, difficulty, time, title, author.
+10.The system will allow users to place recipes into one of that user’s cookbooks.
+
+2.2.3	Membership
+11.The system will allow anonymous user to sign up as a registered user to store user data.
+
