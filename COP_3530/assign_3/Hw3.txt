@@ -1,0 +1,155 @@
+COP 3530
+Sections U03
+Fall 2014
+
+
+                            Homework # 3
+                            ============
+
+
+
+                                         Due: October 16, 2014 
+
+
+Write the 5 methods that are next to your name. All methods must be added to
+the BinaryNode class. Feel free to use the methods in that class and
+to write your own private helper methods. Follow the same rules for submitting 
+the homeworks as in Hw#1 and Hw#2. 
+
+
+
+Method 1.   Add the method prePlusIn to the BinaryNode class.
+
+      The method has the header
+
+      public static <T> BinaryNode<T> prePlusIn( T[] pre, T[] in)
+
+      and takes as input the preorder and the inorder traversals of a the items 
+      of a binary tree and constructs a tree with these traversals. It returns 
+      the root of the tree. Assume that none of the two traversals has duplicate 
+      items. The method throws an IllegalArgumentException if it is not possible 
+      to construct the tree.
+
+Method 2.   Add the method postPlusIn to the BinaryNode class.
+
+      The method has the header
+
+      public static <T> BinaryNode<T> postPlusIn( T[] post, T[] in)
+
+      and takes as input the postorder and the inorder traversals of a binary tree.
+      and constructs a tree that with these traversals. It returns the root 
+      of the tree.  Assume that none of the two traversals has duplicate
+      items. The method throws an IllegalArgumentException if it is not possible
+      to construct the tree.
+
+Method 3.  Add the method
+
+    public static <T> BinaryNode<T> levelsPlusIn(T[] in, T[] levels)
+
+    that takes as input the inorder traversal and the traversal by levels of 
+    a binary tree and constructs the tree. It returns the root of the tree. Assume that 
+    none of the two traversal have duplicate items.
+    Throw an IllegalArgumentException if this cannot  be done.
+
+Method 4. Add the method
+
+     public void iterativePostOrder()
+
+     that prints the nodes of the tree with root this in postorder,
+     without using recursion. Use a stack.
+
+Method 5.  Add the method
+
+     public void printByLevels()
+
+     That prints the nodes of the tree by levels. Use a queue.
+
+Method 6. Add the method
+
+     public void iterativeInOrder()
+
+     that prints the nodes of the tree with root this in inorder,
+     without using recursion. Use a stack.
+ 
+Maethod 7. Add the method
+
+     public BinaryNode<T> parent(BinaryNode<T> n)
+
+     that finds the parent of the node n in this tree.
+     If n = null throw an IllegalArgumentException.
+     If n = this or n does not occur in the tree return null.
+
+Method 8.  Two trees are equal if they have the same address set and 
+     the values at the same address are equal.
+   Write the method
+
+   public boolean equals(BinaryNode<T> r)
+
+   that returns true if the tree r is equal
+   to this and false otherwise. Some of the items may be null. Use equals 
+   to check for equality.
+ 
+Method 9.  Two trees are isomorphic if one of them can be derived from the other
+   by swapping some of the left and right children.
+   Write the method
+
+   public boolean isomorphic(BinaryNode<T> r)
+
+   that returns true if the tree r is isomorphic to this and false otherwise. 
+   Some of the items may be null. Use the equals method to check for equality.
+
+
+Method 10. Write the method 
+     
+     public static <T> ArrayList<T> longestPath(BinaryNode<T> root)
+
+     that returns a longest path in the tree root. The first item of 
+     the array list is the value of the root.
+  
+--------------------------------------------------------------------------------
+
+     The Problem Assignments
+     -----------------------
+
+ 1. Abodo, Franklin -----> 1, 4, 5, 9, 10
+ 2. Alvarez, Justin  -----> 2, 4, 5, 7, 8
+ 3. Archila, Gustavo -----> 1, 5, 6, 8, 10
+ 4. Beltran, Jonathan -----> 1, 4, 7, 9, 10
+ 5. Concepcion, Osvaldo -----> 2, 4, 5, 7, 8 
+
+ 6. Delamo, Kevin -----> 2, 6, 7, 8, 10
+ 7. Fernandez, Eric -----> 1, 5, 6, 7, 9
+ 8. Flores, Felix -----> 2, 6, 7, 9, 10
+ 9. Gonzalez, Daniel-----> 3, 4, 5, 8, 10
+10. Hernandez, Franco -----> 1, 4, 5, 7, 9
+
+11. Herr, Richard -----> 3, 4, 5, 8, 10
+12. Lwande, Absalom -----> 2, 4, 7, 9, 10 
+13. Machado, Juan -----> 1, 5, 6, 7, 8
+14. Martin, Leonardo -----> 3, 4, 5, 9, 10
+15. McBride, Jeremy-----> 1, 5, 6, 7, 9
+
+
+16. Medina Rodriguez, Jorge -----> 3, 4, 5, 8, 10
+17. Mirabent, Marcos ----> 1, 6, 7, 9, 10
+18. Morales Llano, Alfredo  ----->  2, 5, 6, 7, 8
+19. Murillo, Roberto  -----> 3, 4, 5, 9, 10
+20. Ng, Han  -----> 2, 4, 7, 8, 10
+
+
+21. Paniagua, Alan -----> 3, 5, 6, 7, 9  
+22. Ramirez, Ailed -----> 1, 4, 5, 8, 10
+23. Reyes, Manuel-----> 3, 4, 7, 8, 10
+24. Rico, Robert -----> 2, 5, 6, 7, 8
+25. Rodriguez, Orlando  -----> 3, 4, 5, 9, 10
+
+26. Rodriguez, Jorge  -----> 1, 4, 7, 9, 10
+27. Santoyo, Alfredo  -----> 2, 5, 6, 7, 9
+28. Saunders, Matthew  -----> 3, 5, 6, 8, 10 
+29. Stroud, Stephan  -----> 1, 4, 7, 8, 10
+30. Ulloa, Osman  -----> 3, 5, 6, 7, 8
+
+31. Valiente, Monica  -----> 3, 4, 5, 9, 10 
+32. Vega, Victoriano  -----> 2, 6, 7, 8, 10
+33. Viant Rogriguez, Rodolfo  ----> 3, 5, 6, 7, 9
+

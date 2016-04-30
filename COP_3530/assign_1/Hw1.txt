@@ -1,0 +1,453 @@
+COP 3530
+Section U03
+Fall 2014
+
+
+                                HOMEWORK #1
+                                ===========
+
+
+                                                  Due: September 18, 2014
+
+
+
+
+     Do the problem that is next to your name.
+
+
+Problem I. 
+
+    In this handout you have the 3 files that are part of your home-
+work, the expected output and some style guidelines.
+
+The 3 files are ArrayList, that emulates an array list,
+the interface List, and a driver that tests ArrayList.
+ Your job is to write the missing methods of ArrayList.
+The header comments of the methods are the guidelines.
+
+
+I. The class ArrayList
+
+
+import java.util.NoSuchElementException;
+
+// the array list is implemented as the initial
+// segment [0:size-1] of arr
+
+
+public class ArrayList<T> implements List<T>
+{
+    // the initial size of arr
+    private static final int INIT = 3;
+    private int size = 0; // the size of the array list
+    private T[] arr; // the array
+
+    // construct an empty array list
+    public ArrayList()
+    {
+        arr = (T[]) new Object[INIT];
+
+    }
+
+    // insert the value v at index i
+    // if i is out of index, throw an index out of bounds
+    // exception. If the arr is full, create an array of twice
+    // the size of arr, copy arr onto the new array and make
+    // the new array the object array
+    // Then do the insertion
+    public void add(int i, T v)
+    {
+        // you write it
+    }
+
+    // add in the last location
+    public void add(T v)
+    {
+        // you write it
+    }
+
+    // return the value at i
+    // if i is out of bounds throw a no such element exception
+    public T get(int i)
+    {
+        // you write it
+    }
+
+
+    // remove the value at i
+    // if i is out of bounds throw a no such element exception
+    public T remove(int i)
+    {
+        // you write it
+    }
+
+    // set the value at i to v return the old value
+    // if i is out of bounds throw an array index out of bounds
+    // exception
+    public T set (int i, T v)
+    {
+        // you write it
+    }
+
+    // clear the array sets size to zero
+    public void clear()
+    {
+        size = 0;
+    }
+
+     // returns the size
+    public int size()
+    {
+        return size;
+    }
+
+
+    // print the slice arr[0:size-1]
+    public void printArray()
+    {
+        // you write it
+
+    }
+}
+
+
+II. The List interface.
+
+public interface List<T>
+{
+    // add an item
+    void add(T item);
+    // add at a given index
+    void add(int i, T item);
+    // remove at a given index
+    T remove(int i);
+    // get the value at a given index
+    T get(int i);
+    // set the value at i to v
+    // return the old value
+    T set(int i, T v);
+    // clear the array
+    void clear();
+    // return the size
+    int size();
+
+}
+
+III. The driver for ArrayList
+
+
+import java.util.NoSuchElementException;
+public class ToyList
+{
+
+    public static void main(String[] args)
+    {
+        System.out.println("Testing the ArrayList");
+        System.out.println("=====================\n\n");
+
+        System.out.println("We form an array list of strings");
+        ArrayList<String> profs = new ArrayList();
+        System.out.println("We add Papa Bill");
+        profs.add("Papa Bill");
+        System.out.println("We add Shrek, Grandpa and Tornado");
+        profs.add("Shrek");
+        profs.add("Grandpa");
+        profs.add("Tornado");
+        System.out.println("The list has: " + profs.size() +
+                " profs.");
+        System.out.println("We add Ali Baba at index 1");
+        profs.add(1,"Ali Baba");
+        System.out.println("We add Poco Pelo at index 3");
+        profs.add(3,"Poco Pelo");
+        System.out.println("We print the array list.");
+        profs.printArray();
+
+        System.out.println("At index 4 we have " + profs.get(4));
+
+        try
+        {
+            System.out.println("We try to insert Zorba at index 7.");
+            profs.add(7,"Zorba");
+        }
+        catch(ArrayIndexOutOfBoundsException e)
+        {
+            System.out.println("We cannot do it.");
+        }
+
+        System.out.println("We change the prof at 3 to Ming the Merciless");
+        String last = profs.set(3,"Ming the Merciless");
+        System.out.println("Ming replaces " + last + ".");
+        
+        System.out.println("We remove the prof at 2");
+        last = profs.remove(2);
+
+        System.out.println("We print the array list.");
+        profs.printArray();
+
+        try
+        {
+            System.out.println("We try to remove the prof at index 6.");
+            last = profs.remove(6);
+        }
+        catch(NoSuchElementException e)
+        {
+            System.out.println("We cannot do it.");
+        }
+
+        System.out.println("We clear the array list.");
+        profs.clear();
+        profs.printArray();
+
+        System.out.println("I hope that your program worked!");
+    }
+}
+
+
+IV. The expected output of the driver.
+
+The output must be the one below (except for the format of printArray).
+
+Testing the ArrayList
+=====================
+
+
+We form an array list of strings
+We add Papa Bill
+We add Shrek, Grandpa and Tornado
+The list has: 4 profs.
+We add Ali Baba at index 1
+We add Poco Pelo at index 3
+We print the array list.
+
+The array is:
+arr[0] = Papa Bill
+arr[1] = Ali Baba
+arr[2] = Shrek
+arr[3] = Poco Pelo
+arr[4] = Grandpa
+arr[5] = Tornado
+At index 4 we have Grandpa
+We try to insert Zorba at index 7.
+We cannot do it.
+We change the prof at 3 to Ming the Merciless
+Ming replaces Poco Pelo.
+We remove the prof at 2
+We print the array list.
+
+The array is:
+arr[0] = Papa Bill
+arr[1] = Ali Baba
+arr[2] = Shrek
+arr[3] = Poco Pelo
+arr[4] = Grandpa
+arr[5] = Tornado
+At index 4 we have Grandpa
+We try to insert Zorba at index 7.
+We cannot do it.
+We change the prof at 3 to Ming the Merciless
+Ming replaces Poco Pelo.
+We remove the prof at 2
+We print the array list.
+
+The array is:
+arr[0] = Papa Bill
+arr[1] = Ali Baba
+arr[2] = Ming the Merciless
+arr[3] = Grandpa
+arr[4] = Tornado
+We try to remove the prof at index 6.
+We cannot do it.
+We clear the array list.
+The array is empty.
+I hope that your program worked!
+BUILD SUCCESSFUL (total time: 0 seconds)
+
+II. 
+
+You are given the interface Queue shown below.
+
+public interface Queue<AnyType> {
+
+    // add an item
+    void add(AnyType item);
+    // remove an item, throw NoSuchElementException if the queue is empty
+    AnyType remove();
+    // get the first element without removing it
+    // throw NoSuchElementException if the queue is empty
+    AnyType getFirst();
+    // get the size
+    int getSize();
+    // check if the queue is empty
+    boolean isEmpty();
+    // empty the queue
+    void clear();
+}
+
+   Write a generic class CircularQueue that implements this interface as
+a circular queue. The class must have 3 private fields, the data array,
+and the indices f and r that point to the first and the last element
+of the queue, in this order. You may use an extra field, the size of
+the queue.
+
+The class has 2 constructors, one that takes as input the size of data,
+and one that uses a default size, in this case 3.
+
+Add checks that there is space in data, i.e. size < data.length.
+If not, add creates a new array with twice as many elements as data,
+copies the contents of data starting with location f and ending with r,
+onto the new array, starting with location 0. 
+
+Then, add performs the insertion at the end of the queue.
+If data is empty before the insertion, initialize f and r.
+
+Recall that in a circular queue, both the front and the rear wrap arround 
+the end of the data array.
+
+remove() also checks that the queue has 1 item. If that is the case,
+return the item and empty the queue.
+
+You must also write the public method
+
+public void display()
+
+that displays f, r, the contents of data and the size of the queue.
+
+    
+Use the test below to check your program.
+
+    public static void main(String[] args) {
+        System.out.println("Testing Queues");
+        System.out.println("==============\n\n\n");
+
+        System.out.println("We form a queue with the names Papa Bill, Mark,"
+            + " Ali Baba.");
+
+        CircularQueue<String> profs = new CircularQueue<String>();
+        profs.add("Papa Bill");
+        profs.add("Mark");
+        profs.add("Ali Baba");
+
+        System.out.println("We add the names Shrek, Jeff the Chef, Hex");
+        profs.add("Shrek");
+        profs.add("Jeff the Chef");
+        profs.add("Hex");
+        System.out.println("The queue has " + profs.getSize() + " persons.");
+        System.out.println("We delete 4 names.");
+        for (int i = 1; i <= 4; i++)
+            System.out.println("The delete name is " + profs.remove());
+
+        System.out.println("The name on top is " + profs.getFirst());
+        System.out.println("We delete 2 more names.");
+        for (int i = 1; i <= 2; i++)
+            System.out.println("The delete name is " + profs.remove());
+        System.out.println("Now, isEmpty() is " + profs.isEmpty());
+
+        System.out.println("We try to remove a name.");
+        try
+        {
+            String name = profs.remove();
+        }
+        catch (NoSuchElementException e)
+        {
+            System.out.println("We get a NoSuchElementException");
+        }
+
+    }   // end main
+
+The output must be the one beneath.
+Testing Queues
+==============
+
+
+
+We form a queue with the names Papa Bill, Mark, Ali Baba.
+We add the names Shrek, Jeff the Chef, Hex
+The queue has 6 persons.
+We delete 4 names.
+The delete name is Papa Bill
+The delete name is Mark
+The delete name is Ali Baba
+The delete name is Shrek
+The name on top is Jeff the Chef
+We delete 2 more names.
+The delete name is Jeff the Chef
+The delete name is Hex
+Now, isEmpty() is true
+We try to remove a name.
+We get a NoSuchElementException
+
+III. Some Style Guidelines
+    ---------------------
+
+
+Start the program with the author block
+below.
+      /* COURSE      : COP 3530
+       * Section     : U03
+       * Semester    : Fall 2014
+       * Instructor  : Alex Pelin
+       * Author      : (your name)
+       * Assignment #: 1
+       * Due date    : September 18th, 2014
+       * Description : Insert a 2-3 line description of the assignment
+       *
+       *                                      
+       */
+
+Recall that the names of classes and of the variables are nouns, and the
+names of the methods are verbs. The variables and the methods use only
+lower case letters except for the first letter of the words of a compound
+word. The constants have only capital letters and the words are separated
+by underscores. Put header comments to describe what the method does and
+end comments to describe the variables.
+You may use Eclipse, JCreator or Netbeans to develop your program.
+e-mail me the java file of the class. Do not turn in the driver, the interface,
+or the output. 
+
+
+
+ The Problem Assignments:
+ ------------------------
+
+ 1. Abodo, Franklin -----> Problem I
+ 2. Alvarez, Justin  -----> Problem II
+ 3. Archila, Gustavo -----> Problem I
+ 4. Beltran, Jonathan -----> Problem II
+ 5. Concepcion, Osvaldo -----> Problem I
+
+ 6. Delamo, Kevin -----> Problem I
+ 7. Fernandez, Eric -----> Problem II
+ 8. Flores, Felix -----> Problem I
+ 9. Gonzalez, Daniel-----> Problem II
+10. Hernandez, Franco -----> Problem I
+
+11. Herr, Richard -----> Problem II
+12. Lwande, Absalom -----> Problem I
+13. Machado, Juan -----> Problem II
+14. Martin, Leonardo -----> Problem I
+15. McBride, Jeremy-----> Problem II
+
+
+16. Medina Rodriguez, Jorge -----> Problem I
+17. Mirabent, Marcos -----> Problem II
+18. Morales Llano, Alfredo  -----> Problem II
+19. Murillo, Roberto  -----> Problem I
+20. Ng, Han  -----> Problem II
+
+
+21. Paniagua, Alan -----> Problem I
+22. Ramirez, Ailed -----> Problem II
+23. Reyes, Manuel-----> Problem I
+24. Rico, Robert -----> Problem II  
+25. Rodriguez, Orlando  -----> Problem I
+
+26. Rodriguez, Jorge  -----> Problem II 
+27. Santoyo, Alfredo  -----> Problem I
+28. Saunders, Matthew  -----> Problem II
+29. Stroud, Stephan  -----> Problem I
+30. Ulloa, Osman  -----> Problem II
+
+31. Valiente, Monica  -----> Problem I
+32. Vega, Victoriano  -----> Problem II
+33. Viant Rogriguez, Rodolfo  -----> Problem I
+
