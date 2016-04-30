@@ -1,0 +1,56 @@
+elapsed time: 510.483870
+Job  /home/share/platform/lsf/8.3/linux2.6-glibc2.3-x86_64/bin/openmpi_wrapper ./cannon A B C
+
+TID   HOST_NAME   COMMAND_LINE            STATUS            TERMINATION_TIME
+===== ========== ================  =======================  ===================
+00000 n039       ./cannon A B C    Done                     04/23/2015 23:29:41
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@n039>
+Subject: Job 324382: <saunders_hw4_cannon> Done
+
+Job <saunders_hw4_cannon> was submitted from host <u01> by user <msaun008> in cluster <panther>.
+Job was executed on host(s) <n039>, in queue <classroom>, as user <msaun008> in cluster <panther>.
+</home/msaun008> was used as the home directory.
+</home/msaun008/matthew-saunders-homework-4> was used as the working directory.
+Started at Thu Apr 23 23:21:10 2015
+Results reported at Thu Apr 23 23:29:45 2015
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/sh
+#BSUB -q classroom
+#BSUB -J saunders_hw4_cannon
+#BSUB -oo cannon.out
+#BSUB -eo cannon.err
+
+#BSUB -a openmpi
+#BSUB -n 1
+
+. $MODULESHOME/../global/profile.modules
+
+mpirun.lsf ./cannon A B C
+
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time   :    962.82 sec.
+    Max Memory :      1910 MB
+    Max Swap   :      3893 MB
+
+    Max Processes  :         9
+    Max Threads    :        11
+
+The output (if any) is above this job summary.
+
+
+
+PS:
+
+Read file <cannon.err> for stderr output of this job.
+

@@ -1,0 +1,12 @@
+#!/bin/sh
+#BSUB -q classroom
+#BSUB -J saunders_hw4_cannon
+#BSUB -oo cannon.out
+#BSUB -eo cannon.err
+
+#BSUB -a openmpi
+#BSUB -n 16
+
+. $MODULESHOME/../global/profile.modules
+
+mpirun.lsf ./cannon A B C
