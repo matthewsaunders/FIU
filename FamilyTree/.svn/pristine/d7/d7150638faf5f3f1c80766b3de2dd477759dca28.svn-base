@@ -1,0 +1,79 @@
+package account.models;
+
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+
+import javax.servlet.http.HttpSession;
+
+import com.mysql.jdbc.Connection;
+import com.mysql.jdbc.PreparedStatement;
+
+public class MakeReplay {
+
+	public static void postReplay(int id, String text, String owner) {
+
+		// To connect to the database
+		String connectionURL = "jdbc:mysql://softeng.cs.fiu.edu:3306/family_tree__accounts_only";
+		Connection connection = null;
+		ResultSet rs = null;
+		String dbUsername = "ft_accounts"; // Database username
+		String dbPassword = "2K7hWXvfay9cB2qW"; // Database password
+
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+		} catch (Exception e) {
+			System.out.println(" Unable to load driver. ");
+		}
+		try {
+			connection = (Connection) DriverManager.getConnection(
+					connectionURL, dbUsername, dbPassword);
+			System.out.println(" Connection Established. ");
+
+			// After this, create your own logic
+			PreparedStatement st = (PreparedStatement) connection
+					.prepareStatement("CALL insert_replay(?,?,?)");
+			st.setString(1, text);
+			st.setInt(2, id);
+			st.setString(3, owner);
+			st.executeQuery();
+		} catch (Exception e) {
+			System.out.println(" Error connecting to database:  " + e);
+		}
+	}
+	
+	public static int postComment(String text, String owner) {
+		
+		int id = -1;
+		// To connect to the database
+		String connectionURL = "jdbc:mysql://softeng.cs.fiu.edu:3306/family_tree__accounts_only";
+		Connection connection = null;
+		ResultSet rs = null;
+		String dbUsername = "ft_accounts"; // Database username
+		String dbPassword = "2K7hWXvfay9cB2qW"; // Database password
+
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+		} catch (Exception e) {
+			System.out.println(" Unable to load driver. ");
+		}
+		try {
+			connection = (Connection) DriverManager.getConnection(
+					connectionURL, dbUsername, dbPassword);
+			System.out.println(" Connection Established. ");
+
+			// After this, create your own logic
+			PreparedStatement st = (PreparedStatement) connection
+					.prepareStatement("CALL insert_comment(?,?)");
+			st.setString(1, text);
+			st.setString(2, owner);
+			rs = st.executeQuery();
+			
+			if (rs != null) 
+				while (rs.next()) 
+					id = rs.getInt("comment_id");
+		} catch (Exception e) {
+			System.out.println(" Error connecting to database:  " + e);
+		}
+	return id;
+	}
+}

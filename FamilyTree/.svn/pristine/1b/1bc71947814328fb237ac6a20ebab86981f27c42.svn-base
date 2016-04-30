@@ -1,0 +1,33 @@
+/*
+import java.net.PasswordAuthentication;
+import javax.mail.MessagingException;
+
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+
+/**
+ *
+ * @author opena003
+ 
+public class Testing {
+
+    /**
+     * @param args the command line arguments
+     
+    public static void main(String[] args)throws MessagingException {
+        
+        SendEmail em = new SendEmail();
+         em.send ("opena003@fiu.edu", "Otniel", "Test", "This is a test message");                
+        
+      MyAuthenticator auth = new MyAuthenticator("Y03ntr0", "Otniel"); 
+        javax.mail.PasswordAuthentication enter =  auth.getPasswordAuthentication();
+        System.out.println (enter.toString());    
+        
+     User us = new User("opena", "Otniel", "Pena", "Administrator");
+     System.out.println (us.getFname() + "\n" + us.getLname() + "\n" + us.getUserName() + "\n" + us.getPriviledges());
+    }
+}
+*/

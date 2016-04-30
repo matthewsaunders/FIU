@@ -1,0 +1,71 @@
+package account.models;
+
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+
+import com.mysql.jdbc.Connection;
+import com.mysql.jdbc.PreparedStatement;
+import com.mysql.jdbc.Statement;
+
+public class getCommentsInfo {
+	
+	public static ArrayList<Comments> getComments() {
+		
+		ArrayList<Comments> list = new ArrayList<Comments>();
+
+		//To connect to the database
+		String connectionURL = "jdbc:mysql://softeng.cs.fiu.edu:3306/family_tree__accounts_only";
+		Connection connection = null;
+		ResultSet rs = null;
+		String dbUsername = "ft_accounts"; // Database username
+		String dbPassword = "2K7hWXvfay9cB2qW"; // Database password
+
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+		} catch (Exception e) {
+			System.out.println(" Unable to load driver. ");
+		}
+		try {
+			connection = (Connection) DriverManager.getConnection(
+					connectionURL, dbUsername, dbPassword);
+			//System.out.println(" Connection Established. ");
+			
+			//After this, create your own logic
+			PreparedStatement sql = (PreparedStatement) connection.prepareStatement("CALL get_comments");
+			rs = sql.executeQuery();
+			
+			if (rs != null) {
+				
+				int id;
+				int parent;
+				String date = "";
+				String owner = "";
+				String text = "";
+				String fname = "";
+				String lname = "";
+				
+				while (rs.next()) {
+					 id = rs.getInt("comment_id");
+					 parent = rs.getInt("parent");
+					 date = rs.getString("create_dt");
+					 owner = rs.getString("create_by");
+					 text = rs.getString("content");
+					 fname = rs.getString("fname");
+					 lname = rs.getString("lname");
+					 
+					 Comments newcomment = new Comments(id,parent,date,owner,text,fname,lname);
+					 list.add(newcomment);					 
+				}
+			}
+			
+			connection.close();
+		} catch (Exception e) {
+			System.out.println(" Error connecting to database:  " + e);
+		}
+		
+		return list;
+	}
+}
+
+

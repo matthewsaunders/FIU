@@ -1,0 +1,13 @@
+package account.models;
+
+public class Registration {
+	
+	public int doRegistration(String fName, String lName, String email, String pass){
+		
+		if(fName == "Linnet"){
+			return 0;
+		}
+		return 1;
+	}
+		
+}

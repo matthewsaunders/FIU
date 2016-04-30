@@ -1,0 +1,20 @@
+package account.models;
+
+public class LogInAndOut {
+
+	private String username;
+	private String password;
+
+	public LogInAndOut(String username, String password) {
+		this.username = username;
+		this.password = password;
+	}
+	
+	public boolean doLogin() {
+		
+		if(this.password.compareTo("jorgito") == 0 && this.username.compareTo("jorge") == 0)
+			return true;
+		
+		return false;
+	}
+}
