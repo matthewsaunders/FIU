@@ -1,4 +1,6 @@
-# FIU
+# FIU Classwork
+
+This repository contains all my projects from my undergraduate classes in Software Engineering taken at FIU.
 
 * CEN 4010  -   Software Engineering I
 * CEN 4072  -   Software Testing I
